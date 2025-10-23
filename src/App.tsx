@@ -46,7 +46,7 @@ import BankBook from './components/account/BankBook';
 import Reports from './components/account/Reports';
 import OutstandingReports from './components/account/OutstandingReports';
 import ComparativeReports from './components/account/ComparativeReports';
-import DatePickerDemo from './components/common/DatePickerDemo';
+
 import PatientManagement from './components/clinic/PatientManagement';
 import DoctorManagement from './components/clinic/DoctorManagement';
 import AppointmentManagement from './components/clinic/AppointmentManagement';
@@ -232,7 +232,7 @@ function App() {
                 <Route path="diagnostic/test-order" element={<TestOrderManagement />} />
                 <Route path="diagnostic/test-result" element={<TestResultManagement />} />
                 <Route path="diagnostic/order-commission" element={<OrderCommissionManagement />} />
-                <Route path="demo/datepicker" element={<DatePickerDemo />} />
+
               </Route>
             </Routes>
           </div>

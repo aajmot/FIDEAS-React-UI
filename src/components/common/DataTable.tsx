@@ -245,7 +245,7 @@ const DataTable: React.FC<DataTableProps> = ({
       </div>
       
       {/* Pagination */}
-      {totalPages > 1 && (
+      {(totalPages > 1 || (isExternalPagination ? (totalItems || 0) : filteredAndSortedData.length) > 0) && (
         <div className="px-3 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
           <div className="text-xs sm:text-sm text-gray-700">
             Showing {startIndex + 1} to {Math.min(startIndex + pageSize, isExternalPagination ? (totalItems || 0) : filteredAndSortedData.length)} of {isExternalPagination ? (totalItems || 0) : filteredAndSortedData.length} entries
@@ -258,14 +258,14 @@ const DataTable: React.FC<DataTableProps> = ({
                 e.stopPropagation();
                 handlePageChange(Math.max(currentPage - 1, 1));
               }}
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || totalPages <= 1}
               className="p-2 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
               type="button"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <span className="px-2 sm:px-3 py-1 text-xs sm:text-sm">
-              Page {currentPage} of {totalPages}
+              Page {currentPage} of {Math.max(totalPages, 1)}
             </span>
             <button
               onClick={(e) => {
@@ -273,7 +273,7 @@ const DataTable: React.FC<DataTableProps> = ({
                 e.stopPropagation();
                 handlePageChange(Math.min(currentPage + 1, totalPages));
               }}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || totalPages <= 1}
               className="p-2 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
               type="button"
             >

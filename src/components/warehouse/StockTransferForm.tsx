@@ -42,18 +42,20 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ transfer, onClose
   const loadWarehouses = async () => {
     try {
       const response = await api.get('/api/v1/warehouse/warehouses');
-      setWarehouses(response.data);
+      setWarehouses(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       showToast('error', 'Failed to load warehouses');
+      setWarehouses([]);
     }
   };
 
   const loadProducts = async () => {
     try {
       const response = await inventoryService.getProducts();
-      setProducts(response.data);
+      setProducts(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       showToast('error', 'Failed to load products');
+      setProducts([]);
     }
   };
 
