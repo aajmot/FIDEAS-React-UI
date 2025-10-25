@@ -42,10 +42,13 @@ const FinancialYearManagement: React.FC = () => {
         per_page: pageSize,
         search: searchTerm || undefined
       });
-      setYears(response.data);
-      setTotalItems(response.total);
+      setYears(Array.isArray(response.data) ? response.data : []);
+      setTotalItems(response.total || 0);
     } catch (error) {
+      console.error('Financial years error:', error);
       showToast('error', 'Failed to load financial years');
+      setYears([]);
+      setTotalItems(0);
     } finally {
       setLoading(false);
     }
@@ -121,10 +124,7 @@ const FinancialYearManagement: React.FC = () => {
     );
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString();
-  };
+
 
   const columns = [
     { key: 'id', label: 'ID' },
@@ -133,12 +133,12 @@ const FinancialYearManagement: React.FC = () => {
     { 
       key: 'start_date', 
       label: 'Start Date',
-      render: (value: string) => formatDate(value)
+      render: (value: string) => value ? new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : '-'
     },
     { 
       key: 'end_date', 
       label: 'End Date',
-      render: (value: string) => formatDate(value)
+      render: (value: string) => value ? new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : '-'
     },
     {
       key: 'is_current',

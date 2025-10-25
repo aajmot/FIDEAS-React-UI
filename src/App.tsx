@@ -14,7 +14,6 @@ import MenuAccessScreen from './components/admin/RoleMenuMapping';
 import TenantUpdate from './components/admin/TenantUpdate';
 import LegalEntityManagement from './components/admin/LegalEntityManagement';
 import FinancialYearManagement from './components/admin/FinancialYearManagement';
-import FiscalYearManagement from './components/admin/FiscalYearManagement';
 import AgencyManagement from './components/admin/AgencyManagement';
 import AgencyCommissionManagement from './components/admin/AgencyCommissionManagement';
 import OrderCommissionManagement from './components/admin/OrderCommissionManagement';
@@ -124,7 +123,7 @@ function App() {
     <AuthProvider>
       <TenantProvider>
         <ToastProvider>
-        <Router>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <div className="App">
             <Routes>
               <Route path="/login" element={<Login />} />
@@ -144,8 +143,7 @@ function App() {
                 <Route path="admin/transaction-templates" element={<TransactionTemplates />} />
                 <Route path="admin/account-type-mappings" element={<AccountTypeMappings />} />
                 <Route path="admin/legal-entity" element={<LegalEntityManagement />} />
-                <Route path="admin/financial-year" element={<FinancialYearManagement />} />
-                <Route path="admin/financial-years" element={<FiscalYearManagement />} />
+                <Route path="admin/financial-years" element={<FinancialYearManagement />} />
                 <Route path="admin/agency-management" element={<AgencyManagement />} />
                 <Route path="admin/agency-commission-setup" element={<AgencyCommissionManagement />} />
                 <Route path="inventory/units" element={<UnitManagement />} />

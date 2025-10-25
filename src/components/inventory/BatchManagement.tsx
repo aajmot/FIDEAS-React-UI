@@ -10,8 +10,13 @@ const BatchManagement: React.FC = () => {
   }, [days]);
 
   const loadNearExpiry = async () => {
-    const { data } = await batchService.getNearExpiry(days);
-    setNearExpiry(data);
+    try {
+      const { data } = await batchService.getNearExpiry(days);
+      setNearExpiry(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to load near expiry batches:', error);
+      setNearExpiry([]);
+    }
   };
 
   return (

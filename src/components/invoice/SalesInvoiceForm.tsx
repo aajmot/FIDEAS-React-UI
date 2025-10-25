@@ -75,9 +75,9 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ invoice, onClose })
       const response = await api.get('/api/v1/invoice/payment-terms');
       const data = response.data?.data || response.data;
       setPaymentTerms(Array.isArray(data) ? data : []);
-      setPaymentTerms(response.data);
     } catch (error) {
       showToast('error', 'Failed to load payment terms');
+      setPaymentTerms([]);
     }
   };
 

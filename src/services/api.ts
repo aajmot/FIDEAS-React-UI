@@ -15,8 +15,12 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
-  if (token) {
+  if (token && token.split('.').length === 3) {
     config.headers.Authorization = `Bearer ${token}`;
+  } else if (token) {
+    // Invalid token format, clear it
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
   }
   return config;
 });

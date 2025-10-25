@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronUp, Download, Upload } from 'lucide-react';
 import { adminService } from '../../services/api';
 import DatePicker from '../common/DatePicker';
+import FormCheckbox from '../common/FormCheckbox';
 
 interface FinancialYear {
   id: number;
@@ -215,30 +216,26 @@ const FinancialYearForm: React.FC<FinancialYearFormProps> = ({
               />
             </div>
 
-            <div className="flex items-center pt-5">
-              <input
-                type="checkbox"
-                name="is_current"
-                checked={formData.is_current}
-                onChange={handleChange}
-                className="h-3 w-3 text-primary focus:ring-primary border-gray-300 rounded"
-              />
-              <label className="ml-1 block text-xs text-gray-700">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Current Year
               </label>
+              <FormCheckbox
+                label="Current Year"
+                checked={formData.is_current}
+                onChange={(checked) => setFormData(prev => ({ ...prev, is_current: checked }))}
+              />
             </div>
 
-            <div className="flex items-center pt-5">
-              <input
-                type="checkbox"
-                name="is_active"
-                checked={formData.is_active}
-                onChange={handleChange}
-                className="h-3 w-3 text-primary focus:ring-primary border-gray-300 rounded"
-              />
-              <label className="ml-1 block text-xs text-gray-700">
-                Active
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Status
               </label>
+              <FormCheckbox
+                label="Active"
+                checked={formData.is_active}
+                onChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+              />
             </div>
           </div>
 
