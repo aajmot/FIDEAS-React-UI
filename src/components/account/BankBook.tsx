@@ -30,6 +30,15 @@ const BankBook: React.FC = () => {
     loadAccounts();
   }, []);
 
+  useEffect(() => {
+    if (accounts.length > 0 && !filters.account_id) {
+      const firstAccount = accounts[0];
+      setFilters(prev => ({ ...prev, account_id: firstAccount.id.toString() }));
+      // Auto-load entries for first account
+      setTimeout(() => loadBankBook(), 100);
+    }
+  }, [accounts]);
+
   const loadAccounts = async () => {
     try {
       const response = await accountService.getAccounts();
@@ -40,12 +49,13 @@ const BankBook: React.FC = () => {
       setAccounts(bankAccounts);
     } catch (error) {
       showToast('error', 'Failed to load bank accounts');
+    } finally {
+      setLoading(false);
     }
   };
 
   const loadBankBook = async () => {
     if (!filters.account_id) {
-      showToast('info', 'Please select a bank account');
       return;
     }
 

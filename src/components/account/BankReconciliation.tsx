@@ -10,14 +10,24 @@ const BankReconciliation: React.FC = () => {
   }, [accountId]);
 
   const loadUnreconciled = async () => {
-    const { data } = await reconciliationService.getUnreconciled(accountId);
-    setUnreconciled(data);
+    try {
+      const { data } = await reconciliationService.getUnreconciled(accountId);
+      setUnreconciled(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to load unreconciled items:', error);
+      setUnreconciled([]);
+    }
   };
 
   const autoMatch = async () => {
-    const { data } = await reconciliationService.autoMatch(accountId);
-    alert(`Matched ${data.matched_count} transactions`);
-    loadUnreconciled();
+    try {
+      const { data } = await reconciliationService.autoMatch(accountId);
+      alert(`Matched ${data.matched_count} transactions`);
+      loadUnreconciled();
+    } catch (error) {
+      console.error('Failed to auto match:', error);
+      alert('Failed to auto match transactions');
+    }
   };
 
   return (

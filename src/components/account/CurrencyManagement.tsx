@@ -9,8 +9,13 @@ const CurrencyManagement: React.FC = () => {
   }, []);
 
   const loadCurrencies = async () => {
-    const { data } = await currencyService.getCurrencies();
-    setCurrencies(data);
+    try {
+      const { data } = await currencyService.getCurrencies();
+      setCurrencies(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to load currencies:', error);
+      setCurrencies([]);
+    }
   };
 
   const updateRate = async (currencyId: number, rate: number) => {

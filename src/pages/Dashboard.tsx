@@ -21,16 +21,30 @@ const Dashboard: React.FC = () => {
         dashboardService.getTopProducts(),
         dashboardService.getRecentTransactions()
       ]);
-      setKpis(kpisRes.data);
-      setRevenueTrend(Array.isArray(trendRes.data) ? trendRes.data : []);
-      setTopProducts(Array.isArray(productsRes.data) ? productsRes.data : []);
-      setRecentTransactions(Array.isArray(transactionsRes.data) ? transactionsRes.data : []);
+      
+      // Handle nested data structure
+      const kpisData = kpisRes.data?.data || kpisRes.data;
+      const trendData = trendRes.data?.data || trendRes.data;
+      const productsData = productsRes.data?.data || productsRes.data;
+      const transactionsData = transactionsRes.data?.data || transactionsRes.data;
+      
+      console.log('KPIs data:', kpisData);
+      setKpis(kpisData || {});
+      setRevenueTrend(Array.isArray(trendData) ? trendData : []);
+      setTopProducts(Array.isArray(productsData) ? productsData : []);
+      setRecentTransactions(Array.isArray(transactionsData) ? transactionsData : []);
     } catch (error: any) {
+      console.error('Dashboard data error:', error);
       showToast('error', 'Failed to load dashboard data');
+      // Set default values on error
+      setKpis({});
+      setRevenueTrend([]);
+      setTopProducts([]);
+      setRecentTransactions([]);
     }
   };
 
-  if (!kpis) return <div className="p-6">Loading...</div>;
+  if (kpis === null) return <div className="p-6">Loading...</div>;
 
   return (
     <div className="p-6">
