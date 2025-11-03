@@ -89,8 +89,8 @@ const ProductWasteForm: React.FC<ProductWasteFormProps> = ({ onSave, isCollapsed
     setFormData(prev => ({
       ...prev,
       product_id: productId as string,
-      unit_cost: product?.price || 0,
-      total_cost: prev.quantity * (product?.price || 0)
+      unit_cost: product?.cost_price ?? product?.selling_price ?? 0,
+      total_cost: prev.quantity * (product?.cost_price ?? product?.selling_price ?? 0)
     }));
   };
 

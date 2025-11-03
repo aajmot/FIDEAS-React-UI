@@ -41,6 +41,7 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
   });
   const [items, setItems] = useState<SalesOrderItem[]>([{
     product_id: 0,
+    product_name: '',
     quantity: 0,
     free_quantity: 0,
     unit_price: 0,
@@ -50,7 +51,12 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
     discount_percent: 0,
     discount_amount: 0,
     total_amount: 0,
-    batch_number: ''
+    batch_number: '',
+    mrp: 0,
+    gst_amount: 0,
+    cgst_amount: 0,
+    sgst_amount: 0,
+    description: ''
   }]);
   const { showToast } = useToast();
 
@@ -72,6 +78,7 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
       });
       setItems([{
         product_id: 0,
+        product_name: '',
         quantity: 0,
         free_quantity: 0,
         unit_price: 0,
@@ -81,7 +88,12 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
         discount_percent: 0,
         discount_amount: 0,
         total_amount: 0,
-        batch_number: ''
+        batch_number: '',
+        mrp: 0,
+        gst_amount: 0,
+        cgst_amount: 0,
+        sgst_amount: 0,
+        description: ''
       }]);
     }
   }, [resetForm]);
@@ -217,11 +229,15 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
     }
     
     const newItems = [...items];
-    const gstRate = product?.gst_percentage || 0;
+    const gstRate = product?.gst_rate ?? 0;
+    const sellingPrice = product?.selling_price ?? product?.cost_price ?? 0;
+    const mrpValue = product?.mrp_price ?? sellingPrice;
     newItems[index] = {
       ...newItems[index],
       product_id: Number(productId),
-      unit_price: product?.price || 0,
+      unit_price: sellingPrice,
+      mrp: mrpValue,
+      product_name: product?.name,
       gst_rate: gstRate,
       cgst_rate: gstRate / 2,
       sgst_rate: gstRate / 2
@@ -242,16 +258,19 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
 
   const calculateItemTotal = (index: number, itemsArray: SalesOrderItem[]) => {
     const item = itemsArray[index];
-    const baseAmount = item.unit_price * item.quantity; // Only paid quantity
-    const discountAmount = baseAmount * (item.discount_percent / 100);
+    const baseAmount = (item.unit_price || 0) * (item.quantity || 0); // Only paid quantity
+    const discountAmount = baseAmount * ((item.discount_percent || 0) / 100);
     const discountedAmount = baseAmount - discountAmount;
-    const cgstAmount = discountedAmount * (item.cgst_rate / 100);
-    const sgstAmount = discountedAmount * (item.sgst_rate / 100);
+    const cgstAmount = discountedAmount * ((item.cgst_rate || 0) / 100);
+    const sgstAmount = discountedAmount * ((item.sgst_rate || 0) / 100);
+    const gstAmount = cgstAmount + sgstAmount;
     const total = discountedAmount + cgstAmount + sgstAmount;
-
     itemsArray[index] = {
       ...item,
       discount_amount: discountAmount,
+      cgst_amount: cgstAmount,
+      sgst_amount: sgstAmount,
+      gst_amount: gstAmount,
       total_amount: total
     };
     setItems([...itemsArray]);
@@ -260,6 +279,7 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
   const addItem = () => {
     setItems([...items, {
       product_id: 0,
+      product_name: '',
       quantity: 0,
       free_quantity: 0,
       unit_price: 0,
@@ -269,7 +289,12 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
       discount_percent: 0,
       discount_amount: 0,
       total_amount: 0,
-      batch_number: ''
+      batch_number: '',
+      mrp: 0,
+      gst_amount: 0,
+      cgst_amount: 0,
+      sgst_amount: 0,
+      description: ''
     }]);
   };
 

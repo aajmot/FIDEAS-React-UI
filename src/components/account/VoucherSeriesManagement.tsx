@@ -166,13 +166,7 @@ const VoucherSeriesManagement: React.FC = () => {
                   Select Voucher Type *
                 </label>
                 <SearchableDropdown
-                  options={[
-                    { value: 'Journal', label: 'Journal' },
-                    { value: 'Payment', label: 'Payment' },
-                    { value: 'Receipt', label: 'Receipt' },
-                    { value: 'Sales', label: 'Sales' },
-                    { value: 'Purchase', label: 'Purchase' }
-                  ]}
+                  options={series.map(s => ({ value: s.name, label: s.name }))}
                   value={selectedVoucherType}
                   onChange={(value) => handleVoucherTypeSelect(value as string)}
                   placeholder="Select voucher type..."
@@ -217,7 +211,7 @@ const VoucherSeriesManagement: React.FC = () => {
                   label="Active"
                   checked={formData.is_active}
                   onChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                  disabled={!selectedVoucherType}
+                  disabled={true}
                 />
               </div>
 

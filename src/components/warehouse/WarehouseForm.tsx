@@ -95,7 +95,7 @@ const WarehouseForm: React.FC<WarehouseFormProps> = ({
     try {
       const formData = new FormData();
       formData.append('file', file);
-      await api.post('/api/v1/warehouse/warehouses/import', formData, {
+  await api.post('/api/v1/inventory/warehouses/import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       if (onImport) onImport();

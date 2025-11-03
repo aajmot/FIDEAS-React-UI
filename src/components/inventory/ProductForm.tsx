@@ -5,29 +5,62 @@ import SearchableDropdown from '../common/SearchableDropdown';
 
 interface Product {
   id: number;
+  tenant_id?: number;
   name: string;
   code?: string;
+  description?: string;
   composition?: string;
   tags?: string;
+  hsn_id?: number | null;
   hsn_code?: string;
   schedule?: string;
   manufacturer?: string;
   is_discontinued?: boolean;
-  category_id: number;
-  subcategory_id?: number;
-  unit_id: number;
+  category_id?: number;
+  subcategory_id?: number | null;
+  unit_id?: number;
 
-  price: number;
-  gst_percentage?: number;
-  commission_type?: string;
-  commission_value?: number;
+  // Pricing
+  mrp_price?: number;
+  selling_price?: number;
+  cost_price?: number;
+  is_tax_inclusive?: boolean;
+  currency_id?: number | null;
+  exchange_rate?: number | null;
+
+  // Tax rates
+  gst_rate?: number;
+  cgst_rate?: number;
+  sgst_rate?: number;
+  igst_rate?: number;
+  cess_rate?: number;
+  is_reverse_charge?: boolean;
+
+  // Inventory
+  is_composite?: boolean;
+  is_inventory_item?: boolean;
   reorder_level?: number;
   danger_level?: number;
   min_stock?: number;
   max_stock?: number;
-  description?: string;
-  is_inventory_item?: boolean;
-  is_active: boolean;
+
+  // Commission / discounts / sales
+  commission_type?: string;
+  commission_value?: number;
+  max_discount_percent?: number;
+
+  // Misc
+  barcode?: string;
+  is_serialized?: boolean;
+  warranty_months?: number;
+  is_active?: boolean;
+
+  // Audit
+  created_at?: string;
+  created_by?: number | string | null;
+  updated_at?: string;
+  updated_by?: number | string | null;
+  is_deleted?: boolean;
 }
 
 interface ProductFormProps {
@@ -49,6 +82,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
   resetForm,
   onImport
 }) => {
+  const normalizeCommissionType = (value?: string | null) => {
+    if (!value) return '';
+    const normalized = value.toLowerCase();
+    if (normalized === 'percentage') return 'Percentage';
+    if (normalized === 'fixed') return 'Fixed';
+    return value;
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: product?.name || '',
@@ -62,11 +102,29 @@ const ProductForm: React.FC<ProductFormProps> = ({
     category_id: product?.category_id || '',
     subcategory_id: product?.subcategory_id || '',
     unit_id: product?.unit_id || '',
+  price: product?.selling_price ?? 0,
+    mrp_price: product?.mrp_price ?? 0,
+    selling_price: product?.selling_price ?? 0,
+    cost_price: product?.cost_price ?? 0,
+    is_tax_inclusive: product?.is_tax_inclusive ?? false,
+  gst_rate: product?.gst_rate ?? 0,
+  gst_percentage: product?.gst_rate ?? 0,
+    cgst_rate: product?.cgst_rate ?? 0,
+    sgst_rate: product?.sgst_rate ?? 0,
+    igst_rate: product?.igst_rate ?? 0,
+    cess_rate: product?.cess_rate ?? 0,
 
-    price: product?.price || 0,
-    gst_percentage: product?.gst_percentage || 0,
-    commission_type: product?.commission_type || '',
-    commission_value: product?.commission_value || '',
+  commission_type: normalizeCommissionType(product?.commission_type),
+    commission_value: product?.commission_value || 0,
+    max_discount_percent: product?.max_discount_percent ?? 0,
+
+    barcode: product?.barcode || '',
+    is_serialized: product?.is_serialized ?? false,
+    warranty_months: product?.warranty_months ?? 0,
+
+    currency_id: product?.currency_id || '',
+    exchange_rate: product?.exchange_rate ?? 1,
+
     reorder_level: product?.reorder_level || 0,
     danger_level: product?.danger_level || 0,
     min_stock: product?.min_stock || 0,
@@ -99,9 +157,29 @@ const ProductForm: React.FC<ProductFormProps> = ({
         unit_id: '',
 
         price: 0,
+        mrp_price: 0,
+        selling_price: 0,
+        cost_price: 0,
+        is_tax_inclusive: false,
+
+        gst_rate: 0,
         gst_percentage: 0,
-        commission_type: '',
-        commission_value: '',
+        cgst_rate: 0,
+        sgst_rate: 0,
+        igst_rate: 0,
+        cess_rate: 0,
+
+  commission_type: '',
+        commission_value: 0,
+        max_discount_percent: 0,
+
+        barcode: '',
+        is_serialized: false,
+        warranty_months: 0,
+
+        currency_id: '',
+        exchange_rate: 1,
+
         reorder_level: 0,
         danger_level: 0,
         min_stock: 0,
@@ -112,29 +190,49 @@ const ProductForm: React.FC<ProductFormProps> = ({
       });
     } else if (product) {
       setFormData({
-        name: product.name,
-        code: product.code || '',
+  name: product.name,
+  code: product.code || '',
         composition: product.composition || '',
         tags: product.tags || '',
         hsn_code: product.hsn_code || '',
         schedule: product.schedule || 'OTC',
         manufacturer: product.manufacturer || '',
         is_discontinued: product.is_discontinued || false,
-        category_id: product.category_id,
-        subcategory_id: product.subcategory_id || '',
-        unit_id: product.unit_id,
+  category_id: product.category_id ?? '',
+  subcategory_id: product.subcategory_id ?? '',
+  unit_id: product.unit_id ?? '',
 
-        price: product.price,
-        gst_percentage: product.gst_percentage || 0,
-        commission_type: product.commission_type || '',
-        commission_value: product.commission_value || '',
+  price: product.selling_price ?? 0,
+  mrp_price: product.mrp_price ?? 0,
+        selling_price: product.selling_price ?? 0,
+        cost_price: product.cost_price ?? 0,
+        is_tax_inclusive: product.is_tax_inclusive ?? false,
+
+  gst_rate: product.gst_rate ?? 0,
+  gst_percentage: product.gst_rate ?? 0,
+        cgst_rate: product.cgst_rate ?? 0,
+        sgst_rate: product.sgst_rate ?? 0,
+        igst_rate: product.igst_rate ?? 0,
+        cess_rate: product.cess_rate ?? 0,
+
+  commission_type: normalizeCommissionType(product.commission_type),
+        commission_value: product.commission_value || 0,
+        max_discount_percent: product.max_discount_percent ?? 0,
+
+        barcode: product.barcode || '',
+        is_serialized: product.is_serialized ?? false,
+        warranty_months: product.warranty_months ?? 0,
+
+        currency_id: product.currency_id || '',
+        exchange_rate: product.exchange_rate ?? 1,
+
         reorder_level: product.reorder_level || 0,
         danger_level: product.danger_level || 0,
         min_stock: product.min_stock || 0,
         max_stock: product.max_stock || 0,
         description: product.description || '',
         is_inventory_item: product.is_inventory_item ?? true,
-        is_active: product.is_active
+        is_active: product.is_active ?? true
       });
     }
   }, [product, resetForm]);
@@ -306,6 +404,59 @@ const ProductForm: React.FC<ProductFormProps> = ({
               />
             </div>
 
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">MRP</label>
+              <input
+                type="number"
+                name="mrp_price"
+                value={(formData as any).mrp_price}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Selling Price</label>
+              <input
+                type="number"
+                name="selling_price"
+                value={(formData as any).selling_price}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Cost Price</label>
+              <input
+                type="number"
+                name="cost_price"
+                value={(formData as any).cost_price}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Tax Inclusive</label>
+              <div className="flex items-center h-9 px-2 py-1.5 border border-gray-300 rounded bg-white">
+                <input
+                  type="checkbox"
+                  name="is_tax_inclusive"
+                  checked={(formData as any).is_tax_inclusive}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                />
+                <label className="ml-2 block text-sm text-gray-700">Yes</label>
+              </div>
+            </div>
+
             {/* Row 2 */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -402,6 +553,110 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 name="hsn_code"
                 value={formData.hsn_code}
                 onChange={handleChange}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Barcode</label>
+              <input
+                type="text"
+                name="barcode"
+                value={(formData as any).barcode}
+                onChange={handleChange}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Serialized</label>
+              <div className="flex items-center h-9 px-2 py-1.5 border border-gray-300 rounded bg-white">
+                <input
+                  type="checkbox"
+                  name="is_serialized"
+                  checked={(formData as any).is_serialized}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                />
+                <label className="ml-2 block text-sm text-gray-700">Yes</label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Warranty (months)</label>
+              <input
+                type="number"
+                name="warranty_months"
+                value={(formData as any).warranty_months}
+                onChange={handleChange}
+                step="1"
+                min="0"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Max Discount %</label>
+              <input
+                type="number"
+                name="max_discount_percent"
+                value={(formData as any).max_discount_percent}
+                onChange={handleChange}
+                step="0.1"
+                min="0"
+                max="100"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Reorder Level</label>
+              <input
+                type="number"
+                name="reorder_level"
+                value={formData.reorder_level}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Danger Level</label>
+              <input
+                type="number"
+                name="danger_level"
+                value={formData.danger_level}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Minimum Stock</label>
+              <input
+                type="number"
+                name="min_stock"
+                value={formData.min_stock}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Maximum Stock</label>
+              <input
+                type="number"
+                name="max_stock"
+                value={formData.max_stock}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>

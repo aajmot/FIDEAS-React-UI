@@ -23,11 +23,24 @@ const PurchaseOrderView: React.FC<PurchaseOrderViewProps> = ({ orderId, onBack }
   const loadData = async () => {
     try {
       setLoading(true);
-      const [orderResponse, tenantResponse] = await Promise.all([
-        inventoryService.getPurchaseOrder(orderId),
-        adminService.getTenant()
-      ]);
-      setOrder(orderResponse.data);
+      const orderResponse = await inventoryService.getPurchaseOrder(orderId);
+      const order = orderResponse.data;
+      
+      // Fetch supplier details if we have supplier_id
+      if (order.supplier_id) {
+        const supplierResponse = await inventoryService.getSupplier(order.supplier_id);
+        const supplier = supplierResponse.data;
+        
+        // Update order with latest supplier information
+        order.supplier_name = supplier.name;
+        order.supplier_address = supplier.address || '';
+        order.supplier_phone = supplier.phone;
+        order.supplier_tax_id = supplier.tax_id || '';
+      }
+
+      const tenantResponse = await adminService.getTenant();
+      
+      setOrder(order);
       setTenant(tenantResponse.data);
     } catch (error) {
       showToast('error', 'Failed to load purchase order data');
@@ -37,15 +50,7 @@ const PurchaseOrderView: React.FC<PurchaseOrderViewProps> = ({ orderId, onBack }
   };
 
   const handlePrint = () => {
-    const printContent = document.querySelector('.purchase-order-content');
-    const originalContent = document.body.innerHTML;
-    
-    if (printContent) {
-      document.body.innerHTML = printContent.innerHTML;
-      window.print();
-      document.body.innerHTML = originalContent;
-      window.location.reload();
-    }
+    window.print();
   };
 
   if (loading) {
@@ -111,7 +116,7 @@ const PurchaseOrderView: React.FC<PurchaseOrderViewProps> = ({ orderId, onBack }
             <div className="text-right">
               <h2 className="print-po-title text-2xl font-bold text-gray-800 mb-2">PURCHASE ORDER</h2>
               <div className="text-sm text-gray-600">
-                <div>Date: {new Date().toLocaleDateString('en-US', { 
+                <div>Date: {new Date(order.order_date).toLocaleDateString('en-US', { 
                   year: 'numeric', 
                   month: 'long', 
                   day: 'numeric' 
@@ -144,18 +149,22 @@ const PurchaseOrderView: React.FC<PurchaseOrderViewProps> = ({ orderId, onBack }
           
           <div className="print-order-details bg-blue-50 p-4 rounded-lg print:p-2">
             <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Supplier Information</h3>
-            <div className="space-y-1 print:space-y-0">
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Name:</span>
-                <span className="font-semibold text-gray-900">{order.supplier_name}</span>
+                          <div className="space-y-2 print:space-y-1">
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-medium text-gray-600 w-20">Name:</span>
+                <span className="flex-1 font-semibold text-gray-900 text-base">{order.supplier_name || '-'}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Phone:</span>
-                <span className="text-gray-900">{order.supplier_phone || '-'}</span>
+              <div className="flex mb-1">
+                <span className="font-medium text-gray-600 w-20">Address:</span>
+                <span className="flex-1 text-gray-900 whitespace-pre-line text-sm">{order.supplier_address || '-'}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Tax ID:</span>
-                <span className="text-gray-900">{order.supplier_tax_id || '-'}</span>
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-600 w-20">Phone:</span>
+                <span className="flex-1 text-gray-900">{order.supplier_phone || '-'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-600 w-20">GSTIN:</span>
+                <span className="flex-1 text-gray-900 font-medium">{order.supplier_tax_id || '-'}</span>
               </div>
             </div>
           </div>
@@ -174,27 +183,32 @@ const PurchaseOrderView: React.FC<PurchaseOrderViewProps> = ({ orderId, onBack }
                   <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b" style={{ minWidth: '50px' }}>Free</th>
                   <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b" style={{ minWidth: '60px' }}>Rate</th>
                   <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b" style={{ minWidth: '60px' }}>MRP</th>
-                  <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b" style={{ minWidth: '60px' }}>CGST%</th>
-                  <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b" style={{ minWidth: '60px' }}>SGST%</th>
-                  <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b" style={{ minWidth: '50px' }}>Disc%</th>
+                  <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b" style={{ minWidth: '70px' }}>Total</th>
+                  <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b" style={{ minWidth: '70px' }}>GST</th>
+                  <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b" style={{ minWidth: '70px' }}>CESS</th>
                   <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b" style={{ minWidth: '70px' }}>Amount</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {order.items?.map((item, index) => (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-2 py-2 text-sm font-medium text-gray-900 border-b">{item.product_name}</td>
-                    <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.batch_number || '-'}</td>
-                    <td className="px-2 py-2 text-sm text-center font-medium text-gray-900 border-b">{item.quantity}</td>
-                    <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.free_quantity || 0}</td>
-                    <td className="px-2 py-2 text-sm text-right font-medium text-gray-900 border-b">{item.unit_price.toFixed(2)}</td>
-                    <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">{item.mrp.toFixed(2)}</td>
-                    <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{(item.cgst_rate || item.gst_rate / 2).toFixed(1)}%</td>
-                    <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{(item.sgst_rate || item.gst_rate / 2).toFixed(1)}%</td>
-                    <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.discount_percent.toFixed(1)}%</td>
-                    <td className="px-2 py-2 text-sm text-right font-semibold text-gray-900 border-b">{item.total_amount.toFixed(2)}</td>
-                  </tr>
-                ))}
+                {order.items?.map((item, index) => {
+                  // Calculate total GST amount
+                  const totalGstAmount = (item.cgst_amount || 0) + (item.sgst_amount || 0) + (item.igst_amount || 0);
+                  
+                  return (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-2 py-2 text-sm font-medium text-gray-900 border-b">{item.product_name || '-'}</td>
+                      <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.batch_number || '-'}</td>
+                      <td className="px-2 py-2 text-sm text-center font-medium text-gray-900 border-b">{item.quantity || 0}</td>
+                      <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.free_quantity || 0}</td>
+                      <td className="px-2 py-2 text-sm text-right font-medium text-gray-900 border-b">{(item.unit_price || 0).toFixed(2)}</td>
+                      <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">{(item.mrp || 0).toFixed(2)}</td>
+                      <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">{(item.taxable_amount || 0).toFixed(2)}</td>
+                      <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">{totalGstAmount.toFixed(2)}</td>
+                      <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">{(item.cess_amount || 0).toFixed(2)}</td>
+                      <td className="px-2 py-2 text-sm text-right font-semibold text-gray-900 border-b">{((item.taxable_amount || 0) + totalGstAmount + (item.cess_amount || 0)).toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -213,24 +227,40 @@ const PurchaseOrderView: React.FC<PurchaseOrderViewProps> = ({ orderId, onBack }
           <div className="print-summary bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg shadow-sm border border-blue-200 print:p-2">
             <h4 className="text-sm font-semibold text-gray-800 mb-2 border-b border-blue-200 pb-1 print:text-xs print:mb-1">Order Summary</h4>
             <div className="space-y-1 print:space-y-0">
-              {order.discount_percent > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Taxable Amount:</span>
+                <span className="font-medium text-gray-900">{(order.taxable_amount || 0).toFixed(2)}</span>
+              </div>
+              {(order.discount_percent || 0) > 0 && (
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Discount ({order.discount_percent.toFixed(1)}%):</span>
-                  <span className="font-medium text-red-600">-{order.discount_amount.toFixed(2)}</span>
+                  <span className="text-gray-600">Discount ({(order.discount_percent || 0).toFixed(1)}%):</span>
+                  <span className="font-medium text-red-600">-{(order.discount_amount || 0).toFixed(2)}</span>
                 </div>
               )}
-              {order.roundoff !== 0 && (
+              {(order.total_tax_amount || 0) > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">GST Amount:</span>
+                  <span className="font-medium text-gray-900">{(order.total_tax_amount || 0).toFixed(2)}</span>
+                </div>
+              )}
+              {(order.roundoff || 0) !== 0 && (
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Round Off:</span>
-                  <span className="font-medium text-gray-900">{order.roundoff.toFixed(2)}</span>
+                  <span className="font-medium text-gray-900">{(order.roundoff || 0).toFixed(2)}</span>
                 </div>
               )}
               <div className="border-t border-blue-200 pt-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold text-gray-800">Total Amount:</span>
-                  <span className="print-total text-2xl font-bold text-blue-600">{order.total_amount.toFixed(2)}</span>
+                  <span className="text-lg font-semibold text-gray-800">Net Amount:</span>
+                  <span className="print-total text-2xl font-bold text-blue-600">{(order.net_amount || 0).toFixed(2)}</span>
                 </div>
               </div>
+              {order.notes && (
+                <div className="mt-2 text-sm text-gray-600">
+                  <span className="font-medium">Notes: </span>
+                  {order.notes}
+                </div>
+              )}
             </div>
           </div>
         </div>

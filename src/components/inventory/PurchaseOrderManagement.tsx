@@ -60,7 +60,7 @@ const PurchaseOrderManagement: React.FC = () => {
     if (!orderToReverse) return;
     
     try {
-      await inventoryService.reversePurchaseOrder(orderToReverse.id, reason);
+      await inventoryService.reversePurchaseOrder(orderToReverse.id, { reason });
       showToast('success', 'Purchase order reversed successfully');
       loadOrders();
     } catch (error) {
@@ -85,7 +85,7 @@ const PurchaseOrderManagement: React.FC = () => {
       render: (value: string) => value ? new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : '-'
     },
     { 
-      key: 'total_amount', 
+      key: 'net_amount', 
       label: 'Total Amount',
       render: (value: number) => (value || 0).toFixed(2)
     },

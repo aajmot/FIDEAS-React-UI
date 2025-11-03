@@ -658,13 +658,16 @@ export const inventoryService = {
     const response = await api.post<BaseResponse>('/api/v1/inventory/suppliers', supplierData);
     return response.data;
   },
-  
+
+  getSupplier: async (id: number): Promise<BaseResponse> => {
+    const response = await api.get<BaseResponse>(`/api/v1/inventory/suppliers/${id}`);
+    return response.data;
+  },
+
   updateSupplier: async (id: number, supplierData: any): Promise<BaseResponse> => {
     const response = await api.put<BaseResponse>(`/api/v1/inventory/suppliers/${id}`, supplierData);
     return response.data;
-  },
-  
-  deleteSupplier: async (id: number): Promise<BaseResponse> => {
+  },  deleteSupplier: async (id: number): Promise<BaseResponse> => {
     const response = await api.delete<BaseResponse>(`/api/v1/inventory/suppliers/${id}`);
     return response.data;
   },
@@ -689,13 +692,31 @@ export const inventoryService = {
   
   
   // Purchase Orders
-  getPurchaseOrders: async (): Promise<PaginatedResponse> => {
-    const response = await api.get<PaginatedResponse>('/api/v1/inventory/purchase-orders');
+  getPurchaseOrders: async (params?: { page?: number; per_page?: number; search?: string }): Promise<PaginatedResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
+    if (params?.search) queryParams.append('search', params.search);
+    
+    const response = await api.get<PaginatedResponse>(`/api/v1/inventory/purchase-orders?${queryParams.toString()}`);
     return response.data;
   },
   
   createPurchaseOrder: async (orderData: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/inventory/purchase-orders', orderData);
+    const normalizedOrder = {
+      ...orderData,
+      items: Array.isArray(orderData.items)
+        ? orderData.items.map((item: any) => ({
+            ...item,
+            expiry_date: item.expiry_date ? new Date(item.expiry_date).toISOString() : item.expiry_date,
+            total_price: item.total_price ?? item.unit_price * item.quantity,
+            total_amount: item.total_amount ?? item.unit_price * item.quantity,
+            is_active: item.is_active ?? true
+          }))
+        : []
+    };
+
+    const response = await api.post<BaseResponse>('/api/v1/inventory/purchase-orders', normalizedOrder);
     return response.data;
   },
   
@@ -704,8 +725,8 @@ export const inventoryService = {
     return response.data;
   },
   
-  reversePurchaseOrder: async (id: number, reason: string): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>(`/api/v1/inventory/purchase-orders/${id}/reverse`, { reason });
+  reversePurchaseOrder: async (id: number, reason: { reason: string }): Promise<BaseResponse> => {
+    const response = await api.post<BaseResponse>(`/api/v1/inventory/purchase-orders/${id}/reverse`, reason);
     return response.data;
   },
   

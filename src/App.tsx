@@ -54,7 +54,7 @@ import PrescriptionManagement from './components/clinic/PrescriptionManagement';
 import BillingManagement from './components/clinic/BillingManagement';
 import BillingMasterManagement from './components/clinic/BillingMasterManagement';
 import TaxManagement from './components/account/TaxManagement';
-import CurrencyManagement from './components/admin/settings/CurrencyManagement';
+import CurrencyManagement from './components/admin/CurrencyManagement';
 import BankReconciliation from './components/account/BankReconciliation';
 import CostCenterManagement from './components/account/CostCenterManagement';
 import BudgetManagement from './components/account/BudgetManagement';
@@ -165,7 +165,7 @@ function App() {
                 <Route path="account/cost-centers" element={<CostCenterManagement />} />
                 <Route path="account/budgets" element={<BudgetManagement />} />
                 <Route path="account/tax-management" element={<TaxManagement />} />
-                <Route path="admin/settings/currency" element={<CurrencyManagement />} />
+                <Route path="admin/currency-management" element={<CurrencyManagement />} />
                 <Route path="account/bank-reconciliation" element={<BankReconciliation />} />
                 <Route path="account/journal" element={<Journal />} />
                 <Route path="account/vouchers" element={<VoucherManagement />} />

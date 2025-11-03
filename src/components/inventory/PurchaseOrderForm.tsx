@@ -13,9 +13,41 @@ interface PurchaseOrderFormProps {
   resetForm?: boolean;
 }
 
+const createEmptyItem = (): PurchaseOrderItem => ({
+  product_id: 0,
+  product_name: '',
+  quantity: 0,
+  free_quantity: 0,
+  unit_price: 0,
+  mrp: 0,
+  gst_rate: 0,
+  cgst_rate: 0,
+  sgst_rate: 0,
+  discount_percent: 0,
+  discount_amount: 0,
+  igst_rate: 0,
+  igst_amount: 0,
+  cess_rate: 0,
+  cess_amount: 0,
+  total_amount: 0,
+  total_price: 0,
+  batch_number: '',
+  expiry_date: '',
+  is_active: true,
+  hsn_code: '',
+  description: '',
+  cgst_amount: 0,
+  sgst_amount: 0,
+  taxable_amount: 0,
+  total_tax_amount: 0,
+  line_discount_percent: 0,
+  line_discount_amount: 0
+});
+
 const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onSave, isCollapsed, onToggleCollapse, resetForm }) => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [items, setItems] = useState<PurchaseOrderItem[]>([createEmptyItem()]);
   const generatePONumber = () => {
     const now = new Date();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -37,20 +69,6 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onSave, isCollaps
     discount_percent: 0,
     roundoff: 0
   });
-  const [items, setItems] = useState<PurchaseOrderItem[]>([{
-    product_id: 0,
-    quantity: 0,
-    free_quantity: 0,
-    unit_price: 0,
-    mrp: 0,
-    gst_rate: 0,
-    cgst_rate: 0,
-    sgst_rate: 0,
-    discount_percent: 0,
-    discount_amount: 0,
-    total_amount: 0,
-    batch_number: ''
-  }]);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -67,20 +85,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onSave, isCollaps
         discount_percent: 0,
         roundoff: 0
       });
-      setItems([{
-        product_id: 0,
-        quantity: 0,
-        free_quantity: 0,
-        unit_price: 0,
-        mrp: 0,
-        gst_rate: 0,
-        cgst_rate: 0,
-        sgst_rate: 0,
-        discount_percent: 0,
-        discount_amount: 0,
-        total_amount: 0,
-        batch_number: ''
-      }]);
+      setItems([createEmptyItem()]);
     }
   }, [resetForm]);
 
@@ -137,15 +142,33 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onSave, isCollaps
     }
     
     const newItems = [...items];
-    const gstRate = product?.gst_percentage || 0;
+    const gstRate = product?.gst_rate ?? 0;
+    const mrpValue = product?.mrp_price ?? product?.selling_price ?? 0;
+    const basePrice = product?.selling_price ?? product?.cost_price ?? mrpValue;
+    const calculatedUnitPrice = basePrice ? Math.round(basePrice * 0.8 * 100) / 100 : 0;
     newItems[index] = {
       ...newItems[index],
       product_id: Number(productId),
-      mrp: product?.price || 0,
-      unit_price: product ? Math.round(product.price * 0.8 * 100) / 100 : 0,
+      product_name: product?.name || '',
+      mrp: mrpValue,
+      unit_price: calculatedUnitPrice,
       gst_rate: gstRate,
       cgst_rate: gstRate / 2,
-      sgst_rate: gstRate / 2
+      sgst_rate: gstRate / 2,
+      discount_percent: 0,
+      discount_amount: 0,
+      taxable_amount: calculatedUnitPrice,
+      cgst_amount: 0,
+      sgst_amount: 0,
+  igst_rate: 0,
+  igst_amount: 0,
+  cess_rate: 0,
+  cess_amount: 0,
+      total_tax_amount: 0,
+      total_price: calculatedUnitPrice,
+      total_amount: calculatedUnitPrice,
+      hsn_code: product?.hsn_code || '',
+      description: product?.description || ''
     };
     
     setItems(newItems);
@@ -166,31 +189,28 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onSave, isCollaps
     const discountedAmount = baseAmount - discountAmount;
     const cgstAmount = discountedAmount * (item.cgst_rate / 100);
     const sgstAmount = discountedAmount * (item.sgst_rate / 100);
-    const total = discountedAmount + cgstAmount + sgstAmount;
+    const totalTaxAmount = cgstAmount + sgstAmount;
+    const total = discountedAmount + totalTaxAmount;
 
     itemsArray[index] = {
       ...item,
       discount_amount: discountAmount,
-      total_amount: total
+      cgst_amount: cgstAmount,
+      sgst_amount: sgstAmount,
+      taxable_amount: discountedAmount,
+      total_tax_amount: totalTaxAmount,
+      total_price: total,
+      total_amount: total,
+      igst_amount: 0,
+      cess_amount: 0,
+      line_discount_percent: item.discount_percent,
+      line_discount_amount: discountAmount
     };
     setItems([...itemsArray]);
   };
 
   const addItem = () => {
-    setItems([...items, {
-      product_id: 0,
-      quantity: 0,
-      free_quantity: 0,
-      unit_price: 0,
-      mrp: 0,
-      gst_rate: 0,
-      cgst_rate: 0,
-      sgst_rate: 0,
-      discount_percent: 0,
-      discount_amount: 0,
-      total_amount: 0,
-      batch_number: ''
-    }]);
+    setItems([...items, createEmptyItem()]);
   };
 
   const removeItem = (index: number) => {
@@ -200,7 +220,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onSave, isCollaps
   };
 
   const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + item.total_amount, 0);
+    const subtotal = items.reduce((sum, item) => sum + (item.total_amount || 0), 0);
     const discountAmount = subtotal * (formData.discount_percent / 100);
     const finalTotal = subtotal - discountAmount + formData.roundoff;
     return { subtotal, discountAmount, finalTotal };
@@ -221,19 +241,74 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onSave, isCollaps
     }
 
     try {
-      const { finalTotal, discountAmount } = calculateTotals();
+      const { finalTotal, discountAmount, subtotal } = calculateTotals();
+      const selectedSupplier = getSelectedSupplier();
       
+      // Calculate total tax amounts
+      const totalTaxes = validItems.reduce((acc, item) => {
+        const taxableAmount = item.unit_price * item.quantity * (1 - (item.discount_percent / 100));
+        const cgstAmount = taxableAmount * (item.cgst_rate / 100);
+        const sgstAmount = taxableAmount * (item.sgst_rate / 100);
+        return {
+          cgst_amount: acc.cgst_amount + cgstAmount,
+          sgst_amount: acc.sgst_amount + sgstAmount,
+          total_tax_amount: acc.total_tax_amount + cgstAmount + sgstAmount,
+          taxable_amount: acc.taxable_amount + taxableAmount
+        };
+      }, { cgst_amount: 0, sgst_amount: 0, total_tax_amount: 0, taxable_amount: 0 });
+
       const orderData = {
-        order: {
-          po_number: formData.po_number,
-          supplier_id: Number(formData.supplier_id),
-          order_date: new Date(formData.order_date).toISOString(),
-          total_amount: finalTotal,
-          discount_percent: formData.discount_percent,
-          discount_amount: discountAmount,
-          roundoff: formData.roundoff
-        },
-        items: validItems
+        po_number: formData.po_number,
+        supplier_id: Number(formData.supplier_id),
+        reference_number: "",
+        order_date: new Date(formData.order_date).toISOString(),
+        supplier_name: selectedSupplier?.name || "",
+        supplier_gstin: selectedSupplier?.tax_id || "",
+        subtotal_amount: subtotal,
+        header_discount_percent: formData.discount_percent,
+        header_discount_amount: discountAmount,
+        taxable_amount: totalTaxes.taxable_amount,
+        cgst_amount: totalTaxes.cgst_amount,
+        sgst_amount: totalTaxes.sgst_amount,
+        igst_amount: 0,
+        cess_amount: 0,
+        total_tax_amount: totalTaxes.total_tax_amount,
+        roundoff: formData.roundoff,
+        net_amount: finalTotal,
+        currency_id: 1,
+        exchange_rate: 1,
+        is_reverse_charge: false,
+        is_tax_inclusive: false,
+        status: "DRAFT",
+        approval_status: "DRAFT",
+        items: validItems.map(item => {
+          const taxableAmount = item.unit_price * item.quantity * (1 - (item.discount_percent / 100));
+          return {
+            product_id: item.product_id,
+            product_name: item.product_name || '',
+            quantity: item.quantity,
+            free_quantity: item.free_quantity,
+            unit_price: item.unit_price,
+            mrp: item.mrp,
+            line_discount_percent: item.discount_percent,
+            line_discount_amount: item.discount_amount,
+            taxable_amount: taxableAmount,
+            cgst_rate: item.cgst_rate,
+            cgst_amount: taxableAmount * (item.cgst_rate / 100),
+            sgst_rate: item.sgst_rate,
+            sgst_amount: taxableAmount * (item.sgst_rate / 100),
+            igst_rate: item.igst_rate ?? 0,
+            igst_amount: item.igst_amount ?? 0,
+            cess_rate: item.cess_rate ?? 0,
+            cess_amount: item.cess_amount ?? 0,
+            total_price: item.total_price,
+            batch_number: item.batch_number || "",
+            expiry_date: item.expiry_date ? new Date(item.expiry_date).toISOString() : '',
+            is_active: true,
+            hsn_code: item.hsn_code || "",
+            description: item.description || ""
+          };
+        })
       };
 
       await inventoryService.createPurchaseOrder(orderData);
@@ -348,31 +423,31 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onSave, isCollaps
         <div className="mb-6">
           <style>{`
             .purchase-order-table { table-layout: fixed !important; }
-            .purchase-order-table th:nth-child(1), .purchase-order-table td:nth-child(1) { width: 18% !important; }
-            .purchase-order-table th:nth-child(2), .purchase-order-table td:nth-child(2) { width: 8% !important; }
-            .purchase-order-table th:nth-child(3), .purchase-order-table td:nth-child(3) { width: 8% !important; }
-            .purchase-order-table th:nth-child(4), .purchase-order-table td:nth-child(4) { width: 8% !important; }
-            .purchase-order-table th:nth-child(5), .purchase-order-table td:nth-child(5) { width: 7% !important; }
-            .purchase-order-table th:nth-child(6), .purchase-order-table td:nth-child(6) { width: 7% !important; }
+            .purchase-order-table th:nth-child(1), .purchase-order-table td:nth-child(1) { width: 22% !important; }
+            .purchase-order-table th:nth-child(2), .purchase-order-table td:nth-child(2) { width: 9% !important; }
+            .purchase-order-table th:nth-child(3), .purchase-order-table td:nth-child(3) { width: 9% !important; }
+            .purchase-order-table th:nth-child(4), .purchase-order-table td:nth-child(4) { width: 9% !important; }
+            .purchase-order-table th:nth-child(5), .purchase-order-table td:nth-child(5) { width: 9% !important; }
+            .purchase-order-table th:nth-child(6), .purchase-order-table td:nth-child(6) { width: 8% !important; }
             .purchase-order-table th:nth-child(7), .purchase-order-table td:nth-child(7) { width: 8% !important; }
             .purchase-order-table th:nth-child(8), .purchase-order-table td:nth-child(8) { width: 8% !important; }
-            .purchase-order-table th:nth-child(9), .purchase-order-table td:nth-child(9) { width: 7% !important; }
-            .purchase-order-table th:nth-child(10), .purchase-order-table td:nth-child(10) { width: 14% !important; }
-            .purchase-order-table th:nth-child(11), .purchase-order-table td:nth-child(11) { width: 7% !important; }
+            .purchase-order-table th:nth-child(9), .purchase-order-table td:nth-child(9) { width: 8% !important; }
+            .purchase-order-table th:nth-child(10), .purchase-order-table td:nth-child(10) { width: 10% !important; }
+            .purchase-order-table th:nth-child(11), .purchase-order-table td:nth-child(11) { width: 5% !important; }
           `}</style>
           <div className="overflow-x-auto">
             <table className="border border-gray-200 purchase-order-table" style={{ minWidth: '900px', width: '100%' }}>
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-left" style={{ minWidth: '180px' }}>Product</th>
+                  <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>HSN</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>Batch</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>MRP</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>Price</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Qty</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Free</th>
-                  <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>CGST%</th>
-                  <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>SGST%</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Disc%</th>
+                  <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>GST%</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>Total</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Action</th>
                 </tr>
@@ -409,6 +484,15 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onSave, isCollaps
                   <td className="px-3 py-2 w-20">
                     <input
                       type="text"
+                      value={item.hsn_code || ''}
+                      onChange={(e) => handleItemChange(index, 'hsn_code', e.target.value)}
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
+                      placeholder="HSN"
+                    />
+                  </td>
+                  <td className="px-3 py-2 w-20">
+                    <input
+                      type="text"
                       value={item.batch_number || ''}
                       onChange={(e) => handleItemChange(index, 'batch_number', e.target.value)}
                       className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
@@ -418,9 +502,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onSave, isCollaps
                   <td className="px-3 py-2 w-20">
                     <input
                       type="number"
-                      value={item.mrp}
-                      onChange={(e) => handleItemChange(index, 'mrp', parseFloat(e.target.value) || 0)}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
+                      value={item.mrp || 0}
+                      readOnly
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center bg-gray-100"
                       step="0.01"
                     />
                   </td>
@@ -452,31 +536,22 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onSave, isCollaps
                   <td className="px-3 py-2 w-16">
                     <input
                       type="number"
-                      value={item.cgst_rate}
-                      onChange={(e) => handleItemChange(index, 'cgst_rate', parseFloat(e.target.value) || 0)}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
-                      step="0.1"
-                    />
-                  </td>
-                  <td className="px-3 py-2 w-16">
-                    <input
-                      type="number"
-                      value={item.sgst_rate}
-                      onChange={(e) => handleItemChange(index, 'sgst_rate', parseFloat(e.target.value) || 0)}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
-                      step="0.1"
-                    />
-                  </td>
-                  <td className="px-3 py-2 w-16">
-                    <input
-                      type="number"
                       value={item.discount_percent}
                       onChange={(e) => handleItemChange(index, 'discount_percent', parseFloat(e.target.value) || 0)}
                       className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
                       step="0.1"
                     />
                   </td>
-                  <td className="px-3 py-2 w-24 text-sm text-center">{item.total_amount.toFixed(2)}</td>
+                  <td className="px-3 py-2 w-16">
+                    <input
+                      type="number"
+                      value={item.gst_rate}
+                      readOnly
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center bg-gray-100"
+                      step="0.1"
+                    />
+                  </td>
+                  <td className="px-3 py-2 w-24 text-sm text-center">{(item.total_amount ?? 0).toFixed(2)}</td>
                   <td className="px-3 py-2 w-16 text-center">
                     <button
                       type="button"

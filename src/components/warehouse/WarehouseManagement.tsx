@@ -37,7 +37,7 @@ const WarehouseManagement: React.FC = () => {
     try {
       setLoading(true);
       const searchText = search !== undefined ? search : searchTerm;
-      const response = await api.get('/api/v1/warehouse/warehouses', {
+  const response = await api.get('/api/v1/inventory/warehouses', {
         params: { page, per_page: 10, search: searchText }
       });
       const data = response.data?.data || response.data;
@@ -71,10 +71,10 @@ const WarehouseManagement: React.FC = () => {
   const handleSave = async (warehouseData: any) => {
     try {
       if (editingWarehouse) {
-        await api.put(`/api/v1/warehouse/warehouses/${editingWarehouse.id}`, warehouseData);
+  await api.put(`/api/v1/inventory/warehouses/${editingWarehouse.id}`, warehouseData);
         showToast('success', 'Warehouse updated successfully');
       } else {
-        await api.post('/api/v1/warehouse/warehouses', warehouseData);
+  await api.post('/api/v1/inventory/warehouses', warehouseData);
         showToast('success', 'Warehouse created successfully');
       }
       setEditingWarehouse(undefined);
@@ -115,7 +115,7 @@ const WarehouseManagement: React.FC = () => {
       },
       async () => {
         try {
-          await api.delete(`/api/v1/warehouse/warehouses/${warehouse.id}`);
+          await api.delete(`/api/v1/inventory/warehouses/${warehouse.id}`);
           showToast('success', 'Warehouse deleted successfully');
           loadWarehouses(currentPage);
         } catch (error: any) {

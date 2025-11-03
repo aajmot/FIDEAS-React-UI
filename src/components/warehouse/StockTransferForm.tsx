@@ -89,7 +89,7 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
 
   const loadWarehouses = async () => {
     try {
-      const response = await api.get('/api/v1/warehouse/warehouses');
+  const response = await api.get('/api/v1/inventory/warehouses');
       const data = response.data?.data || response.data;
       setWarehouses(Array.isArray(data) ? data : []);
     } catch (error) {

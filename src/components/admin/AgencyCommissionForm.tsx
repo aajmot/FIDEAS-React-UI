@@ -107,11 +107,17 @@ const AgencyCommissionForm: React.FC<AgencyCommissionFormProps> = ({
   const handleProductChange = (value: string | number | (string | number)[]) => {
     const productId = Array.isArray(value) ? value[0] : value;
     const selectedProduct = products.find(p => p.id === productId);
+    const derivedRate = selectedProduct
+      ? selectedProduct.rate
+        || selectedProduct.selling_price
+        || selectedProduct.mrp_price
+        || selectedProduct.cost_price
+      : '';
     setFormData({
       ...formData,
       product_id: String(productId),
       product_name: selectedProduct ? selectedProduct.name : '',
-      product_rate: selectedProduct ? (selectedProduct.rate || selectedProduct.price || '') : ''
+      product_rate: derivedRate !== undefined && derivedRate !== null ? String(derivedRate) : ''
     });
   };
 

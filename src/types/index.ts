@@ -84,39 +84,132 @@ export interface PurchaseOrder {
   po_number: string;
   supplier_id: number;
   supplier_name: string;
-  supplier_phone?: string;
-  supplier_tax_id?: string;
+  supplier_address: string;
+  supplier_phone: string;
+  supplier_tax_id: string;
+  reference_number: string;
   order_date: string;
   total_amount: number;
+  sub_total: number;
   discount_percent: number;
   discount_amount: number;
   roundoff: number;
   status: string;
+  cgst_amount: number;
+  sgst_amount: number;
+  total_tax_amount: number;
+  notes: string;
   items?: PurchaseOrderItem[];
+  
+  // Optional fields for backward compatibility
+  subtotal_amount?: number;
+  header_discount_percent?: number;
+  header_discount_amount?: number;
+  taxable_amount?: number;
+  igst_amount?: number;
+  cess_amount?: number;
+  net_amount?: number;
+  currency_id?: number;
+  exchange_rate?: number;
+  is_reverse_charge?: boolean;
+  is_tax_inclusive?: boolean;
+  approval_status?: string;
 }
 
 export interface PurchaseOrderItem {
   id?: number;
   product_id: number;
-  product_name?: string;
+  product_name: string;
   quantity: number;
   free_quantity: number;
   unit_price: number;
   mrp: number;
-  gst_rate: number;
-  cgst_rate: number;
-  sgst_rate: number;
   discount_percent: number;
   discount_amount: number;
   total_amount: number;
-  batch_number?: string;
+  batch_number: string;
+  expiry_date: string;
+  is_active: boolean;
+  hsn_code: string;
+  description: string;
+  
+  // Tax related fields
+  gst_rate: number;
+  cgst_rate: number;
+  sgst_rate: number;
+  cgst_amount: number;
+  sgst_amount: number;
+  taxable_amount: number;
+  total_tax_amount: number;
+  
+  // Optional fields for backward compatibility
+  total_price?: number;
+  igst_rate?: number;
+  igst_amount?: number;
+  cess_rate?: number;
+  cess_amount?: number;
+  line_discount_percent?: number;
+  line_discount_amount?: number;
 }
 
 export interface Product {
   id: number;
+  tenant_id?: number;
   name: string;
-  price: number;
-  gst_percentage?: number;
+  code?: string;
+  description?: string;
+  composition?: string;
+  tags?: string;
+  hsn_id?: number | null;
+  hsn_code?: string;
+  schedule?: string;
+  manufacturer?: string;
+  is_discontinued?: boolean;
+  category_id?: number;
+  subcategory_id?: number | null;
+  unit_id?: number;
+
+  // Pricing
+  mrp_price?: number;
+  selling_price?: number;
+  cost_price?: number;
+  is_tax_inclusive?: boolean;
+  currency_id?: number | null;
+  exchange_rate?: number | null;
+
+  // Tax rates
+  gst_rate?: number;
+  cgst_rate?: number;
+  sgst_rate?: number;
+  igst_rate?: number;
+  cess_rate?: number;
+  is_reverse_charge?: boolean;
+
+  // Inventory
+  is_composite?: boolean;
+  is_inventory_item?: boolean;
+  reorder_level?: number;
+  danger_level?: number;
+  min_stock?: number;
+  max_stock?: number;
+
+  // Commission / discounts / sales
+  commission_type?: string;
+  commission_value?: number;
+  max_discount_percent?: number;
+
+  // Misc
+  barcode?: string;
+  is_serialized?: boolean;
+  warranty_months?: number;
+  is_active?: boolean;
+
+  // Audit
+  created_at?: string;
+  created_by?: number | string | null;
+  updated_at?: string;
+  updated_by?: number | string | null;
+  is_deleted?: boolean;
 }
 
 export interface SalesOrder {
@@ -144,9 +237,14 @@ export interface SalesOrderItem {
   quantity: number;
   free_quantity: number;
   unit_price: number;
+  mrp?: number;
   gst_rate: number;
   cgst_rate: number;
   sgst_rate: number;
+  gst_amount?: number;
+  cgst_amount?: number;
+  sgst_amount?: number;
+  description?: string;
   discount_percent: number;
   discount_amount: number;
   total_amount: number;

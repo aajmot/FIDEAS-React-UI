@@ -31,7 +31,7 @@ const StockTransferManagement: React.FC = () => {
     try {
       const [transfersResponse, warehousesResponse] = await Promise.all([
         api.get('/api/v1/warehouse/stock-transfers'),
-        api.get('/api/v1/warehouse/warehouses')
+        api.get('/api/v1/inventory/warehouses')
       ]);
       
       const transfersData = transfersResponse.data?.data || transfersResponse.data;

@@ -3,6 +3,8 @@ import { adminService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import FormTextarea from '../common/FormTextarea';
 import FormCheckbox from '../common/FormCheckbox';
+import SearchableDropdown from '../common/SearchableDropdown';
+import { currencyService } from '../../services/apiExtensions';
 
 interface TenantData {
   id: number;
@@ -40,10 +42,23 @@ const TenantUpdate: React.FC = () => {
   const [settings, setSettings] = useState<TenantSetting[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [currencies, setCurrencies] = useState<any[]>([]);
   const { showToast } = useToast();
+
+  const loadCurrencies = async () => {
+    try {
+      const { data } = await currencyService.getCurrencies();
+      setCurrencies(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to load currencies:', error);
+      showToast('error', 'Failed to load currencies');
+      setCurrencies([]);
+    }
+  };
 
   useEffect(() => {
     loadTenant();
+    loadCurrencies();
   }, []);
 
   const loadTenant = async () => {
@@ -281,6 +296,19 @@ const TenantUpdate: React.FC = () => {
                               value={setting.value}
                               onChange={(e) => handleSettingChange(setting.setting, e.target.value)}
                               className="w-24 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
+                          ) : setting.value_type === 'CURRENCY' ? (
+                            <SearchableDropdown
+                              options={currencies
+                                .filter(curr => curr && curr.currency_code && curr.symbol)
+                                .map(curr => ({ 
+                                  label: `${curr.currency_code}(${curr.symbol || ''})`, 
+                                  value: curr.currency_code 
+                                }))}
+                              value={setting.value || ''}
+                              onChange={(value) => handleSettingChange(setting.setting, String(value))}
+                              className="w-48"
+                              placeholder="Select currency"
                             />
                           ) : (
                             <input

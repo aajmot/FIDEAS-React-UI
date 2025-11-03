@@ -16,11 +16,15 @@ interface Product {
   schedule?: string;
   manufacturer?: string;
   is_discontinued?: boolean;
-  category_id: number;
+  category_id?: number;
   subcategory_id?: number;
   unit_id: number;
-
-  price: number;
+  // pricing (legacy 'price' kept for compatibility)
+  price?: number;
+  mrp_price?: number;
+  selling_price?: number;
+  cost_price?: number;
+  gst_rate?: number;
   gst_percentage?: number;
   commission_type?: string;
   commission_value?: number;
@@ -145,18 +149,19 @@ const ProductManagement: React.FC = () => {
     { key: 'id', label: 'ID' },
     { key: 'name', label: 'Name' },
     { key: 'code', label: 'Code' },
-    { 
-      key: 'price', 
+    {
+      key: 'selling_price',
       label: 'Price',
-      render: (value: number) => (value || 0).toFixed(2)
+      render: (_value: number, row: Product) => {
+        const amount = row.selling_price ?? row.price ?? 0;
+        return amount.toFixed(2);
+      }
     },
-    { 
-      key: 'gst_percentage', 
+    {
+      key: 'gst_rate',
       label: 'GST%',
-      render: (value: number) => `${(value || 0).toFixed(1)}%`
+      render: (_value: number, row: Product) => `${(row.gst_rate ?? row.gst_percentage ?? 0).toFixed(1)}%`
     },
-    { key: 'commission_type', label: 'Commission Type', render: (v: string) => v || '-' },
-    { key: 'commission_value', label: 'Commission Value', render: (v: number) => v ? v.toFixed(2) : '-' },
     { 
       key: 'tags', 
       label: 'Tags',
@@ -167,7 +172,6 @@ const ProductManagement: React.FC = () => {
       )
     },
     { key: 'hsn_code', label: 'HSN' },
-    { key: 'schedule', label: 'Schedule' },
     { 
       key: 'manufacturer', 
       label: 'Manufacturer',

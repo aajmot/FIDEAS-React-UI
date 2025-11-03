@@ -1,7 +1,8 @@
 import React from 'react';
 
 interface FormTextareaProps {
-  value: string;
+  // value can be null/undefined at runtime; coerce to empty string when rendering
+  value?: string | null;
   onChange: (value: string) => void;
   placeholder?: string;
   rows?: number;
@@ -31,7 +32,8 @@ const FormTextarea: React.FC<FormTextareaProps> = ({
     <div className="relative">
       <textarea
         name={name}
-        value={value}
+        // guard against null values — React warns when textarea value is null
+        value={value ?? ''}
         onChange={(e) => {
           onChange(e.target.value);
           checkScroll(e.target);

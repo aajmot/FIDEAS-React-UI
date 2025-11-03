@@ -89,8 +89,8 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ invoice, onClose })
     newItems[index] = {
       ...newItems[index],
       product_id: Number(productId),
-      unit_price: product?.price || 0,
-      gst_rate: product?.gst_percentage || 0
+      unit_price: product?.selling_price ?? product?.cost_price ?? 0,
+      gst_rate: product?.gst_rate ?? 0
     };
     setItems(newItems);
     calculateItemTotal(index, newItems);

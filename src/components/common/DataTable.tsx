@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Edit, Trash2, Download, ChevronLeft, ChevronRight, Search, ChevronUp, ChevronDown } from 'lucide-react';
+import { Edit, Trash2, Download, ChevronLeft, ChevronRight, Search, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface Column {
@@ -21,6 +21,7 @@ interface DataTableProps {
   currentPage?: number;
   onPageChange?: (page: number) => void;
   onSearch?: (searchTerm: string) => void;
+  onRefresh?: () => void;
 }
 
 const DataTable: React.FC<DataTableProps> = ({
@@ -35,7 +36,8 @@ const DataTable: React.FC<DataTableProps> = ({
   totalItems,
   currentPage: externalCurrentPage,
   onPageChange,
-  onSearch
+  onSearch,
+  onRefresh
 }) => {
   const [internalCurrentPage, setInternalCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
@@ -145,6 +147,15 @@ const DataTable: React.FC<DataTableProps> = ({
                 className="pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-48 h-10"
               />
             </div>
+            {onRefresh && (
+              <button
+                onClick={onRefresh}
+                title="Refresh"
+                className="flex-shrink-0 p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mr-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </button>
+            )}
             <button
               onClick={exportToExcel}
               title="Export to Excel"

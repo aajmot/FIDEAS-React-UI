@@ -20,21 +20,21 @@ export const inventoryService = {
 };
 
 export const accountExtensions = {
-  getTDSEntries: () => api.get('/account/tds-entries'),
-  createTDSEntry: (data: any) => api.post('/account/tds-entries', data),
-  updateTDSEntry: (id: number, data: any) => api.put(`/account/tds-entries/${id}`, data),
-  deleteTDSEntry: (id: number) => api.delete(`/account/tds-entries/${id}`),
-  getTDSSections: () => api.get('/account/tds-sections'),
-  createTDSSection: (data: any) => api.post('/account/tds-sections', data),
-  calculateTDS: (data: any) => api.post('/account/calculate-tds', data),
-  getReceivablesAging: () => api.get('/account/reports/ar-aging'),
-  getPayablesAging: () => api.get('/account/reports/ap-aging'),
-  getContraVouchers: () => api.get('/account/contra-vouchers'),
-  createContra: (data: any) => api.post('/account/contra-vouchers', data),
-  getCreditNotes: () => api.get('/account/credit-notes'),
-  createCreditNote: (data: any) => api.post('/account/credit-notes', data),
-  getDebitNotes: () => api.get('/account/debit-notes'),
-  createDebitNote: (data: any) => api.post('/account/debit-notes', data)
+  getTDSEntries: () => api.get('/api/v1/account/tds-entries'),
+  createTDSEntry: (data: any) => api.post('/api/v1/account/tds-entries', data),
+  updateTDSEntry: (id: number, data: any) => api.put(`/api/v1/account/tds-entries/${id}`, data),
+  deleteTDSEntry: (id: number) => api.delete(`/api/v1/account/tds-entries/${id}`),
+  getTDSSections: () => api.get('/api/v1/account/tds-sections'),
+  createTDSSection: (data: any) => api.post('/api/v1/account/tds-sections', data),
+  calculateTDS: (data: any) => api.post('/api/v1/account/calculate-tds', data),
+  getReceivablesAging: () => api.get('/api/v1/account/reports/ar-aging'),
+  getPayablesAging: () => api.get('/api/v1/account/reports/ap-aging'),
+  getContraVouchers: () => api.get('/api/v1/account/contra'),
+  createContra: (data: any) => api.post('/api/v1/account/contra', data),
+  getCreditNotes: () => api.get('/api/v1/account/credit-notes'),
+  createCreditNote: (data: any) => api.post('/api/v1/account/credit-notes', data),
+  getDebitNotes: () => api.get('/api/v1/account/debit-notes'),
+  createDebitNote: (data: any) => api.post('/api/v1/account/debit-notes', data)
 };
 
 export const batchService = {
@@ -44,22 +44,22 @@ export const batchService = {
 };
 
 export const currencyService = {
-  getCurrencies: () => api.get('/api/v1/currency/list'),
-  convertAmount: (data: any) => api.post('/api/v1/currency/convert', data),
+  getCurrencies: () => api.get('/api/v1/admin/currency/list'),
+  convertAmount: (data: any) => api.post('/api/v1/admin/currency/convert', data),
   updateExchangeRate: (currencyId: number, rate: number) => 
-    api.put('/api/v1/currency/exchange-rate', { currency_id: currencyId, rate }),
-  getForexGainLoss: (voucherId: number) => api.get(`/api/v1/currency/forex-gain-loss/${voucherId}`)
+    api.put('/api/v1/admin/currency/exchange-rate', { currency_id: currencyId, rate }),
+  getForexGainLoss: (voucherId: number) => api.get(`/api/v1/admin/currency/forex-gain-loss/${voucherId}`)
 };
 
 export const reconciliationService = {
   importStatement: (accountId: number, file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post(`/api/v1/reconciliation/import/${accountId}`, formData);
+    return api.post(`/api/v1/account/import/${accountId}`, formData);
   },
-  autoMatch: (accountId: number) => api.post(`/api/v1/reconciliation/auto-match/${accountId}`),
-  manualReconcile: (data: any) => api.post('/api/v1/reconciliation/manual-reconcile', data),
-  getUnreconciled: (accountId: number) => api.get(`/api/v1/reconciliation/unreconciled/${accountId}`)
+  autoMatch: (accountId: number) => api.post(`/api/v1/account/auto-match/${accountId}`),
+  manualReconcile: (data: any) => api.post('/api/v1/account/manual-reconcile', data),
+  getUnreconciled: (accountId: number) => api.get(`/api/v1/account/unreconciled/${accountId}`)
 };
 
 export const notificationService = {
