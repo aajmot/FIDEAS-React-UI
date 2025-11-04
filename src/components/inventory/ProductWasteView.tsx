@@ -121,34 +121,67 @@ const ProductWasteView: React.FC<ProductWasteViewProps> = ({ waste, onBack }) =>
                   day: '2-digit' 
                 })}</span>
               </div>
+              {waste.warehouse_name && (
+                <div className="flex justify-between">
+                  <span className="font-medium text-gray-600">Warehouse:</span>
+                  <span className="text-gray-900">{waste.warehouse_name}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Waste Details Table */}
+        {/* General Reason */}
+        {waste.reason && (
+          <div className="print-section mb-4 print:mb-2">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 print:p-2">
+              <h3 className="text-sm font-semibold text-gray-800 mb-1 print:text-xs">General Reason:</h3>
+              <p className="text-sm text-gray-700 print:text-xs">{waste.reason}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Waste Items Table */}
         <div className="print-section mb-4 print:mb-2">
-          <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Waste Details</h3>
+          <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Waste Items</h3>
           <div className="overflow-x-auto shadow-sm border border-gray-200 rounded-lg">
             <table className="print-table min-w-full">
               <thead className="bg-gray-100">
                 <tr>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Line</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Product</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Batch</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Quantity</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Unit Cost</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Total Cost</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Reason</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Item Reason</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                <tr className="bg-white">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900 border-b">{waste.product_name}</td>
-                  <td className="px-4 py-3 text-sm text-center text-gray-700 border-b">{waste.batch_number || '-'}</td>
-                  <td className="px-4 py-3 text-sm text-center font-medium text-gray-900 border-b">{waste.quantity}</td>
-                  <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 border-b">{waste.unit_cost.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900 border-b">{waste.total_cost.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-700 border-b">{waste.reason}</td>
-                </tr>
+                {waste.items && waste.items.length > 0 ? (
+                  waste.items.map((item, index) => (
+                    <tr key={index} className="bg-white">
+                      <td className="px-4 py-3 text-sm text-center text-gray-900 border-b">{item.line_no}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 border-b">{item.product_name}</td>
+                      <td className="px-4 py-3 text-sm text-center text-gray-700 border-b">{item.batch_number || '-'}</td>
+                      <td className="px-4 py-3 text-sm text-center font-medium text-gray-900 border-b">{item.quantity || 0}</td>
+                      <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 border-b">{(item.unit_cost_base || 0).toFixed(2)}</td>
+                      <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900 border-b">{((item.quantity || 0) * (item.unit_cost_base || 0)).toFixed(2)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b">{item.reason || '-'}</td>
+                    </tr>
+                  ))
+                ) : (
+                  // Fallback for legacy single-item format
+                  <tr className="bg-white">
+                    <td className="px-4 py-3 text-sm text-center text-gray-900 border-b">1</td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 border-b">{waste.product_name}</td>
+                    <td className="px-4 py-3 text-sm text-center text-gray-700 border-b">{waste.batch_number || '-'}</td>
+                    <td className="px-4 py-3 text-sm text-center font-medium text-gray-900 border-b">{waste.quantity || 0}</td>
+                    <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 border-b">{(waste.unit_cost_base || 0).toFixed(2)}</td>
+                    <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900 border-b">{((waste.quantity || 0) * (waste.unit_cost_base || 0)).toFixed(2)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700 border-b">-</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -170,7 +203,12 @@ const ProductWasteView: React.FC<ProductWasteViewProps> = ({ waste, onBack }) =>
               <div className="border-t border-blue-200 pt-3">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold text-gray-800">Total Cost:</span>
-                  <span className="print-total text-2xl font-bold text-blue-600">{waste.total_cost.toFixed(2)}</span>
+                  <span className="print-total text-2xl font-bold text-blue-600">
+                    {waste.items && waste.items.length > 0 
+                      ? waste.items.reduce((sum, item) => sum + ((item.quantity || 0) * (item.unit_cost_base || 0)), 0).toFixed(2)
+                      : ((waste.quantity || 0) * (waste.unit_cost_base || 0)).toFixed(2)
+                    }
+                  </span>
                 </div>
               </div>
             </div>

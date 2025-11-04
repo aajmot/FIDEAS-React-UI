@@ -74,33 +74,51 @@ const ProductWasteManagement: React.FC = () => {
       sortable: true,
     },
     {
-      key: 'product_name',
-      label: 'Product',
+      key: 'waste_date',
+      label: 'Date',
       sortable: true,
+      render: (value: string) => new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }),
     },
     {
-      key: 'batch_number',
-      label: 'Batch',
+      key: 'warehouse_name',
+      label: 'Warehouse',
       sortable: true,
       render: (value: string) => value || '-',
     },
     {
-      key: 'quantity',
-      label: 'Quantity',
-      sortable: true,
-      render: (value: number) => (value || 0).toFixed(1),
+      key: 'items',
+      label: 'Items Count',
+      sortable: false,
+      render: (value: any, waste: ProductWaste) => {
+        if (waste.items && waste.items.length > 0) {
+          return waste.items.length;
+        }
+        return waste.product_name ? '1 (Legacy)' : '0';
+      },
     },
     {
-      key: 'unit_cost',
-      label: 'Unit Cost',
-      sortable: true,
-      render: (value: number) => (value || 0).toFixed(2),
+      key: 'total_quantity',
+      label: 'Total Qty',
+      sortable: false,
+      render: (_: any, waste: ProductWaste) => {
+        if (waste.items && waste.items.length > 0) {
+          const total = waste.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+          return total.toFixed(1);
+        }
+        return (waste.quantity || 0).toFixed(1);
+      },
     },
     {
       key: 'total_cost',
       label: 'Total Cost',
-      sortable: true,
-      render: (value: number) => (value || 0).toFixed(2),
+      sortable: false,
+      render: (_: any, waste: ProductWaste) => {
+        if (waste.items && waste.items.length > 0) {
+          const total = waste.items.reduce((sum, item) => sum + ((item.quantity || 0) * (item.unit_cost_base || 0)), 0);
+          return total.toFixed(2);
+        }
+        return ((waste.quantity || 0) * (waste.unit_cost_base || 0)).toFixed(2);
+      },
     },
     {
       key: 'reason',
@@ -108,15 +126,9 @@ const ProductWasteManagement: React.FC = () => {
       sortable: true,
       render: (value: string) => (
         <span title={value}>
-          {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+          {value && value.length > 30 ? `${value.substring(0, 30)}...` : (value || '-')}
         </span>
       ),
-    },
-    {
-      key: 'waste_date',
-      label: 'Date',
-      sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }),
     },
     {
       key: 'actions',

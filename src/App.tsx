@@ -28,6 +28,7 @@ import SupplierManagement from './components/inventory/SupplierManagement';
 import PurchaseOrderManagement from './components/inventory/PurchaseOrderManagement';
 import SalesOrderManagement from './components/inventory/SalesOrderManagement';
 import ProductWasteManagement from './components/inventory/ProductWasteManagement';
+import StockAdjustmentManagement from './components/inventory/StockAdjustmentManagement';
 import StockMeter from './components/inventory/StockMeter';
 import StockTracking from './components/inventory/StockTracking';
 import ChartOfAccounts from './components/account/ChartOfAccounts';
@@ -156,6 +157,7 @@ function App() {
                 <Route path="inventory/sales-order" element={<SalesOrderManagement />} />
                 <Route path="inventory/order-commission" element={<OrderCommissionManagement />} />
                 <Route path="inventory/product-waste" element={<ProductWasteManagement />} />
+                <Route path="inventory/stock-adjustment" element={<StockAdjustmentManagement />} />
                 <Route path="inventory/stock-details" element={<StockDetails />} />
                 <Route path="inventory/stock-meter" element={<StockMeter />} />
                 <Route path="inventory/stock-tracking" element={<StockTracking />} />

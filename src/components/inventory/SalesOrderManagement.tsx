@@ -75,62 +75,55 @@ const SalesOrderManagement: React.FC = () => {
   };
 
   const columns = [
-    {
-      key: 'so_number',
-      label: 'SO Number',
-      sortable: true,
+    { 
+      key: 'so_number', 
+      label: 'SO Number'
     },
-    {
-      key: 'customer_name',
-      label: 'Customer',
-      sortable: true,
+    { 
+      key: 'customer_name', 
+      label: 'Customer'
     },
-    {
-      key: 'agency_name',
+    { 
+      key: 'agency_name', 
       label: 'Agency',
-      sortable: true,
+      render: (value: string) => value || '-'
     },
-    {
-      key: 'order_date',
+    { 
+      key: 'order_date', 
       label: 'Date',
-      sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }),
+      render: (value: string) => value ? new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : '-'
     },
-    {
-      key: 'total_amount',
+    { 
+      key: 'net_amount', 
       label: 'Total Amount',
-      sortable: true,
-      render: (value: number) => (value || 0).toFixed(2),
+      render: (value: number, row: SalesOrder) => ((value || row.total_amount) || 0).toFixed(2)
     },
     {
       key: 'status',
       label: 'Status',
-      sortable: true,
       render: (value: string) => (
         <span className={`px-2 py-1 text-xs rounded-full ${
-          value === 'completed' ? 'bg-green-100 text-green-800' :
-          value === 'reversed' ? 'bg-red-100 text-red-800' :
-          'bg-yellow-100 text-yellow-800'
+          value === 'reversed' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
         }`}>
           {value}
         </span>
-      ),
+      )
     },
     {
       key: 'actions',
       label: 'Actions',
-      render: (_: any, order: SalesOrder) => (
+      render: (value: any, row: SalesOrder) => (
         <div className="flex space-x-2">
           <button
-            onClick={() => handleView(order)}
+            onClick={() => handleView(row)}
             className="text-blue-600 hover:text-blue-800"
             title="Print Order"
           >
             <Printer className="h-4 w-4" />
           </button>
-          {order.status !== 'reversed' && (
+          {row.status !== 'reversed' && (
             <button
-              onClick={() => handleReverse(order)}
+              onClick={() => handleReverse(row)}
               className="text-red-600 hover:text-red-800"
               title="Reverse Order"
             >
@@ -138,8 +131,8 @@ const SalesOrderManagement: React.FC = () => {
             </button>
           )}
         </div>
-      ),
-    },
+      )
+    }
   ];
 
   if (showOrderView && selectedOrder) {
@@ -162,20 +155,13 @@ const SalesOrderManagement: React.FC = () => {
         onToggleCollapse={() => setIsFormCollapsed(!isFormCollapsed)}
         resetForm={resetForm}
       />
-
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Sales Orders</h2>
-        </div>
-        <div className="p-6">
-          <DataTable
-            title="Sales Orders"
-            data={orders}
-            columns={columns}
-            loading={loading}
-          />
-        </div>
-      </div>
+      
+      <DataTable
+        title="Sales Order Management"
+        columns={columns}
+        data={orders}
+        loading={loading}
+      />
       
       <ConfirmationModalWithInput
         isOpen={showReverseModal}

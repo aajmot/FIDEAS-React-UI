@@ -217,16 +217,33 @@ export interface SalesOrder {
   so_number: string;
   customer_id: number;
   customer_name: string;
+  customer_gstin?: string;
   agency_id?: number;
   agency_name?: string;
   customer_phone?: string;
   customer_tax_id?: string;
+  reference_number?: string;
   order_date: string;
   total_amount: number;
+  subtotal_amount?: number;
   discount_percent: number;
   discount_amount: number;
+  header_discount_percent?: number;
+  header_discount_amount?: number;
+  taxable_amount?: number;
+  cgst_amount?: number;
+  sgst_amount?: number;
+  igst_amount?: number;
+  cess_amount?: number;
+  total_tax_amount?: number;
   roundoff: number;
+  net_amount?: number;
+  currency_id?: number;
+  exchange_rate?: number;
+  is_reverse_charge?: boolean;
+  is_tax_inclusive?: boolean;
   status: string;
+  approval_status?: string;
   items?: SalesOrderItem[];
 }
 
@@ -241,27 +258,72 @@ export interface SalesOrderItem {
   gst_rate: number;
   cgst_rate: number;
   sgst_rate: number;
+  igst_rate?: number;
   gst_amount?: number;
   cgst_amount?: number;
   sgst_amount?: number;
+  igst_amount?: number;
+  cess_rate?: number;
+  cess_amount?: number;
   description?: string;
   discount_percent: number;
   discount_amount: number;
+  line_discount_percent?: number;
+  line_discount_amount?: number;
+  taxable_amount?: number;
+  total_tax_amount?: number;
   total_amount: number;
+  total_price?: number;
   batch_number?: string;
+  expiry_date?: string;
+  is_active?: boolean;
+  hsn_code?: string;
+}
+
+export interface ProductWasteItem {
+  id?: number;
+  line_no: number;
+  product_id: number;
+  product_name?: string;
+  batch_number?: string;
+  quantity: number;
+  unit_cost_base: number;
+  unit_cost_foreign?: number;
+  total_cost?: number;
+  reason?: string;
 }
 
 export interface ProductWaste {
   id: number;
   waste_number: string;
-  product_id: number;
-  product_name: string;
-  batch_number?: string;
-  quantity: number;
-  unit_cost: number;
-  total_cost: number;
-  reason: string;
+  warehouse_id?: number;
+  warehouse_name?: string;
   waste_date: string;
+  reason: string;
+  currency_id?: number;
+  exchange_rate?: number;
+  is_active?: boolean;
+  voucher_id?: number;
+  items?: ProductWasteItem[];
+  // Legacy fields for backward compatibility
+  product_id?: number;
+  product_name?: string;
+  batch_number?: string;
+  quantity?: number;
+  unit_cost_base?: number;
+  unit_cost_foreign?: number;
+  total_cost?: number;
+}
+
+export interface Warehouse {
+  id: number;
+  code: string;
+  name: string;
+  address: string;
+  contact_person: string;
+  phone: string;
+  email: string;
+  is_active: boolean;
 }
 
 export interface Account {

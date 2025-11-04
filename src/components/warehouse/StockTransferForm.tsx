@@ -8,8 +8,13 @@ import { useToast } from '../../context/ToastContext';
 import api from '../../services/api';
 
 interface TransferItem {
+  line_no: number;
   product_id: number;
+  product_name?: string;
   quantity: number;
+  batch_number: string;
+  unit_cost_base: number;
+  uom: string;
 }
 
 interface StockTransferFormProps {
@@ -24,6 +29,7 @@ interface StockTransferFormProps {
 const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollapsed, onToggleCollapse, resetForm, editingTransfer, onCancelEdit }) => {
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [units, setUnits] = useState<any[]>([]);
   const { showToast } = useToast();
 
   const generateTransferNumber = () => {
@@ -45,17 +51,25 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
     from_warehouse_id: '',
     to_warehouse_id: '',
     transfer_date: new Date().toISOString().split('T')[0],
-    notes: ''
+    transfer_type: 'INTERNAL',
+    status: 'DRAFT',
+    reason: ''
   });
 
   const [items, setItems] = useState<TransferItem[]>([{
+    line_no: 1,
     product_id: 0,
-    quantity: 0
+    product_name: '',
+    quantity: 0,
+    batch_number: '',
+    unit_cost_base: 0,
+    uom: 'NOS'
   }]);
 
   useEffect(() => {
     loadWarehouses();
     loadProducts();
+    loadUnits();
   }, []);
 
   useEffect(() => {
@@ -65,11 +79,18 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
         from_warehouse_id: '',
         to_warehouse_id: '',
         transfer_date: new Date().toISOString().split('T')[0],
-        notes: ''
+        transfer_type: 'INTERNAL',
+        status: 'DRAFT',
+        reason: ''
       });
       setItems([{
+        line_no: 1,
         product_id: 0,
-        quantity: 0
+        product_name: '',
+        quantity: 0,
+        batch_number: '',
+        unit_cost_base: 0,
+        uom: 'NOS'
       }]);
     }
   }, [resetForm]);
@@ -82,7 +103,9 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
         from_warehouse_id: editingTransfer.from_warehouse_id?.toString() || '',
         to_warehouse_id: editingTransfer.to_warehouse_id?.toString() || '',
         transfer_date: editingTransfer.transfer_date?.split('T')[0] || new Date().toISOString().split('T')[0],
-        notes: editingTransfer.notes || ''
+        transfer_type: editingTransfer.transfer_type || 'INTERNAL',
+        status: editingTransfer.status || 'DRAFT',
+        reason: editingTransfer.reason || ''
       });
     }
   }, [editingTransfer]);
@@ -108,9 +131,27 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
     }
   };
 
+  const loadUnits = async () => {
+    try {
+      const response: any = await inventoryService.getUnits();
+      let unitsData;
+      if (Array.isArray(response)) {
+        unitsData = response;
+      } else if (response?.data) {
+        unitsData = response.data?.data || response.data;
+      } else {
+        unitsData = [];
+      }
+      setUnits(Array.isArray(unitsData) ? unitsData : []);
+    } catch (error) {
+      showToast('error', 'Failed to load units');
+      setUnits([]);
+    }
+  };
+
   const loadTransferItems = async (transferId: number) => {
     try {
-      const response = await api.get(`/api/v1/warehouse/stock-transfers/${transferId}`);
+      const response = await api.get(`/api/v1/inventory/stock-transfers/${transferId}`);
       const transferData = response.data?.data || response.data;
       if (transferData.items && Array.isArray(transferData.items)) {
         setItems(transferData.items);
@@ -120,19 +161,54 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
     }
   };
 
-  const handleItemChange = (index: number, field: keyof TransferItem, value: number) => {
+  const handleItemChange = (index: number, field: keyof TransferItem, value: any) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
   };
 
+  const handleProductChange = async (index: number, productId: number) => {
+    const newItems = [...items];
+    const product = products.find(p => p.id === productId);
+    
+    // Find the unit name from unit_id
+    let unitName = 'NOS'; // default
+    if (product?.unit_id) {
+      const unit = units.find(u => u.id === product.unit_id);
+      unitName = unit?.name || 'NOS';
+    }
+    
+    newItems[index] = {
+      ...newItems[index],
+      product_id: productId,
+      product_name: product?.name || '',
+      unit_cost_base: product?.mrp || 0,
+      uom: unitName
+    };
+    
+    setItems(newItems);
+  };
+
   const addItem = () => {
-    setItems([...items, { product_id: 0, quantity: 0 }]);
+    setItems([...items, {
+      line_no: items.length + 1,
+      product_id: 0,
+      product_name: '',
+      quantity: 0,
+      batch_number: '',
+      unit_cost_base: 0,
+      uom: 'NOS'
+    }]);
   };
 
   const removeItem = (index: number) => {
     if (items.length > 1) {
-      setItems(items.filter((_, i) => i !== index));
+      const newItems = items.filter((_, i) => i !== index);
+      // Renumber line_no
+      newItems.forEach((item, idx) => {
+        item.line_no = idx + 1;
+      });
+      setItems(newItems);
     }
   };
 
@@ -155,20 +231,34 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
       return;
     }
 
+    if (!formData.reason) {
+      showToast('error', 'Please provide a reason for the transfer');
+      return;
+    }
+
     try {
       const transferData = {
         transfer_number: formData.transfer_number,
         from_warehouse_id: Number(formData.from_warehouse_id),
         to_warehouse_id: Number(formData.to_warehouse_id),
         transfer_date: new Date(formData.transfer_date).toISOString(),
-        notes: formData.notes,
-        items: validItems
+        transfer_type: formData.transfer_type,
+        status: formData.status,
+        reason: formData.reason,
+        items: validItems.map(item => ({
+          line_no: item.line_no,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          batch_number: item.batch_number,
+          unit_cost_base: item.unit_cost_base,
+          uom: item.uom
+        }))
       };
 
       if (editingTransfer) {
-        await api.put(`/api/v1/warehouse/stock-transfers/${editingTransfer.id}`, transferData);
+        await api.put(`/api/v1/inventory/stock-transfers/${editingTransfer.id}`, transferData);
       } else {
-        await api.post('/api/v1/warehouse/stock-transfers', transferData);
+        await api.post('/api/v1/inventory/stock-transfers', transferData);
       }
       onSave();
       if (onCancelEdit) onCancelEdit();
@@ -244,11 +334,36 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Notes</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Transfer Type</label>
+              <select
+                value={formData.transfer_type}
+                onChange={(e) => setFormData({ ...formData, transfer_type: e.target.value })}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
+              >
+                <option value="INTERNAL">Internal</option>
+                <option value="EXTERNAL">External</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
+              >
+                <option value="DRAFT">Draft</option>
+                <option value="PENDING">Pending</option>
+                <option value="COMPLETED">Completed</option>
+              </select>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">Reason *</label>
               <FormTextarea
-                value={formData.notes}
-                onChange={(value) => setFormData({ ...formData, notes: value })}
-                placeholder="Optional notes"
+                value={formData.reason}
+                onChange={(value) => setFormData({ ...formData, reason: value })}
+                placeholder="Enter reason for transfer"
                 rows={2}
               />
             </div>
@@ -269,29 +384,45 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
           <div className="mb-6">
 
             <div className="overflow-x-auto">
-              <table className="border border-gray-200" style={{ minWidth: '600px', width: '100%' }}>
+              <table className="border border-gray-200" style={{ minWidth: '1000px', width: '100%' }}>
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-left" style={{ minWidth: '200px' }}>Product</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '100px' }}>Quantity</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '50px' }}>Line#</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-left" style={{ minWidth: '200px' }}>Product *</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '100px' }}>Batch</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '100px' }}>Quantity *</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '100px' }}>Unit Cost</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>UOM</th>
                     <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((item, index) => (
                     <tr key={index} className="border-t">
+                      <td className="px-2 py-2 text-center">
+                        <span className="text-sm text-gray-600">{item.line_no}</span>
+                      </td>
                       <td className="px-2 py-2" style={{ minWidth: '200px' }}>
                         <SearchableDropdown
                           options={products.map(p => ({ value: p.id, label: p.name }))}
                           value={item.product_id}
-                          onChange={(value) => handleItemChange(index, 'product_id', Number(Array.isArray(value) ? value[0] : value))}
+                          onChange={(value) => handleProductChange(index, Number(Array.isArray(value) ? value[0] : value))}
                           placeholder="Select product..."
                           multiple={false}
                           searchable={true}
                           className="w-full"
                         />
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-2 py-2">
+                        <input
+                          type="text"
+                          value={item.batch_number}
+                          onChange={(e) => handleItemChange(index, 'batch_number', e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
+                          placeholder="Batch"
+                        />
+                      </td>
+                      <td className="px-2 py-2">
                         <input
                           type="number"
                           value={item.quantity}
@@ -300,7 +431,28 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
                           min="0"
                         />
                       </td>
-                      <td className="px-3 py-2 text-center">
+                      <td className="px-2 py-2">
+                        <input
+                          type="number"
+                          value={item.unit_cost_base}
+                          onChange={(e) => handleItemChange(index, 'unit_cost_base', parseFloat(e.target.value) || 0)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
+                          min="0"
+                          step="0.01"
+                        />
+                      </td>
+                      <td className="px-2 py-2">
+                        <SearchableDropdown
+                          options={units.map(u => ({ value: u.name, label: u.name }))}
+                          value={item.uom}
+                          onChange={(value) => handleItemChange(index, 'uom', Array.isArray(value) ? value[0] : value)}
+                          placeholder="Select UOM..."
+                          multiple={false}
+                          searchable={true}
+                          className="w-full"
+                        />
+                      </td>
+                      <td className="px-2 py-2 text-center">
                         <button
                           type="button"
                           onClick={() => removeItem(index)}
@@ -326,9 +478,19 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
                   from_warehouse_id: '',
                   to_warehouse_id: '',
                   transfer_date: new Date().toISOString().split('T')[0],
-                  notes: ''
+                  transfer_type: 'INTERNAL',
+                  status: 'DRAFT',
+                  reason: ''
                 });
-                setItems([{ product_id: 0, quantity: 0 }]);
+                setItems([{
+                  line_no: 1,
+                  product_id: 0,
+                  product_name: '',
+                  quantity: 0,
+                  batch_number: '',
+                  unit_cost_base: 0,
+                  uom: 'NOS'
+                }]);
                 if (onCancelEdit) onCancelEdit();
               }}
               className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded"

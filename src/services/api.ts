@@ -565,6 +565,11 @@ export const inventoryService = {
     const response = await api.get<PaginatedResponse>(`/api/v1/inventory/products?${queryParams.toString()}`);
     return response.data;
   },
+
+  getProduct: async (id: number): Promise<BaseResponse> => {
+    const response = await api.get<BaseResponse>(`/api/v1/inventory/products/get/${id}`);
+    return response.data;
+  },
   
   createProduct: async (productData: any): Promise<BaseResponse> => {
     const response = await api.post<BaseResponse>('/api/v1/inventory/products', productData);
@@ -753,17 +758,54 @@ export const inventoryService = {
   
   // Product Wastes
   getProductWastes: async (): Promise<PaginatedResponse> => {
-    const response = await api.get<PaginatedResponse>('/api/v1/inventory/product-wastes');
+    const response = await api.get<PaginatedResponse>('/api/v1/inventory/waste-products');
     return response.data;
   },
   
   createProductWaste: async (wasteData: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/inventory/product-wastes', wasteData);
+    const response = await api.post<BaseResponse>('/api/v1/inventory/waste-products', wasteData);
     return response.data;
   },
   
   deleteProductWaste: async (id: number): Promise<BaseResponse> => {
-    const response = await api.delete<BaseResponse>(`/api/v1/inventory/product-wastes/${id}`);
+    const response = await api.delete<BaseResponse>(`/api/v1/inventory/waste-products/${id}`);
+    return response.data;
+  },
+
+  // Stock Adjustments
+  getStockAdjustments: async (params?: { page?: number; per_page?: number; search?: string }): Promise<PaginatedResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
+    if (params?.search) queryParams.append('search', params.search);
+    
+    const response = await api.get<PaginatedResponse>(`/api/v1/inventory/stock-adjustments?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  createStockAdjustment: async (adjustmentData: any): Promise<BaseResponse> => {
+    const response = await api.post<BaseResponse>('/api/v1/inventory/stock-adjustments', adjustmentData);
+    return response.data;
+  },
+
+  getStockAdjustment: async (id: number): Promise<BaseResponse> => {
+    const response = await api.get<BaseResponse>(`/api/v1/inventory/stock-adjustments/${id}`);
+    return response.data;
+  },
+
+  deleteStockAdjustment: async (id: number): Promise<BaseResponse> => {
+    const response = await api.delete<BaseResponse>(`/api/v1/inventory/stock-adjustments/${id}`);
+    return response.data;
+  },
+
+  // Warehouses
+  getWarehouses: async (params?: { search?: string; page?: number; per_page?: number }): Promise<PaginatedResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
+    
+    const response = await api.get<PaginatedResponse>(`/api/v1/inventory/warehouses?${queryParams.toString()}`);
     return response.data;
   },
   

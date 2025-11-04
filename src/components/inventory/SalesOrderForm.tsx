@@ -39,25 +39,39 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
     discount_percent: 0,
     roundoff: 0
   });
-  const [items, setItems] = useState<SalesOrderItem[]>([{
+  const createEmptyItem = (): SalesOrderItem => ({
     product_id: 0,
     product_name: '',
     quantity: 0,
     free_quantity: 0,
     unit_price: 0,
+    mrp: 0,
     gst_rate: 0,
     cgst_rate: 0,
     sgst_rate: 0,
+    igst_rate: 0,
+    igst_amount: 0,
+    cess_rate: 0,
+    cess_amount: 0,
     discount_percent: 0,
     discount_amount: 0,
-    total_amount: 0,
-    batch_number: '',
-    mrp: 0,
-    gst_amount: 0,
+    line_discount_percent: 0,
+    line_discount_amount: 0,
+    taxable_amount: 0,
     cgst_amount: 0,
     sgst_amount: 0,
+    gst_amount: 0,
+    total_tax_amount: 0,
+    total_amount: 0,
+    total_price: 0,
+    batch_number: '',
+    expiry_date: '',
+    is_active: true,
+    hsn_code: '',
     description: ''
-  }]);
+  });
+
+  const [items, setItems] = useState<SalesOrderItem[]>([createEmptyItem()]);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -76,25 +90,7 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
         discount_percent: 0,
         roundoff: 0
       });
-      setItems([{
-        product_id: 0,
-        product_name: '',
-        quantity: 0,
-        free_quantity: 0,
-        unit_price: 0,
-        gst_rate: 0,
-        cgst_rate: 0,
-        sgst_rate: 0,
-        discount_percent: 0,
-        discount_amount: 0,
-        total_amount: 0,
-        batch_number: '',
-        mrp: 0,
-        gst_amount: 0,
-        cgst_amount: 0,
-        sgst_amount: 0,
-        description: ''
-      }]);
+      setItems([createEmptyItem()]);
     }
   }, [resetForm]);
 
@@ -235,12 +231,29 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
     newItems[index] = {
       ...newItems[index],
       product_id: Number(productId),
+      product_name: product?.name || '',
       unit_price: sellingPrice,
       mrp: mrpValue,
-      product_name: product?.name,
       gst_rate: gstRate,
       cgst_rate: gstRate / 2,
-      sgst_rate: gstRate / 2
+      sgst_rate: gstRate / 2,
+      igst_rate: 0,
+      igst_amount: 0,
+      cess_rate: 0,
+      cess_amount: 0,
+      discount_percent: 0,
+      discount_amount: 0,
+      line_discount_percent: 0,
+      line_discount_amount: 0,
+      taxable_amount: sellingPrice,
+      cgst_amount: 0,
+      sgst_amount: 0,
+      gst_amount: 0,
+      total_tax_amount: 0,
+      total_price: sellingPrice,
+      total_amount: sellingPrice,
+      hsn_code: product?.hsn_code || '',
+      description: product?.description || ''
     };
     
     setItems(newItems);
@@ -251,51 +264,41 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
-    if (field !== 'batch_number') {
-      calculateItemTotal(index, newItems);
-    }
+    calculateItemTotal(index, newItems);
   };
 
   const calculateItemTotal = (index: number, itemsArray: SalesOrderItem[]) => {
     const item = itemsArray[index];
-    const baseAmount = (item.unit_price || 0) * (item.quantity || 0); // Only paid quantity
-    const discountAmount = baseAmount * ((item.discount_percent || 0) / 100);
+    const baseAmount = item.unit_price * item.quantity;
+    const discountAmount = baseAmount * (item.discount_percent / 100);
     const discountedAmount = baseAmount - discountAmount;
-    const cgstAmount = discountedAmount * ((item.cgst_rate || 0) / 100);
-    const sgstAmount = discountedAmount * ((item.sgst_rate || 0) / 100);
-    const gstAmount = cgstAmount + sgstAmount;
-    const total = discountedAmount + cgstAmount + sgstAmount;
+    const cgstAmount = discountedAmount * (item.cgst_rate / 100);
+    const sgstAmount = discountedAmount * (item.sgst_rate / 100);
+    const igstAmount = discountedAmount * ((item.igst_rate || 0) / 100);
+    const cessAmount = discountedAmount * ((item.cess_rate || 0) / 100);
+    const totalTaxAmount = cgstAmount + sgstAmount + igstAmount + cessAmount;
+    const total = discountedAmount + totalTaxAmount;
+
     itemsArray[index] = {
       ...item,
       discount_amount: discountAmount,
+      line_discount_percent: item.discount_percent,
+      line_discount_amount: discountAmount,
       cgst_amount: cgstAmount,
       sgst_amount: sgstAmount,
-      gst_amount: gstAmount,
+      igst_amount: igstAmount,
+      cess_amount: cessAmount,
+      taxable_amount: discountedAmount,
+      gst_amount: cgstAmount + sgstAmount + igstAmount,
+      total_tax_amount: totalTaxAmount,
+      total_price: total,
       total_amount: total
     };
     setItems([...itemsArray]);
   };
 
   const addItem = () => {
-    setItems([...items, {
-      product_id: 0,
-      product_name: '',
-      quantity: 0,
-      free_quantity: 0,
-      unit_price: 0,
-      gst_rate: 0,
-      cgst_rate: 0,
-      sgst_rate: 0,
-      discount_percent: 0,
-      discount_amount: 0,
-      total_amount: 0,
-      batch_number: '',
-      mrp: 0,
-      gst_amount: 0,
-      cgst_amount: 0,
-      sgst_amount: 0,
-      description: ''
-    }]);
+    setItems([...items, createEmptyItem()]);
   };
 
   const removeItem = (index: number) => {
@@ -319,47 +322,94 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
       return;
     }
 
-    const validItems = items.filter(item => item.product_id > 0 && item.quantity > 0).map(item => ({
-      product_id: item.product_id,
-      batch_number: item.batch_number,
-      quantity: item.quantity,
-      free_quantity: item.free_quantity,
-      unit_price: item.unit_price,
-      gst_rate: item.gst_rate,
-      discount_percent: item.discount_percent,
-      discount_amount: item.discount_amount,
-      total_price: item.total_amount
-    }));
+    const validItems = items.filter(item => item.product_id > 0 && item.quantity > 0);
     if (validItems.length === 0) {
       showToast('error', 'Please add at least one item');
       return;
     }
 
     try {
-      const { finalTotal, discountAmount } = calculateTotals();
+      const { finalTotal, discountAmount, subtotal } = calculateTotals();
+      const selectedCustomer = getSelectedCustomer();
       
+      // Calculate total tax amounts
+      const totalTaxes = validItems.reduce((acc, item) => {
+        const taxableAmount = item.unit_price * item.quantity * (1 - (item.discount_percent / 100));
+        const cgstAmount = taxableAmount * (item.cgst_rate / 100);
+        const sgstAmount = taxableAmount * (item.sgst_rate / 100);
+        const igstAmount = taxableAmount * ((item.igst_rate || 0) / 100);
+        const cessAmount = taxableAmount * ((item.cess_rate || 0) / 100);
+        return {
+          cgst_amount: acc.cgst_amount + cgstAmount,
+          sgst_amount: acc.sgst_amount + sgstAmount,
+          igst_amount: acc.igst_amount + igstAmount,
+          cess_amount: acc.cess_amount + cessAmount,
+          total_tax_amount: acc.total_tax_amount + cgstAmount + sgstAmount + igstAmount + cessAmount,
+          taxable_amount: acc.taxable_amount + taxableAmount
+        };
+      }, { cgst_amount: 0, sgst_amount: 0, igst_amount: 0, cess_amount: 0, total_tax_amount: 0, taxable_amount: 0 });
+
       const orderData = {
-        order: {
-          order_number: formData.so_number,
-          customer_id: Number(formData.customer_id),
-          agency_id: formData.agency_id ? Number(formData.agency_id) : undefined,
-          order_date: new Date(formData.order_date).toISOString(),
-          total_amount: finalTotal,
-          discount_percent: formData.discount_percent,
-          discount_amount: discountAmount,
-          roundoff: formData.roundoff
-        },
-        items: validItems
+        so_number: formData.so_number,
+        customer_id: Number(formData.customer_id),
+        agency_id: formData.agency_id ? Number(formData.agency_id) : undefined,
+        reference_number: "",
+        order_date: new Date(formData.order_date).toISOString(),
+        customer_name: selectedCustomer?.name || "",
+        customer_gstin: selectedCustomer?.tax_id || "",
+        subtotal_amount: subtotal,
+        header_discount_percent: formData.discount_percent,
+        header_discount_amount: discountAmount,
+        taxable_amount: totalTaxes.taxable_amount,
+        cgst_amount: totalTaxes.cgst_amount,
+        sgst_amount: totalTaxes.sgst_amount,
+        igst_amount: totalTaxes.igst_amount,
+        cess_amount: totalTaxes.cess_amount,
+        total_tax_amount: totalTaxes.total_tax_amount,
+        roundoff: formData.roundoff,
+        net_amount: finalTotal,
+        currency_id: 1,
+        exchange_rate: 1,
+        is_reverse_charge: false,
+        is_tax_inclusive: false,
+        status: "DRAFT",
+        approval_status: "DRAFT",
+        items: validItems.map(item => {
+          const taxableAmount = item.unit_price * item.quantity * (1 - (item.discount_percent / 100));
+          return {
+            product_id: item.product_id,
+            product_name: item.product_name || '',
+            quantity: item.quantity,
+            free_quantity: item.free_quantity,
+            unit_price: item.unit_price,
+            mrp: item.mrp,
+            line_discount_percent: item.discount_percent,
+            line_discount_amount: item.discount_amount,
+            taxable_amount: taxableAmount,
+            cgst_rate: item.cgst_rate,
+            cgst_amount: taxableAmount * (item.cgst_rate / 100),
+            sgst_rate: item.sgst_rate,
+            sgst_amount: taxableAmount * (item.sgst_rate / 100),
+            igst_rate: item.igst_rate ?? 0,
+            igst_amount: item.igst_amount ?? 0,
+            cess_rate: item.cess_rate ?? 0,
+            cess_amount: item.cess_amount ?? 0,
+            total_price: item.total_price,
+            batch_number: item.batch_number || "",
+            expiry_date: item.expiry_date ? new Date(item.expiry_date).toISOString() : undefined,
+            is_active: true,
+            hsn_code: item.hsn_code || "",
+            description: item.description || ""
+          };
+        })
       };
 
-      const response = await inventoryService.createSalesOrder(orderData);
-      if (response.success) {
-        onSave();
-      } else {
-        showToast('error', response.message || 'Failed to create sales order');
-      }
-    } catch (error) {
-      showToast('error', 'Failed to create sales order');
+      await inventoryService.createSalesOrder(orderData);
+      onSave();
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create sales order';
+      console.error('Sales order creation error:', error);
+      showToast('error', errorMessage);
     }
   };
 
@@ -492,16 +542,15 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
         <div className="mb-6">
           <style>{`
             .sales-order-table { table-layout: fixed !important; }
-            .sales-order-table th:nth-child(1), .sales-order-table td:nth-child(1) { width: 20% !important; }
-            .sales-order-table th:nth-child(2), .sales-order-table td:nth-child(2) { width: 9% !important; }
-            .sales-order-table th:nth-child(3), .sales-order-table td:nth-child(3) { width: 9% !important; }
+            .sales-order-table th:nth-child(1), .sales-order-table td:nth-child(1) { width: 22% !important; }
+            .sales-order-table th:nth-child(2), .sales-order-table td:nth-child(2) { width: 10% !important; }
+            .sales-order-table th:nth-child(3), .sales-order-table td:nth-child(3) { width: 10% !important; }
             .sales-order-table th:nth-child(4), .sales-order-table td:nth-child(4) { width: 8% !important; }
             .sales-order-table th:nth-child(5), .sales-order-table td:nth-child(5) { width: 8% !important; }
             .sales-order-table th:nth-child(6), .sales-order-table td:nth-child(6) { width: 9% !important; }
-            .sales-order-table th:nth-child(7), .sales-order-table td:nth-child(7) { width: 9% !important; }
-            .sales-order-table th:nth-child(8), .sales-order-table td:nth-child(8) { width: 8% !important; }
-            .sales-order-table th:nth-child(9), .sales-order-table td:nth-child(9) { width: 12% !important; }
-            .sales-order-table th:nth-child(10), .sales-order-table td:nth-child(10) { width: 8% !important; }
+            .sales-order-table th:nth-child(7), .sales-order-table td:nth-child(7) { width: 10% !important; }
+            .sales-order-table th:nth-child(8), .sales-order-table td:nth-child(8) { width: 13% !important; }
+            .sales-order-table th:nth-child(9), .sales-order-table td:nth-child(9) { width: 10% !important; }
           `}</style>
           <div className="overflow-x-auto">
             <table className="border border-gray-200 sales-order-table" style={{ minWidth: '800px', width: '100%' }}>
@@ -512,9 +561,8 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>Price</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Qty</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Free</th>
-                  <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>CGST%</th>
-                  <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>SGST%</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Disc%</th>
+                  <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>GST%</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>Total</th>
                   <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Action</th>
                 </tr>
@@ -585,27 +633,19 @@ const SalesOrderForm: React.FC<SalesOrderFormProps> = ({ onSave, isCollapsed, on
                   <td className="px-3 py-2 w-16">
                     <input
                       type="number"
-                      value={item.cgst_rate}
-                      onChange={(e) => handleItemChange(index, 'cgst_rate', parseFloat(e.target.value) || 0)}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
-                      step="0.1"
-                    />
-                  </td>
-                  <td className="px-3 py-2 w-16">
-                    <input
-                      type="number"
-                      value={item.sgst_rate}
-                      onChange={(e) => handleItemChange(index, 'sgst_rate', parseFloat(e.target.value) || 0)}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
-                      step="0.1"
-                    />
-                  </td>
-                  <td className="px-3 py-2 w-16">
-                    <input
-                      type="number"
                       value={item.discount_percent}
                       onChange={(e) => handleItemChange(index, 'discount_percent', parseFloat(e.target.value) || 0)}
                       className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
+                      step="0.1"
+                    />
+                  </td>
+                  <td className="px-3 py-2 w-16">
+                    <input
+                      type="number"
+                      value={item.gst_rate}
+                      readOnly
+                      disabled
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center bg-gray-100 cursor-not-allowed"
                       step="0.1"
                     />
                   </td>
