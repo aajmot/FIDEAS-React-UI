@@ -22,6 +22,15 @@ interface Account {
   group_name: string;
 }
 
+interface ConfigurationKey {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  default_account_id?: number;
+  is_active: boolean;
+}
+
 interface Template {
   id: number;
   name: string;
@@ -36,12 +45,14 @@ const TransactionTemplates: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [configurationKeys, setConfigurationKeys] = useState<ConfigurationKey[]>([]);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
 
   useEffect(() => {
     loadTemplates();
     loadAccounts();
+    loadConfigurationKeys();
   }, []);
 
   const loadAccounts = async () => {
@@ -50,6 +61,17 @@ const TransactionTemplates: React.FC = () => {
       setAccounts(response.data || []);
     } catch (error) {
       console.error('Failed to load accounts');
+    }
+  };
+
+  const loadConfigurationKeys = async () => {
+    try {
+      const response = await adminService.getAccountConfigurationKeys();
+      console.log('Config Keys Response:', response);
+      // API returns data in 'items' property
+      setConfigurationKeys((response as any).items || []);
+    } catch (error) {
+      console.error('Failed to load configuration keys');
     }
   };
 
@@ -205,21 +227,10 @@ const TransactionTemplates: React.FC = () => {
                             Account Type
                           </label>
                           <SearchableDropdown
-                            options={[
-                              { value: 'ACCOUNTS_RECEIVABLE', label: 'Accounts Receivable' },
-                              { value: 'ACCOUNTS_PAYABLE', label: 'Accounts Payable' },
-                              { value: 'SALES_REVENUE', label: 'Sales Revenue' },
-                              { value: 'SALES_RETURN', label: 'Sales Return' },
-                              { value: 'PURCHASE_RETURN', label: 'Purchase Return' },
-                              { value: 'INVENTORY', label: 'Inventory' },
-                              { value: 'COGS', label: 'Cost of Goods Sold' },
-                              { value: 'TAX_PAYABLE', label: 'Tax Payable' },
-                              { value: 'TAX_RECEIVABLE', label: 'Tax Receivable' },
-                              { value: 'DISCOUNT_ALLOWED', label: 'Discount Allowed' },
-                              { value: 'DISCOUNT_RECEIVED', label: 'Discount Received' },
-                              { value: 'PHARMACY_REVENUE', label: 'Pharmacy Revenue' },
-                              { value: 'DIAGNOSTIC_REVENUE', label: 'Diagnostic Revenue' }
-                            ]}
+                            options={configurationKeys.map(key => ({
+                              value: key.code,
+                              label: key.name
+                            }))}
                             value={rule.account_type}
                             onChange={(value) => handleRuleChange(rule.line_number, 'account_type', value as string)}
                             placeholder="Search or select..."

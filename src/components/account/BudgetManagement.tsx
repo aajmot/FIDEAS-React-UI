@@ -70,7 +70,7 @@ const BudgetManagement: React.FC = () => {
   const fetchAccounts = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch('/api/v1/account/accounts', {
+      const response = await fetch('/api/v1/account/account-masters', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();

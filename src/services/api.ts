@@ -443,18 +443,28 @@ export const adminService = {
     return response.data;
   },
   
-  getAccountTypeMappings: async (): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>('/api/v1/admin/account-type-mappings');
+  getAccountConfigurations: async (): Promise<BaseResponse> => {
+    const response = await api.get<BaseResponse>('/api/v1/admin/account-configurations');
     return response.data;
   },
   
-  updateAccountTypeMapping: async (accountType: string, data: any): Promise<BaseResponse> => {
-    const response = await api.put<BaseResponse>(`/api/v1/admin/account-type-mappings/${accountType}`, data);
+  getAccountConfigurationKeys: async (): Promise<BaseResponse> => {
+    const response = await api.get<BaseResponse>('/api/v1/admin/account-configuration-keys');
+    return response.data;
+  },
+  
+  updateAccountConfiguration: async (configKey: string, data: { account_id: number; module?: string }): Promise<BaseResponse> => {
+    const response = await api.put<BaseResponse>(`/api/v1/admin/account-configurations/${configKey}`, data);
+    return response.data;
+  },
+  
+  deleteAccountConfiguration: async (configId: number): Promise<BaseResponse> => {
+    const response = await api.delete<BaseResponse>(`/api/v1/admin/account-configurations/${configId}`);
     return response.data;
   },
   
   getAccounts: async (): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>('/api/v1/admin/accounts');
+    const response = await api.get<BaseResponse>('/api/v1/account/account-masters');
     return response.data;
   },
 };
@@ -887,22 +897,22 @@ export const inventoryService = {
 export const accountService = {
   // Chart of Accounts
   getAccounts: async (): Promise<PaginatedResponse> => {
-    const response = await api.get<PaginatedResponse>('/api/v1/account/accounts');
+    const response = await api.get<PaginatedResponse>('/api/v1/account/account-masters');
     return response.data;
   },
   
   createAccount: async (accountData: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/account/accounts', accountData);
+    const response = await api.post<BaseResponse>('/api/v1/account/account-masters', accountData);
     return response.data;
   },
   
   updateAccount: async (id: number, accountData: any): Promise<BaseResponse> => {
-    const response = await api.put<BaseResponse>(`/api/v1/account/accounts/${id}`, accountData);
+    const response = await api.put<BaseResponse>(`/api/v1/account/account-masters/${id}`, accountData);
     return response.data;
   },
   
   deleteAccount: async (id: number): Promise<BaseResponse> => {
-    const response = await api.delete<BaseResponse>(`/api/v1/account/accounts/${id}`);
+    const response = await api.delete<BaseResponse>(`/api/v1/account/account-masters/${id}`);
     return response.data;
   },
   

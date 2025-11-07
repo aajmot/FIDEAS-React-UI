@@ -1,63 +1,140 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Minus, X } from 'lucide-react';
+import { Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import SearchableDropdown from '../common/SearchableDropdown';
 import DatePicker from '../common/DatePicker';
 import { inventoryService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import api from '../../services/api';
+import { Supplier, Product } from '../../types';
 
 interface InvoiceItem {
   product_id: number;
+  product_name: string;
   quantity: number;
+  free_quantity: number;
   unit_price: number;
+  mrp: number;
   gst_rate: number;
+  cgst_rate: number;
+  sgst_rate: number;
   discount_percent: number;
+  discount_amount: number;
+  igst_rate: number;
+  igst_amount: number;
+  cess_rate: number;
+  cess_amount: number;
   total_amount: number;
+  total_price: number;
+  batch_number: string;
+  expiry_date: string;
+  hsn_code: string;
+  description: string;
+  cgst_amount: number;
+  sgst_amount: number;
+  taxable_amount: number;
+  total_tax_amount: number;
+  line_discount_percent: number;
+  line_discount_amount: number;
 }
 
 interface PurchaseInvoiceFormProps {
-  invoice: any;
-  onClose: () => void;
+  onSave: () => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+  resetForm?: boolean;
 }
 
-const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ invoice, onClose }) => {
-  const [suppliers, setSuppliers] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
+const createEmptyItem = (): InvoiceItem => ({
+  product_id: 0,
+  product_name: '',
+  quantity: 0,
+  free_quantity: 0,
+  unit_price: 0,
+  mrp: 0,
+  gst_rate: 0,
+  cgst_rate: 0,
+  sgst_rate: 0,
+  discount_percent: 0,
+  discount_amount: 0,
+  igst_rate: 0,
+  igst_amount: 0,
+  cess_rate: 0,
+  cess_amount: 0,
+  total_amount: 0,
+  total_price: 0,
+  batch_number: '',
+  expiry_date: '',
+  hsn_code: '',
+  description: '',
+  cgst_amount: 0,
+  sgst_amount: 0,
+  taxable_amount: 0,
+  total_tax_amount: 0,
+  line_discount_percent: 0,
+  line_discount_amount: 0
+});
+
+const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCollapsed, onToggleCollapse, resetForm }) => {
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [paymentTerms, setPaymentTerms] = useState<any[]>([]);
-  const { showToast } = useToast();
+  const [items, setItems] = useState<InvoiceItem[]>([createEmptyItem()]);
+  
+  const generateInvoiceNumber = () => {
+    const now = new Date();
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const tenantId = user.tenant_id || 1;
+    const dd = String(now.getDate()).padStart(2, '0');
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const fff = String(now.getMilliseconds()).padStart(3, '0');
+    return `PINV-${tenantId}${dd}${mm}${yyyy}${hh}${min}${ss}${fff}`;
+  };
 
   const [formData, setFormData] = useState({
-    invoice_number: invoice?.invoice_number || `PINV-${Date.now()}`,
-    supplier_id: invoice?.supplier_id || '',
-    invoice_date: invoice?.invoice_date?.split('T')[0] || new Date().toISOString().split('T')[0],
-    payment_term_id: invoice?.payment_term_id || '',
-    due_date: invoice?.due_date?.split('T')[0] || '',
-    discount_percent: invoice?.discount_percent || 0,
-    notes: invoice?.notes || ''
-  });
-
-  const [items, setItems] = useState<InvoiceItem[]>(invoice?.items || [{
-    product_id: 0,
-    quantity: 0,
-    unit_price: 0,
-    gst_rate: 0,
+    invoice_number: generateInvoiceNumber(),
+    reference_number: '',
+    supplier_id: '',
+    invoice_date: new Date().toISOString().split('T')[0],
+    payment_term_id: '',
+    due_date: new Date().toISOString().split('T')[0],
     discount_percent: 0,
-    total_amount: 0
-  }]);
+    roundoff: 0
+  });
+  
+  const { showToast } = useToast();
 
   useEffect(() => {
-    loadSuppliers('');
+    loadSuppliers();
     loadProducts();
     loadPaymentTerms();
   }, []);
 
-  const loadSuppliers = async (search: string) => {
+  useEffect(() => {
+    if (resetForm) {
+      setFormData({
+        invoice_number: generateInvoiceNumber(),
+        reference_number: '',
+        supplier_id: '',
+        invoice_date: new Date().toISOString().split('T')[0],
+        payment_term_id: '',
+        due_date: new Date().toISOString().split('T')[0],
+        discount_percent: 0,
+        roundoff: 0
+      });
+      setItems([createEmptyItem()]);
+    }
+  }, [resetForm]);
+
+  const loadSuppliers = async () => {
     try {
-      const response = await inventoryService.getSuppliers({ search, per_page: 50 });
+      const response = await inventoryService.getSuppliers();
       setSuppliers(response.data);
-      return response.data.map((s: any) => ({ value: s.id, label: `${s.phone} | ${s.name}` }));
     } catch (error) {
-      return [];
+      showToast('error', 'Failed to load suppliers');
     }
   };
 
@@ -72,7 +149,7 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ invoice, onCl
 
   const loadPaymentTerms = async () => {
     try {
-      const response = await api.get('/api/v1/invoice/payment-terms');
+      const response = await api.get('/api/v1/account/payment-terms');
       const data = response.data?.data || response.data;
       setPaymentTerms(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -81,22 +158,79 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ invoice, onCl
     }
   };
 
-  const handleProductChange = (index: number, value: string | number | (string | number)[]) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: name.includes('percent') || name === 'roundoff' ? parseFloat(value) || 0 : value
+    }));
+  };
+
+  const handleSupplierChange = (value: string | number | (string | number)[]) => {
+    setFormData(prev => ({ ...prev, supplier_id: value as string }));
+  };
+
+  const getSelectedSupplier = () => {
+    return suppliers.find(supplier => supplier.id === Number(formData.supplier_id));
+  };
+
+  const handleProductChange = async (index: number, value: string | number | (string | number)[]) => {
     const productId = Array.isArray(value) ? value[0] : value;
-    const product = products.find(p => p.id === Number(productId));
+    let product = products.find(p => p.id === Number(productId));
+    
+    // If product not found in current list, fetch it
+    if (!product && productId) {
+      try {
+        const response = await inventoryService.getProducts({ search: '', per_page: 1000 });
+        const foundProduct = response.data.find(p => p.id === Number(productId));
+        if (foundProduct) {
+          product = foundProduct;
+          setProducts(prev => [...prev, foundProduct]);
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      }
+    }
     
     const newItems = [...items];
+    const gstRate = product?.gst_rate ?? 0;
+    const mrpValue = product?.mrp_price ?? product?.selling_price ?? 0;
+    // For purchase invoices, prioritize cost_price, if 0 then calculate 70% of MRP
+    let calculatedUnitPrice = product?.cost_price ?? 0;
+    if (calculatedUnitPrice === 0 && mrpValue > 0) {
+      calculatedUnitPrice = Math.floor(mrpValue * 0.7 * 100) / 100;
+    }
+    
     newItems[index] = {
       ...newItems[index],
       product_id: Number(productId),
-      unit_price: product?.cost_price ?? product?.selling_price ?? 0,
-      gst_rate: product?.gst_rate ?? 0
+      product_name: product?.name || '',
+      mrp: mrpValue,
+      unit_price: calculatedUnitPrice,
+      gst_rate: gstRate,
+      cgst_rate: gstRate / 2,
+      sgst_rate: gstRate / 2,
+      discount_percent: 0,
+      discount_amount: 0,
+      taxable_amount: calculatedUnitPrice,
+      cgst_amount: 0,
+      sgst_amount: 0,
+      igst_rate: 0,
+      igst_amount: 0,
+      cess_rate: 0,
+      cess_amount: 0,
+      total_tax_amount: 0,
+      total_price: calculatedUnitPrice,
+      total_amount: calculatedUnitPrice,
+      hsn_code: product?.hsn_code || '',
+      description: product?.description || ''
     };
+    
     setItems(newItems);
     calculateItemTotal(index, newItems);
   };
 
-  const handleItemChange = (index: number, field: keyof InvoiceItem, value: number) => {
+  const handleItemChange = (index: number, field: keyof InvoiceItem, value: number | string) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
@@ -108,22 +242,30 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ invoice, onCl
     const baseAmount = item.unit_price * item.quantity;
     const discountAmount = baseAmount * (item.discount_percent / 100);
     const discountedAmount = baseAmount - discountAmount;
-    const gstAmount = discountedAmount * (item.gst_rate / 100);
-    const total = discountedAmount + gstAmount;
+    const cgstAmount = discountedAmount * (item.cgst_rate / 100);
+    const sgstAmount = discountedAmount * (item.sgst_rate / 100);
+    const totalTaxAmount = cgstAmount + sgstAmount;
+    const total = discountedAmount + totalTaxAmount;
 
-    itemsArray[index] = { ...item, total_amount: total };
+    itemsArray[index] = {
+      ...item,
+      discount_amount: discountAmount,
+      cgst_amount: cgstAmount,
+      sgst_amount: sgstAmount,
+      taxable_amount: discountedAmount,
+      total_tax_amount: totalTaxAmount,
+      total_price: total,
+      total_amount: total,
+      igst_amount: 0,
+      cess_amount: 0,
+      line_discount_percent: item.discount_percent,
+      line_discount_amount: discountAmount
+    };
     setItems([...itemsArray]);
   };
 
   const addItem = () => {
-    setItems([...items, {
-      product_id: 0,
-      quantity: 0,
-      unit_price: 0,
-      gst_rate: 0,
-      discount_percent: 0,
-      total_amount: 0
-    }]);
+    setItems([...items, createEmptyItem()]);
   };
 
   const removeItem = (index: number) => {
@@ -133,15 +275,15 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ invoice, onCl
   };
 
   const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + item.total_amount, 0);
+    const subtotal = items.reduce((sum, item) => sum + (item.total_amount || 0), 0);
     const discountAmount = subtotal * (formData.discount_percent / 100);
-    const finalTotal = subtotal - discountAmount;
+    const finalTotal = subtotal - discountAmount + formData.roundoff;
     return { subtotal, discountAmount, finalTotal };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!formData.supplier_id) {
       showToast('error', 'Please select a supplier');
       return;
@@ -154,185 +296,363 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ invoice, onCl
     }
 
     try {
-      const { finalTotal } = calculateTotals();
+      const { finalTotal, discountAmount, subtotal } = calculateTotals();
+      const selectedSupplier = getSelectedSupplier();
       
+      // Calculate total tax amounts
+      const totalTaxes = validItems.reduce((acc, item) => {
+        const taxableAmount = item.unit_price * item.quantity * (1 - (item.discount_percent / 100));
+        const cgstAmount = taxableAmount * (item.cgst_rate / 100);
+        const sgstAmount = taxableAmount * (item.sgst_rate / 100);
+        return {
+          cgst_amount: acc.cgst_amount + cgstAmount,
+          sgst_amount: acc.sgst_amount + sgstAmount,
+          total_tax_amount: acc.total_tax_amount + cgstAmount + sgstAmount,
+          taxable_amount: acc.taxable_amount + taxableAmount
+        };
+      }, { cgst_amount: 0, sgst_amount: 0, total_tax_amount: 0, taxable_amount: 0 });
+
       const invoiceData = {
         invoice_number: formData.invoice_number,
+        reference_number: formData.reference_number || "",
         supplier_id: Number(formData.supplier_id),
         invoice_date: new Date(formData.invoice_date).toISOString(),
         payment_term_id: formData.payment_term_id ? Number(formData.payment_term_id) : undefined,
         due_date: formData.due_date ? new Date(formData.due_date).toISOString() : undefined,
-        total_amount: finalTotal,
-        discount_percent: formData.discount_percent,
-        notes: formData.notes,
-        items: validItems.map(item => ({
-          product_id: item.product_id,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          gst_rate: item.gst_rate,
-          discount_percent: item.discount_percent,
-          total_price: item.total_amount
-        }))
+        base_currency_id: 1,
+        subtotal_base: subtotal,
+        discount_percent_base: formData.discount_percent,
+        discount_amount_base: discountAmount,
+        cgst_amount_base: totalTaxes.cgst_amount,
+        sgst_amount_base: totalTaxes.sgst_amount,
+        igst_amount_base: 0,
+        ugst_amount_base: 0,
+        cess_amount_base: 0,
+        tax_amount_base: totalTaxes.total_tax_amount,
+        roundoff_base: formData.roundoff,
+        total_amount_base: finalTotal,
+        status: "DRAFT",
+        items: validItems.map((item, idx) => {
+          const taxableAmount = item.unit_price * item.quantity * (1 - (item.discount_percent / 100));
+          return {
+            line_no: idx + 1,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            free_quantity: item.free_quantity || 0,
+            uom: "",
+            unit_price_base: item.unit_price,
+            mrp_base: item.mrp || 0,
+            discount_percent: item.discount_percent,
+            discount_amount_base: item.discount_amount,
+            taxable_amount_base: taxableAmount,
+            cgst_rate: item.cgst_rate,
+            cgst_amount_base: taxableAmount * (item.cgst_rate / 100),
+            sgst_rate: item.sgst_rate,
+            sgst_amount_base: taxableAmount * (item.sgst_rate / 100),
+            igst_rate: 0,
+            igst_amount_base: 0,
+            ugst_rate: 0,
+            ugst_amount_base: 0,
+            cess_rate: 0,
+            cess_amount_base: 0,
+            tax_amount_base: taxableAmount * (item.cgst_rate / 100) + taxableAmount * (item.sgst_rate / 100),
+            total_amount_base: item.total_amount,
+            batch_number: item.batch_number || "",
+            expiry_date: item.expiry_date ? new Date(item.expiry_date).toISOString() : undefined,
+            hsn_code: item.hsn_code || "",
+            description: item.description || ""
+          };
+        })
       };
 
-      if (invoice) {
-        await api.put(`/api/v1/invoice/purchase-invoices/${invoice.id}`, invoiceData);
-        showToast('success', 'Invoice updated successfully');
-      } else {
-        await api.post('/api/v1/invoice/purchase-invoices', invoiceData);
-        showToast('success', 'Invoice created successfully');
-      }
-      onClose();
+      await api.post('/api/v1/inventory/purchase-invoices', invoiceData);
+      onSave();
     } catch (error: any) {
-      showToast('error', error.response?.data?.detail || 'Failed to save invoice');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create purchase invoice';
+      console.error('Purchase invoice creation error:', error);
+      showToast('error', errorMessage);
     }
   };
 
   const { subtotal, discountAmount, finalTotal } = calculateTotals();
 
   return (
-    <div className="p-3 sm:p-6">
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b flex justify-between items-center">
-          <h2 className="text-lg font-semibold">{invoice ? 'Edit' : 'Create'} Purchase Invoice</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X size={24} />
-          </button>
-        </div>
+    <div className="bg-white rounded-lg shadow mb-6">
+      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h2 className="text-lg font-semibold text-gray-900">Create Purchase Invoice</h2>
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          {isCollapsed ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+        </button>
+      </div>
 
+      {!isCollapsed && (
         <form onSubmit={handleSubmit} className="p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
             <div>
-              <label className="block text-sm font-medium mb-1">Invoice Number</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Invoice Number</label>
               <input
                 type="text"
+                name="invoice_number"
                 value={formData.invoice_number}
-                onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
-                className="w-full px-3 py-2 border rounded"
+                onChange={handleInputChange}
+                readOnly
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-100"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Supplier *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Reference Number</label>
+              <input
+                type="text"
+                name="reference_number"
+                value={formData.reference_number}
+                onChange={handleInputChange}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
+                placeholder="Reference #"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Invoice Date</label>
+              <DatePicker
+                value={formData.invoice_date}
+                onChange={(value) => setFormData(prev => ({ ...prev, invoice_date: value }))}
+                placeholder="Select invoice date"
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Supplier *</label>
               <SearchableDropdown
-                options={suppliers.map(s => ({ value: s.id, label: `${s.phone} | ${s.name}` }))}
+                options={suppliers.map(supplier => ({
+                  value: supplier.id,
+                  label: `${supplier.phone} | ${supplier.name}`
+                }))}
                 value={formData.supplier_id}
-                onChange={(value) => setFormData({ ...formData, supplier_id: (Array.isArray(value) ? value[0] : value).toString() })}
-                onSearch={loadSuppliers}
-                placeholder="Select supplier"
+                onChange={handleSupplierChange}
+                placeholder="Select supplier..."
                 multiple={false}
                 searchable={true}
               />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Invoice Date</label>
-              <DatePicker
-                value={formData.invoice_date}
-                onChange={(value) => setFormData({ ...formData, invoice_date: value })}
-                className="w-full"
-              />
-            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
             <div>
-              <label className="block text-sm font-medium mb-1">Payment Terms</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Supplier Name</label>
+              <input
+                type="text"
+                value={getSelectedSupplier()?.name || ''}
+                readOnly
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="text"
+                value={getSelectedSupplier()?.email || ''}
+                readOnly
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-100"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Tax ID</label>
+              <input
+                type="text"
+                value={getSelectedSupplier()?.tax_id || ''}
+                readOnly
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Payment Terms</label>
               <select
+                name="payment_term_id"
                 value={formData.payment_term_id}
                 onChange={(e) => setFormData({ ...formData, payment_term_id: e.target.value })}
-                className="w-full px-3 py-2 border rounded"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
               >
                 <option value="">Select payment term</option>
                 {paymentTerms.map(term => (
-                  <option key={term.id} value={term.id}>{term.term_name} ({term.days} days)</option>
+                  <option key={term.id} value={term.id}>{term.name} ({term.days} days)</option>
                 ))}
               </select>
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
             <div>
-              <label className="block text-sm font-medium mb-1">Due Date</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Due Date</label>
               <DatePicker
                 value={formData.due_date}
                 onChange={(value) => setFormData({ ...formData, due_date: value })}
+                placeholder="Select due date"
                 className="w-full"
               />
             </div>
           </div>
 
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-md font-semibold">Invoice Items</h3>
-              <button type="button" onClick={addItem} className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700">
-                <Plus size={16} className="mr-1" /> Add Item
-              </button>
-            </div>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-md font-semibold">Invoice Items</h3>
+            <button
+              type="button"
+              onClick={addItem}
+              className="flex items-center px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded"
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Add Item
+            </button>
+          </div>
 
+          <div className="mb-6">
+            <style>{`
+              .purchase-invoice-table { table-layout: fixed !important; }
+              .purchase-invoice-table th:nth-child(1), .purchase-invoice-table td:nth-child(1) { width: 22% !important; }
+              .purchase-invoice-table th:nth-child(2), .purchase-invoice-table td:nth-child(2) { width: 9% !important; }
+              .purchase-invoice-table th:nth-child(3), .purchase-invoice-table td:nth-child(3) { width: 9% !important; }
+              .purchase-invoice-table th:nth-child(4), .purchase-invoice-table td:nth-child(4) { width: 9% !important; }
+              .purchase-invoice-table th:nth-child(5), .purchase-invoice-table td:nth-child(5) { width: 9% !important; }
+              .purchase-invoice-table th:nth-child(6), .purchase-invoice-table td:nth-child(6) { width: 8% !important; }
+              .purchase-invoice-table th:nth-child(7), .purchase-invoice-table td:nth-child(7) { width: 8% !important; }
+              .purchase-invoice-table th:nth-child(8), .purchase-invoice-table td:nth-child(8) { width: 8% !important; }
+              .purchase-invoice-table th:nth-child(9), .purchase-invoice-table td:nth-child(9) { width: 8% !important; }
+              .purchase-invoice-table th:nth-child(10), .purchase-invoice-table td:nth-child(10) { width: 10% !important; }
+              .purchase-invoice-table th:nth-child(11), .purchase-invoice-table td:nth-child(11) { width: 5% !important; }
+            `}</style>
             <div className="overflow-x-auto">
-              <table className="w-full border">
+              <table className="border border-gray-200 purchase-invoice-table" style={{ minWidth: '900px', width: '100%' }}>
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-3 py-2 text-xs text-left">Product</th>
-                    <th className="px-3 py-2 text-xs text-center">Qty</th>
-                    <th className="px-3 py-2 text-xs text-center">Price</th>
-                    <th className="px-3 py-2 text-xs text-center">GST%</th>
-                    <th className="px-3 py-2 text-xs text-center">Disc%</th>
-                    <th className="px-3 py-2 text-xs text-center">Total</th>
-                    <th className="px-3 py-2 text-xs text-center">Action</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-left" style={{ minWidth: '180px' }}>Product</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>HSN</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>Batch</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>MRP</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>Price</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Qty</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Free</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Disc%</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>GST%</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>Total</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((item, index) => (
                     <tr key={index} className="border-t">
-                      <td className="px-3 py-2">
+                      <td className="px-2 py-2">
                         <SearchableDropdown
-                          options={products.map(p => ({ value: p.id, label: p.name }))}
+                          options={products.map(product => ({
+                            value: product.id,
+                            label: product.name
+                          }))}
                           value={item.product_id}
                           onChange={(value) => handleProductChange(index, value)}
-                          placeholder="Select product"
+                          placeholder="Select product..."
                           multiple={false}
                           searchable={true}
+                          className="w-full"
+                          onSearch={async (searchTerm) => {
+                            try {
+                              const response = await inventoryService.getProducts({ search: searchTerm, per_page: 50 });
+                              return response.data.map(product => ({
+                                value: product.id,
+                                label: product.name
+                              }));
+                            } catch (error) {
+                              console.error('Product search error:', error);
+                              return [];
+                            }
+                          }}
                         />
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2 w-20">
+                        <input
+                          type="text"
+                          value={item.hsn_code || ''}
+                          onChange={(e) => handleItemChange(index, 'hsn_code', e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
+                          placeholder="HSN"
+                        />
+                      </td>
+                      <td className="px-3 py-2 w-20">
+                        <input
+                          type="text"
+                          value={item.batch_number || ''}
+                          onChange={(e) => handleItemChange(index, 'batch_number', e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
+                          placeholder="Batch"
+                        />
+                      </td>
+                      <td className="px-3 py-2 w-20">
                         <input
                           type="number"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                          className="w-20 px-2 py-1 text-sm border rounded text-center"
+                          value={item.mrp || 0}
+                          readOnly
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center bg-gray-100"
+                          step="0.01"
                         />
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2 w-20">
                         <input
                           type="number"
                           value={item.unit_price}
                           onChange={(e) => handleItemChange(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                          className="w-24 px-2 py-1 text-sm border rounded text-center"
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
                           step="0.01"
                         />
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2 w-16">
                         <input
                           type="number"
-                          value={item.gst_rate}
-                          onChange={(e) => handleItemChange(index, 'gst_rate', parseFloat(e.target.value) || 0)}
-                          className="w-16 px-2 py-1 text-sm border rounded text-center"
-                          step="0.1"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
                         />
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2 w-16">
+                        <input
+                          type="number"
+                          value={item.free_quantity}
+                          onChange={(e) => handleItemChange(index, 'free_quantity', parseFloat(e.target.value) || 0)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
+                        />
+                      </td>
+                      <td className="px-3 py-2 w-16">
                         <input
                           type="number"
                           value={item.discount_percent}
                           onChange={(e) => handleItemChange(index, 'discount_percent', parseFloat(e.target.value) || 0)}
-                          className="w-16 px-2 py-1 text-sm border rounded text-center"
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
                           step="0.1"
                         />
                       </td>
-                      <td className="px-3 py-2 text-sm text-center">{item.total_amount.toFixed(2)}</td>
-                      <td className="px-3 py-2 text-center">
-                        <button type="button" onClick={() => removeItem(index)} className="text-red-600 hover:text-red-800" disabled={items.length === 1}>
-                          <Minus size={16} />
+                      <td className="px-3 py-2 w-16">
+                        <input
+                          type="number"
+                          value={item.gst_rate}
+                          readOnly
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center bg-gray-100"
+                          step="0.1"
+                        />
+                      </td>
+                      <td className="px-3 py-2 w-24 text-sm text-center">{(item.total_amount ?? 0).toFixed(2)}</td>
+                      <td className="px-3 py-2 w-16 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeItem(index)}
+                          className="text-red-600 hover:text-red-800"
+                          disabled={items.length === 1}
+                        >
+                          <Minus className="h-4 w-4" />
                         </button>
                       </td>
                     </tr>
@@ -342,45 +662,77 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ invoice, onCl
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex flex-col md:flex-row justify-end">
             <div className="w-full md:w-1/2 bg-gray-50 p-4 rounded">
+              <h4 className="font-semibold mb-3">Invoice Summary</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>₹{subtotal.toFixed(2)}</span>
+                  <span>{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Discount %:</span>
                   <input
                     type="number"
+                    name="discount_percent"
                     value={formData.discount_percent}
-                    onChange={(e) => setFormData({ ...formData, discount_percent: parseFloat(e.target.value) || 0 })}
-                    className="w-20 px-2 py-1 text-sm border rounded"
+                    onChange={handleInputChange}
+                    className="w-16 px-2 py-1.5 text-sm border border-gray-300 rounded"
                     step="0.1"
                   />
                 </div>
                 <div className="flex justify-between">
                   <span>Discount Amount:</span>
-                  <span>₹{discountAmount.toFixed(2)}</span>
+                  <span>{discountAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Round Off:</span>
+                  <input
+                    type="number"
+                    name="roundoff"
+                    value={formData.roundoff}
+                    onChange={handleInputChange}
+                    className="w-16 px-2 py-1.5 text-sm border border-gray-300 rounded"
+                    step="0.01"
+                  />
                 </div>
                 <div className="flex justify-between font-semibold text-lg border-t pt-2">
                   <span>Total:</span>
-                  <span>₹{finalTotal.toFixed(2)}</span>
+                  <span>{finalTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 mt-6">
-            <button type="button" onClick={onClose} className="px-4 py-2 border rounded hover:bg-gray-50">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 mt-6">
+            <button
+              type="button"
+              onClick={() => {
+                setFormData({
+                  invoice_number: generateInvoiceNumber(),
+                  reference_number: '',
+                  supplier_id: '',
+                  invoice_date: new Date().toISOString().split('T')[0],
+                  payment_term_id: '',
+                  due_date: new Date().toISOString().split('T')[0],
+                  discount_percent: 0,
+                  roundoff: 0
+                });
+                setItems([createEmptyItem()]);
+              }}
+              className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded"
+            >
               Cancel
             </button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-              {invoice ? 'Update' : 'Create'} Invoice
+            <button
+              type="submit"
+              className="px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-secondary rounded"
+            >
+              Save Invoice
             </button>
           </div>
         </form>
-      </div>
+      )}
     </div>
   );
 };

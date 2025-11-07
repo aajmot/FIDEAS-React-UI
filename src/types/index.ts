@@ -597,3 +597,87 @@ export interface Test {
   gst?: number;
   cess?: number;
 }
+
+export interface PaymentTerm {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  days: number;
+  is_active: boolean;
+  is_default: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PurchaseInvoice {
+  id: number;
+  invoice_number: string;
+  reference_number?: string;
+  invoice_date: string;
+  due_date?: string;
+  supplier_id: number;
+  supplier_name?: string;
+  purchase_order_id?: number;
+  payment_term_id?: number;
+  warehouse_id?: number;
+  base_currency_id: number;
+  foreign_currency_id?: number;
+  exchange_rate?: number;
+  cgst_amount_base?: number;
+  sgst_amount_base?: number;
+  igst_amount_base?: number;
+  ugst_amount_base?: number;
+  cess_amount_base?: number;
+  subtotal_base?: number;
+  discount_amount_base?: number;
+  tax_amount_base?: number;
+  total_amount_base: number;
+  subtotal_foreign?: number;
+  discount_amount_foreign?: number;
+  tax_amount_foreign?: number;
+  total_amount_foreign?: number;
+  paid_amount_base?: number;
+  balance_amount_base?: number;
+  status: string;
+  notes?: string;
+  tags?: string[];
+  items?: PurchaseInvoiceItem[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PurchaseInvoiceItem {
+  id?: number;
+  line_no: number;
+  product_id: number;
+  product_name?: string;
+  description?: string;
+  hsn_code?: string;
+  batch_number?: string;
+  serial_numbers?: string;
+  quantity: number;
+  uom?: string;
+  unit_price_base: number;
+  discount_percent?: number;
+  discount_amount_base?: number;
+  taxable_amount_base: number;
+  cgst_rate?: number;
+  cgst_amount_base?: number;
+  sgst_rate?: number;
+  sgst_amount_base?: number;
+  igst_rate?: number;
+  igst_amount_base?: number;
+  ugst_rate?: number;
+  ugst_amount_base?: number;
+  cess_rate?: number;
+  cess_amount_base?: number;
+  tax_amount_base?: number;
+  total_amount_base: number;
+  unit_price_foreign?: number;
+  discount_amount_foreign?: number;
+  taxable_amount_foreign?: number;
+  tax_amount_foreign?: number;
+  total_amount_foreign?: number;
+  landed_cost_per_unit?: number;
+}
