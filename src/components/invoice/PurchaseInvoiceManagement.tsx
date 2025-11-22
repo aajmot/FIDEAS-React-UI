@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { Printer } from 'lucide-react';
 import DataTable from '../common/DataTable';
 import PurchaseInvoiceForm from './PurchaseInvoiceForm';
-import ConfirmationModal from '../common/ConfirmationModal';
+import PurchaseInvoiceView from './PurchaseInvoiceView';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
-import { useConfirmation } from '../../hooks/useConfirmation';
 import { PurchaseInvoice } from '../../types';
 
 const PurchaseInvoiceManagement: React.FC = () => {
@@ -15,8 +15,8 @@ const PurchaseInvoiceManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewingInvoiceId, setViewingInvoiceId] = useState<number | null>(null);
   const { showToast } = useToast();
-  const { confirmationState, showConfirmation, hideConfirmation, handleConfirm } = useConfirmation();
 
   const pageSize = 10;
 
@@ -65,24 +65,15 @@ const PurchaseInvoiceManagement: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const handleDelete = async (invoice: PurchaseInvoice) => {
-    showConfirmation(
-      {
-        title: 'Delete Purchase Invoice',
-        message: `Are you sure you want to delete invoice "${invoice.invoice_number}"? This action cannot be undone.`,
-        confirmText: 'Delete',
-        variant: 'danger'
-      },
-      async () => {
-        try {
-          await api.delete(`/api/v1/inventory/purchase-invoices/${invoice.id}`);
-          showToast('success', 'Invoice deleted successfully');
-          loadInvoices();
-        } catch (error) {
-          showToast('error', 'Failed to delete invoice');
-        }
-      }
-    );
+
+
+  const handlePrint = (invoice: PurchaseInvoice) => {
+    setViewingInvoiceId(invoice.id);
+  };
+
+  const handleBackFromView = () => {
+    setViewingInvoiceId(null);
+    loadInvoices();
   };
 
   const getStatusColor = (status: string) => {
@@ -113,7 +104,13 @@ const PurchaseInvoiceManagement: React.FC = () => {
       key: 'invoice_date',
       label: 'Date',
       render: (value: string) => (
-        <span className="text-xs">{new Date(value).toLocaleDateString()}</span>
+        <span className="text-xs">
+          {new Date(value).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: '2-digit' 
+          })}
+        </span>
       )
     },
     {
@@ -128,7 +125,7 @@ const PurchaseInvoiceManagement: React.FC = () => {
       label: 'Amount',
       render: (value: any) => {
         const amount = typeof value === 'number' ? value : parseFloat(value) || 0;
-        return <span className="text-xs font-medium">₹{amount.toFixed(2)}</span>;
+        return <span className="text-xs font-medium">{amount.toFixed(2)}</span>;
       }
     },
     {
@@ -136,7 +133,11 @@ const PurchaseInvoiceManagement: React.FC = () => {
       label: 'Due Date',
       render: (value: string | undefined) => (
         <span className="text-xs">
-          {value ? new Date(value).toLocaleDateString() : '-'}
+          {value ? new Date(value).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: '2-digit' 
+          }) : '-'}
         </span>
       )
     },
@@ -148,8 +149,31 @@ const PurchaseInvoiceManagement: React.FC = () => {
           {value}
         </span>
       )
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (value: any, row: PurchaseInvoice) => (
+        <div className="flex gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrint(row);
+            }}
+            className="text-gray-600 hover:text-gray-900"
+            title="Print Invoice"
+          >
+            <Printer className="h-4 w-4" />
+          </button>
+        </div>
+      )
     }
   ];
+
+  // If viewing an invoice, show the view component
+  if (viewingInvoiceId !== null) {
+    return <PurchaseInvoiceView invoiceId={viewingInvoiceId} onBack={handleBackFromView} />;
+  }
 
   return (
     <div className="p-3 sm:p-6">
@@ -164,24 +188,12 @@ const PurchaseInvoiceManagement: React.FC = () => {
         title="Purchase Invoices Management"
         columns={columns}
         data={invoices}
-        onDelete={handleDelete}
         loading={loading}
         pageSize={pageSize}
         totalItems={totalItems}
         currentPage={currentPage}
         onPageChange={handlePageChange}
         onSearch={handleSearch}
-      />
-
-      <ConfirmationModal
-        isOpen={confirmationState.isOpen}
-        title={confirmationState.title}
-        message={confirmationState.message}
-        confirmText={confirmationState.confirmText}
-        cancelText={confirmationState.cancelText}
-        variant={confirmationState.variant}
-        onConfirm={handleConfirm}
-        onCancel={hideConfirmation}
       />
     </div>
   );

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
-import SalesInvoiceForm from './SalesInvoiceForm';
+import { Printer } from 'lucide-react';
 import DataTable from '../common/DataTable';
-import { useToast } from '../../context/ToastContext';
+import SalesInvoiceForm from './SalesInvoiceForm';
+import SalesInvoiceView from './SalesInvoiceView';
 import api from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 interface SalesInvoice {
   id: number;
@@ -18,22 +19,63 @@ interface SalesInvoice {
 
 const SalesInvoiceManagement: React.FC = () => {
   const [invoices, setInvoices] = useState<SalesInvoice[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [editingInvoice, setEditingInvoice] = useState<SalesInvoice | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isFormCollapsed, setIsFormCollapsed] = useState(false);
+  const [resetForm, setResetForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewingInvoiceId, setViewingInvoiceId] = useState<number | null>(null);
   const { showToast } = useToast();
 
-  useEffect(() => {
-    fetchInvoices();
-  }, []);
+  const pageSize = 10;
 
-  const fetchInvoices = async () => {
-    setLoading(true);
+  useEffect(() => {
+    loadInvoices();
+  }, [currentPage, searchTerm]);
+
+  const loadInvoices = async () => {
     try {
-      const response = await api.get('/api/v1/invoice/sales-invoices');
+      setLoading(true);
+      const response = await api.get('/api/v1/invoice/sales-invoices', {
+        params: {
+          page: currentPage,
+          per_page: pageSize,
+          search: searchTerm || undefined
+        }
+      });
       const data = response.data?.data || response.data;
-      setInvoices(Array.isArray(data) ? data : []);
+      const invoicesData = Array.isArray(data) ? data : [];
+      
+      // Fetch customers to map customer names
+      try {
+        const customersResponse = await api.get('/api/v1/inventory/customers', {
+          params: { per_page: 1000 }
+        });
+        const customers = customersResponse.data?.data || customersResponse.data || [];
+        
+        // Map customer names and ensure total_amount_base is used
+        const enrichedInvoices = invoicesData.map((invoice: any) => {
+          const customer = customers.find((c: any) => c.id === invoice.customer_id);
+          return {
+            ...invoice,
+            customer_name: customer?.name || `Customer ${invoice.customer_id}`,
+            total_amount: invoice.total_amount_base || invoice.total_amount || 0
+          };
+        });
+        
+        setInvoices(enrichedInvoices);
+      } catch (customerError) {
+        console.error('Failed to fetch customers:', customerError);
+        // Fallback: set invoices without customer names
+        setInvoices(invoicesData.map((invoice: any) => ({
+          ...invoice,
+          customer_name: `Customer ${invoice.customer_id}`,
+          total_amount: invoice.total_amount_base || invoice.total_amount || 0
+        })));
+      }
+      
+      setTotalItems(response.data?.total || 0);
     } catch (error) {
       showToast('error', 'Failed to load invoices');
       setInvoices([]);
@@ -42,32 +84,34 @@ const SalesInvoiceManagement: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Delete this invoice?')) return;
-    try {
-      await api.delete(`/api/v1/invoice/sales-invoices/${id}`);
-      showToast('success', 'Invoice deleted successfully');
-      fetchInvoices();
-    } catch (error: any) {
-      showToast('error', error.response?.data?.detail || 'Failed to delete invoice');
-    }
+  const handleInvoiceSaved = () => {
+    loadInvoices();
+    setResetForm(true);
+    setTimeout(() => setResetForm(false), 100);
+    showToast('success', 'Sales invoice created successfully');
   };
 
-  const handleEdit = (invoice: SalesInvoice) => {
-    setEditingInvoice(invoice);
-    setShowForm(true);
+  const handleToggleCollapse = () => {
+    setIsFormCollapsed(!isFormCollapsed);
   };
 
-  const handleFormClose = () => {
-    setShowForm(false);
-    setEditingInvoice(null);
-    fetchInvoices();
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
-  const filteredInvoices = invoices.filter(inv =>
-    inv.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    inv.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSearch = (search: string) => {
+    setSearchTerm(search);
+    setCurrentPage(1);
+  };
+
+  const handlePrint = (invoice: SalesInvoice) => {
+    setViewingInvoiceId(invoice.id);
+  };
+
+  const handleBackFromView = () => {
+    setViewingInvoiceId(null);
+    loadInvoices();
+  };
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -80,30 +124,60 @@ const SalesInvoiceManagement: React.FC = () => {
   };
 
   const columns = [
-    { key: 'invoice_number', label: 'Invoice #', sortable: true },
-    { 
-      key: 'invoice_date', 
-      label: 'Date', 
-      sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString()
+    { key: 'id', label: 'ID' },
+    {
+      key: 'invoice_number',
+      label: 'Invoice #',
+      render: (value: any, row: SalesInvoice) => (
+        <div>
+          <div className="font-medium text-xs">{row.invoice_number}</div>
+        </div>
+      )
     },
-    { key: 'customer_name', label: 'Customer', sortable: true },
-    { 
-      key: 'total_amount', 
-      label: 'Amount', 
-      sortable: true,
-      render: (value: number) => `₹${value?.toFixed(2) || '0.00'}`
+    {
+      key: 'invoice_date',
+      label: 'Date',
+      render: (value: string) => (
+        <span className="text-xs">
+          {new Date(value).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: '2-digit' 
+          })}
+        </span>
+      )
     },
-    { 
-      key: 'due_date', 
-      label: 'Due Date', 
-      sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString()
+    {
+      key: 'customer_name',
+      label: 'Customer',
+      render: (value: string) => (
+        <span className="text-xs">{value}</span>
+      )
+    },
+    {
+      key: 'total_amount',
+      label: 'Amount',
+      render: (value: any) => {
+        const amount = typeof value === 'number' ? value : parseFloat(value) || 0;
+        return <span className="text-xs font-medium">{amount.toFixed(2)}</span>;
+      }
+    },
+    {
+      key: 'due_date',
+      label: 'Due Date',
+      render: (value: string | undefined) => (
+        <span className="text-xs">
+          {value ? new Date(value).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: '2-digit' 
+          }) : '-'}
+        </span>
+      )
     },
     {
       key: 'status',
       label: 'Status',
-      sortable: true,
       render: (value: string) => (
         <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(value)}`}>
           {value}
@@ -113,56 +187,53 @@ const SalesInvoiceManagement: React.FC = () => {
     {
       key: 'actions',
       label: 'Actions',
-      render: (_: any, invoice: SalesInvoice) => (
+      render: (value: any, row: SalesInvoice) => (
         <div className="flex gap-2">
-          <button onClick={() => handleEdit(invoice)} className="text-blue-600 hover:text-blue-800">
-            <Edit size={18} />
-          </button>
-          <button onClick={() => handleDelete(invoice.id)} className="text-red-600 hover:text-red-800">
-            <Trash2 size={18} />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrint(row);
+            }}
+            className="text-gray-600 hover:text-gray-900"
+            title="Print Invoice"
+          >
+            <Printer className="h-4 w-4" />
           </button>
         </div>
       )
     }
   ];
 
-  if (showForm) {
-    return <SalesInvoiceForm invoice={editingInvoice} onClose={handleFormClose} />;
+  // If viewing an invoice, show the view component
+  if (viewingInvoiceId !== null) {
+    return (
+      <SalesInvoiceView
+        invoiceId={viewingInvoiceId}
+        onBack={() => setViewingInvoiceId(null)}
+      />
+    );
   }
 
   return (
     <div className="p-3 sm:p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Sales Invoices</h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          <Plus size={20} /> New Invoice
-        </button>
-      </div>
+      <SalesInvoiceForm
+        onSave={handleInvoiceSaved}
+        isCollapsed={isFormCollapsed}
+        onToggleCollapse={handleToggleCollapse}
+        resetForm={resetForm}
+      />
 
-      <div className="mb-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-3 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Search by invoice number or customer..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded"
-          />
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow">
-        <DataTable
-          title="Sales Invoices"
-          data={filteredInvoices}
-          columns={columns}
-          loading={loading}
-        />
-      </div>
+      <DataTable
+        title="Sales Invoices Management"
+        columns={columns}
+        data={invoices}
+        loading={loading}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+        onSearch={handleSearch}
+      />
     </div>
   );
 };

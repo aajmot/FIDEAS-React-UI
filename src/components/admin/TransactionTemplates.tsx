@@ -45,6 +45,7 @@ const TransactionTemplates: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accountTypes, setAccountTypes] = useState<any[]>([]);
   const [configurationKeys, setConfigurationKeys] = useState<ConfigurationKey[]>([]);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
@@ -52,6 +53,7 @@ const TransactionTemplates: React.FC = () => {
   useEffect(() => {
     loadTemplates();
     loadAccounts();
+    loadAccountTypes();
     loadConfigurationKeys();
   }, []);
 
@@ -61,6 +63,23 @@ const TransactionTemplates: React.FC = () => {
       setAccounts(response.data || []);
     } catch (error) {
       console.error('Failed to load accounts');
+    }
+  };
+
+  const loadAccountTypes = async () => {
+    try {
+      const response = await adminService.getAccountTypes();
+      setAccountTypes(response.data || []);
+    } catch (error) {
+      console.error('Failed to load account types');
+      // Fallback to default types if API fails
+      setAccountTypes([
+        { value: 'ASSET' },
+        { value: 'LIABILITY' },
+        { value: 'EQUITY' },
+        { value: 'INCOME' },
+        { value: 'EXPENSE' }
+      ]);
     }
   };
 
@@ -227,9 +246,9 @@ const TransactionTemplates: React.FC = () => {
                             Account Type
                           </label>
                           <SearchableDropdown
-                            options={configurationKeys.map(key => ({
-                              value: key.code,
-                              label: key.name
+                            options={accountTypes.map(type => ({
+                              value: type.value,
+                              label: type.value
                             }))}
                             value={rule.account_type}
                             onChange={(value) => handleRuleChange(rule.line_number, 'account_type', value as string)}

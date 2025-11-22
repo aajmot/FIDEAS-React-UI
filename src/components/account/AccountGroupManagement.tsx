@@ -6,6 +6,7 @@ import SearchableDropdown from '../common/SearchableDropdown';
 
 const AccountGroupManagement: React.FC = () => {
   const [groups, setGroups] = useState<any[]>([]);
+  const [accountTypes, setAccountTypes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormCollapsed, setIsFormCollapsed] = useState(false);
   const [editingGroup, setEditingGroup] = useState<any>(null);
@@ -19,6 +20,7 @@ const AccountGroupManagement: React.FC = () => {
 
   useEffect(() => {
     loadGroups();
+    loadAccountTypes();
   }, []);
 
   const loadGroups = async () => {
@@ -30,6 +32,23 @@ const AccountGroupManagement: React.FC = () => {
       showToast('error', 'Failed to load account groups');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAccountTypes = async () => {
+    try {
+      const response = await accountService.getAccountTypes();
+      setAccountTypes(response.data || []);
+    } catch (error) {
+      showToast('error', 'Failed to load account types');
+      // Fallback to default types if API fails
+      setAccountTypes([
+        { value: 'ASSET' },
+        { value: 'LIABILITY' },
+        { value: 'EQUITY' },
+        { value: 'INCOME' },
+        { value: 'EXPENSE' }
+      ]);
     }
   };
 
@@ -167,13 +186,10 @@ const AccountGroupManagement: React.FC = () => {
                   Account Type *
                 </label>
                 <SearchableDropdown
-                  options={[
-                    { value: 'ASSET', label: 'Asset' },
-                    { value: 'LIABILITY', label: 'Liability' },
-                    { value: 'EQUITY', label: 'Equity' },
-                    { value: 'INCOME', label: 'Income' },
-                    { value: 'EXPENSE', label: 'Expense' }
-                  ]}
+                  options={accountTypes.map(type => ({
+                    value: type.value,
+                    label: type.value
+                  }))}
                   value={formData.account_type}
                   onChange={(value) => setFormData(prev => ({ ...prev, account_type: value as string }))}
                   placeholder="Select type..."

@@ -467,6 +467,11 @@ export const adminService = {
     const response = await api.get<BaseResponse>('/api/v1/account/account-masters');
     return response.data;
   },
+
+  getAccountTypes: async (): Promise<BaseResponse> => {
+    const response = await api.get<BaseResponse>('/api/v1/account/account-types');
+    return response.data;
+  },
 };
 
 export const clinicAgencyService = {
@@ -1082,6 +1087,12 @@ export const accountService = {
   
   deleteAccountGroup: async (id: number): Promise<BaseResponse> => {
     const response = await api.delete<BaseResponse>(`/api/v1/account/account-groups/${id}`);
+    return response.data;
+  },
+
+  // Account Types
+  getAccountTypes: async (): Promise<BaseResponse> => {
+    const response = await api.get<BaseResponse>('/api/v1/account/account-types');
     return response.data;
   },
   

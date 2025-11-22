@@ -37,6 +37,16 @@ interface InvoiceItem {
   line_discount_amount: number;
 }
 
+interface PaymentDetail {
+  line_no: number;
+  payment_mode: 'CASH' | 'BANK';
+  account_id: number;
+  bank_account_id?: number;
+  amount_base: number;
+  transaction_reference?: string;
+  description?: string;
+}
+
 interface PurchaseInvoiceFormProps {
   onSave: () => void;
   isCollapsed: boolean;
@@ -78,7 +88,10 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [paymentTerms, setPaymentTerms] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<any[]>([]);
   const [items, setItems] = useState<InvoiceItem[]>([createEmptyItem()]);
+  const [paymentDetails, setPaymentDetails] = useState<PaymentDetail[]>([]);
   
   const generateInvoiceNumber = () => {
     const now = new Date();
@@ -111,6 +124,7 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
     loadSuppliers();
     loadProducts();
     loadPaymentTerms();
+    loadAccounts();
   }, []);
 
   useEffect(() => {
@@ -126,8 +140,39 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
         roundoff: 0
       });
       setItems([createEmptyItem()]);
+      setPaymentDetails([]);
     }
   }, [resetForm]);
+
+  // Update default payment when total changes
+  useEffect(() => {
+    const { finalTotal } = calculateTotals();
+    // Round to 2 decimal places to match display
+    const roundedTotal = Math.round(finalTotal * 100) / 100;
+    
+    if (paymentDetails.length === 0 && roundedTotal > 0 && accounts.length > 0) {
+      // Find default cash account
+      const cashAccount = accounts.find((acc: any) => 
+        acc.code?.startsWith('CASH') || acc.name?.toLowerCase().includes('cash')
+      );
+      
+      // Create default cash payment for full amount
+      setPaymentDetails([{
+        line_no: 1,
+        payment_mode: 'CASH',
+        account_id: cashAccount?.id || 0,
+        amount_base: roundedTotal,
+        description: 'Full payment',
+        transaction_reference: ''
+      }]);
+    } else if (paymentDetails.length === 1 && paymentDetails[0].description === 'Full payment') {
+      // Update the default payment amount if it's still the auto-generated one
+      setPaymentDetails([{
+        ...paymentDetails[0],
+        amount_base: roundedTotal
+      }]);
+    }
+  }, [items, formData.discount_percent, formData.roundoff, accounts]);
 
   const loadSuppliers = async () => {
     try {
@@ -155,6 +200,45 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
     } catch (error) {
       showToast('error', 'Failed to load payment terms');
       setPaymentTerms([]);
+    }
+  };
+
+  const loadAccounts = async () => {
+    try {
+      const response = await api.get('/api/v1/account/account-masters');
+      const accountData = response.data?.data || response.data;
+      const accountList = Array.isArray(accountData) ? accountData : [];
+      setAccounts(accountList);
+      
+      // Filter bank accounts for bank payment mode
+      const banks = accountList.filter((acc: any) => 
+        acc.code?.startsWith('BANK') || acc.account_type?.toLowerCase().includes('bank')
+      );
+      setBankAccounts(banks);
+
+      // Find default cash account
+      const cashAccount = accountList.find((acc: any) => 
+        acc.code?.startsWith('CASH') || acc.name?.toLowerCase().includes('cash')
+      );
+      
+      // Create default payment entry with cash account
+      const { finalTotal } = calculateTotals();
+      // Round to 2 decimal places to match display
+      const roundedTotal = Math.round(finalTotal * 100) / 100;
+      if (cashAccount && roundedTotal > 0) {
+        setPaymentDetails([{
+          line_no: 1,
+          payment_mode: 'CASH',
+          account_id: cashAccount.id,
+          amount_base: roundedTotal,
+          description: 'Full payment',
+          transaction_reference: ''
+        }]);
+      }
+    } catch (error) {
+      showToast('error', 'Failed to load accounts');
+      setAccounts([]);
+      setBankAccounts([]);
     }
   };
 
@@ -274,6 +358,40 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
     }
   };
 
+  const addPaymentDetail = () => {
+    const newPayment: PaymentDetail = {
+      line_no: paymentDetails.length + 1,
+      payment_mode: 'CASH',
+      account_id: 0,
+      amount_base: 0,
+      description: '',
+      transaction_reference: ''
+    };
+    setPaymentDetails([...paymentDetails, newPayment]);
+  };
+
+  const removePaymentDetail = (index: number) => {
+    const updatedPayments = paymentDetails.filter((_, i) => i !== index);
+    // Re-number the line_no
+    const renumbered = updatedPayments.map((payment, idx) => ({
+      ...payment,
+      line_no: idx + 1
+    }));
+    setPaymentDetails(renumbered);
+  };
+
+  const handlePaymentDetailChange = (index: number, field: keyof PaymentDetail, value: any) => {
+    const newPayments = [...paymentDetails];
+    newPayments[index] = { ...newPayments[index], [field]: value };
+    
+    // Clear bank_account_id if payment mode is changed to CASH
+    if (field === 'payment_mode' && value === 'CASH') {
+      newPayments[index].bank_account_id = undefined;
+    }
+    
+    setPaymentDetails(newPayments);
+  };
+
   const calculateTotals = () => {
     const subtotal = items.reduce((sum, item) => sum + (item.total_amount || 0), 0);
     const discountAmount = subtotal * (formData.discount_percent / 100);
@@ -312,7 +430,10 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
         };
       }, { cgst_amount: 0, sgst_amount: 0, total_tax_amount: 0, taxable_amount: 0 });
 
-      const invoiceData = {
+      // Prepare payment details if any
+      const validPaymentDetails = paymentDetails.filter(p => p.account_id > 0 && p.amount_base > 0);
+
+      const invoiceData: any = {
         invoice_number: formData.invoice_number,
         reference_number: formData.reference_number || "",
         supplier_id: Number(formData.supplier_id),
@@ -364,6 +485,27 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
           };
         })
       };
+
+      // Add payment details if present
+      if (validPaymentDetails.length > 0) {
+        invoiceData.payment_details = validPaymentDetails.map(payment => {
+          const paymentDetail: any = {
+            line_no: payment.line_no,
+            payment_mode: payment.payment_mode,
+            account_id: payment.account_id,
+            amount_base: payment.amount_base,
+            description: payment.description || "",
+            transaction_reference: payment.transaction_reference || ""
+          };
+          
+          // Add bank_account_id only for BANK payment mode
+          if (payment.payment_mode === 'BANK' && payment.bank_account_id) {
+            paymentDetail.bank_account_id = payment.bank_account_id;
+          }
+          
+          return paymentDetail;
+        });
+      }
 
       await api.post('/api/v1/inventory/purchase-invoices', invoiceData);
       onSave();
@@ -662,8 +804,9 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-end">
-            <div className="w-full md:w-1/2 bg-gray-50 p-4 rounded">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Side - Invoice Summary */}
+            <div className="bg-gray-50 p-4 rounded">
               <h4 className="font-semibold mb-3">Invoice Summary</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -702,6 +845,87 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
                 </div>
               </div>
             </div>
+
+            {/* Right Side - Payment Details */}
+            <div className="bg-blue-50 p-4 rounded">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-semibold">Payment Details</h4>
+                <button
+                  type="button"
+                  onClick={addPaymentDetail}
+                  className="flex items-center px-2 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add
+                </button>
+              </div>
+              
+              {paymentDetails.length > 0 && (
+                <div className="space-y-3">
+                  {paymentDetails.map((payment, index) => (
+                    <div key={index} className="bg-white p-3 rounded border border-blue-200">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-xs font-medium text-gray-500">Payment #{payment.line_no}</span>
+                        <button
+                          type="button"
+                          onClick={() => removePaymentDetail(index)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Mode</label>
+                            <select
+                              value={payment.payment_mode}
+                              onChange={(e) => handlePaymentDetailChange(index, 'payment_mode', e.target.value)}
+                              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
+                            >
+                              <option value="CASH">CASH</option>
+                              <option value="BANK">BANK</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Amount *</label>
+                            <input
+                              type="number"
+                              value={payment.amount_base}
+                              onChange={(e) => handlePaymentDetailChange(index, 'amount_base', parseFloat(e.target.value) || 0)}
+                              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
+                              step="0.01"
+                              min="0"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                          <input
+                            type="text"
+                            value={payment.description || ''}
+                            onChange={(e) => handlePaymentDetailChange(index, 'description', e.target.value)}
+                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
+                            placeholder="Payment description"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div className="bg-white px-3 py-2 rounded border border-blue-300">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Total Payments:</span>
+                      <span className="text-sm font-semibold text-blue-700">
+                        {paymentDetails.reduce((sum, p) => sum + (p.amount_base || 0), 0).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 mt-6">
@@ -719,6 +943,7 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
                   roundoff: 0
                 });
                 setItems([createEmptyItem()]);
+                setPaymentDetails([]);
               }}
               className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded"
             >
