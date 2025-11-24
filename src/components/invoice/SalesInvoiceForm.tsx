@@ -395,6 +395,7 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
           product_id: item.product_id,
           product_name: item.product_name || '',
           quantity: item.quantity,
+          free_quantity: item.free_quantity,
           uom: 'NOS',
           unit_price_base: item.unit_price,
           unit_cost_base: item.unit_price * 0.7, // Assuming 30% margin

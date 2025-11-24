@@ -176,7 +176,15 @@ const VoucherManagement: React.FC = () => {
     {
       key: 'date',
       label: 'Date',
-      render: (value: string) => new Date(value).toLocaleDateString()
+      render: (value: string) => (
+        <span className="text-xs">
+          {new Date(value).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: '2-digit' 
+          })}
+        </span>
+      )
     },
     {
       key: 'amount',

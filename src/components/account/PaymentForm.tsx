@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import SearchableDropdown from '../common/SearchableDropdown';
 import DatePicker from '../common/DatePicker';
+import FormTextarea from '../common/FormTextarea';
 import { useAuth } from '../../context/AuthContext';
-import { accountService } from '../../services/api';
+import { accountService, inventoryService } from '../../services/api';
 import { Payment } from '../../types';
 
 interface PaymentFormProps {
@@ -39,10 +40,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   };
   
   const [accounts, setAccounts] = useState<any[]>([]);
+  const [parties, setParties] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     payment_number: payment?.payment_number || generatePaymentNumber(),
     payment_mode: payment?.payment_mode || 'PAID',
-    payment_type: payment?.payment_type || 'CASH',
+    payment_type: 'PAYMENT',
+    party_type: 'SUPPLIER',
+    party_id: payment?.party_id || '',
     account_id: payment?.account_id || '',
     amount: payment?.amount || 0,
     payment_date: payment?.payment_date || new Date().toISOString().split('T')[0],
@@ -56,6 +60,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     loadAccounts();
   }, []);
 
+  useEffect(() => {
+    if (formData.party_type) {
+      loadParties(formData.party_type);
+    } else {
+      setParties([]);
+    }
+  }, [formData.party_type]);
+
   const loadAccounts = async () => {
     try {
       const response = await accountService.getAccounts();
@@ -68,12 +80,29 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     }
   };
 
+  const loadParties = async (partyType: string) => {
+    try {
+      if (partyType === 'SUPPLIER') {
+        const response = await inventoryService.getSuppliers({ per_page: 1000 });
+        setParties(response.data || []);
+      } else if (partyType === 'CUSTOMER') {
+        const response = await inventoryService.getCustomers({ per_page: 1000 });
+        setParties(response.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load parties:', error);
+      setParties([]);
+    }
+  };
+
   useEffect(() => {
     if (resetForm && !payment) {
       setFormData({
         payment_number: generatePaymentNumber(),
         payment_mode: 'PAID',
-        payment_type: 'CASH',
+        payment_type: 'PAYMENT',
+        party_type: 'SUPPLIER',
+        party_id: '',
         account_id: '',
         amount: 0,
         payment_date: new Date().toISOString().split('T')[0],
@@ -86,7 +115,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       setFormData({
         payment_number: payment.payment_number,
         payment_mode: payment.payment_mode || 'PAID',
-        payment_type: payment.payment_type,
+        payment_type: 'PAYMENT',
+        party_type: 'SUPPLIER',
+        party_id: payment.party_id || '',
         account_id: payment.account_id || '',
         amount: payment.amount,
         payment_date: payment.payment_date || new Date().toISOString().split('T')[0],
@@ -112,7 +143,15 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       return;
     }
     
-    onSave(formData);
+    // Set date field for API compatibility
+    const paymentDataToSave = {
+      ...formData,
+      payment_type: 'PAYMENT',
+      date: formData.payment_date,
+      description: formData.remarks || formData.reference_number || 'Payment transaction'
+    };
+    
+    onSave(paymentDataToSave);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -154,38 +193,37 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               />
             </div>
 
+
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
-                Payment Mode
+                Party Type
               </label>
               <SearchableDropdown
-                options={[
-                  { value: 'PAID', label: 'Payment (Outgoing)' },
-                  { value: 'RECEIVED', label: 'Receipt (Incoming)' }
-                ]}
-                value={formData.payment_mode}
-                onChange={(value) => setFormData(prev => ({ ...prev, payment_mode: value as string }))}
-                placeholder="Select mode..."
+                options={[{ value: 'SUPPLIER', label: 'Supplier' }]}
+                value={formData.party_type}
+                onChange={() => {}}
+                placeholder="Supplier"
                 multiple={false}
                 searchable={false}
+                disabled={true}
               />
             </div>
 
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
-                Payment Type
+                Party
               </label>
               <SearchableDropdown
-                options={[
-                  { value: 'CASH', label: 'Cash' },
-                  { value: 'BANK', label: 'Bank' },
-                  { value: 'CARD', label: 'Card' }
-                ]}
-                value={formData.payment_type}
-                onChange={(value) => setFormData(prev => ({ ...prev, payment_type: value as string }))}
-                placeholder="Select type..."
+                options={parties.map(party => ({ 
+                  value: party.id, 
+                  label: `${party.name}${party.phone ? ' - ' + party.phone : ''}` 
+                }))}
+                value={formData.party_id}
+                onChange={(value) => setFormData(prev => ({ ...prev, party_id: value as string }))}
+                placeholder={formData.party_type ? `Select ${formData.party_type.toLowerCase()}...` : 'Select party type first...'}
                 multiple={false}
-                searchable={false}
+                searchable={true}
+                disabled={!formData.party_type}
               />
             </div>
 
@@ -266,12 +304,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Remarks
               </label>
-              <textarea
+              <FormTextarea
                 name="remarks"
                 value={formData.remarks}
-                onChange={handleChange}
+                onChange={(value) => setFormData(prev => ({ ...prev, remarks: value }))}
+                placeholder="Enter remarks..."
                 rows={1}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary resize-none overflow-y-auto min-h-[34px] max-h-[34px]"
               />
             </div>
           </div>

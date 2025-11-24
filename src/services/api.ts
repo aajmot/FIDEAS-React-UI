@@ -1044,6 +1044,11 @@ export const accountService = {
     return response.data;
   },
   
+  getPayment: async (id: number): Promise<BaseResponse> => {
+    const response = await api.get<BaseResponse>(`/api/v1/account/payments/${id}`);
+    return response.data;
+  },
+  
   recordPayment: async (paymentData: any): Promise<BaseResponse> => {
     const response = await api.post<BaseResponse>('/api/v1/account/record-payment', paymentData);
     return response.data;

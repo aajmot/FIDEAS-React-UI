@@ -402,6 +402,8 @@ export interface Payment {
   payment_mode?: string;
   payment_method: string;
   payment_date?: string;
+  party_type?: string;
+  party_id?: number;
   account_id?: number;
   reference_type?: string;
   reference_id?: number;
