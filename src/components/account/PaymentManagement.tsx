@@ -178,19 +178,19 @@ const PaymentManagement: React.FC = () => {
         <span className="text-xs">{value || '-'}</span>
       )
     },
+    // {
+    //   key: 'account_name',
+    //   label: 'Account',
+    //   render: (value: string) => (
+    //     <span className="text-xs">{value || '-'}</span>
+    //   )
+    // },
     {
-      key: 'account_name',
-      label: 'Account',
-      render: (value: string) => (
-        <span className="text-xs">{value || '-'}</span>
-      )
-    },
-    {
-      key: 'amount',
+      key: 'total_amount_base',
       label: 'Amount',
       render: (value: any) => {
         const amount = typeof value === 'number' ? value : parseFloat(value) || 0;
-        return <span className="text-xs font-medium">₹ {amount.toFixed(2)}</span>;
+        return <span className="text-xs font-medium">{amount.toFixed(2)}</span>;
       }
     },
     {

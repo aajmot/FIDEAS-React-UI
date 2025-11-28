@@ -100,14 +100,7 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
 
   const [items, setItems] = useState<InvoiceItem[]>([createEmptyItem()]);
 
-  const [paymentDetails, setPaymentDetails] = useState<PaymentDetail[]>([
-    {
-      line_no: 1,
-      payment_mode: 'CASH',
-      amount_base: 0,
-      description: ''
-    }
-  ]);
+  const [paymentDetails, setPaymentDetails] = useState<PaymentDetail[]>([]);
 
   useEffect(() => {
     loadCustomers('');
@@ -119,10 +112,20 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
   // Update default payment amount when total changes
   useEffect(() => {
     const { finalTotal } = calculateTotals();
-    if (paymentDetails.length > 0) {
-      const updatedPayments = [...paymentDetails];
-      updatedPayments[0] = { ...updatedPayments[0], amount_base: finalTotal };
-      setPaymentDetails(updatedPayments);
+    const roundedTotal = Math.round(finalTotal * 100) / 100;
+    
+    if (paymentDetails.length === 0 && roundedTotal > 0) {
+      setPaymentDetails([{
+        line_no: 1,
+        payment_mode: 'CASH',
+        amount_base: roundedTotal,
+        description: ''
+      }]);
+    } else if (paymentDetails.length === 1 && paymentDetails[0].description === 'Full payment') {
+      setPaymentDetails([{
+        ...paymentDetails[0],
+        amount_base: roundedTotal
+      }]);
     }
   }, [items, formData.discount_percent, formData.roundoff]);
 
@@ -139,14 +142,7 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
         roundoff: 0
       });
       setItems([createEmptyItem()]);
-      setPaymentDetails([
-        {
-          line_no: 1,
-          payment_mode: 'CASH',
-          amount_base: 0,
-          description: ''
-        }
-      ]);
+      setPaymentDetails([]);
     }
   }, [resetForm]);
 
@@ -415,6 +411,12 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
           hsn_code: item.hsn_code || undefined,
           batch_number: item.batch_number || undefined,
           description: item.description || undefined
+        })),
+        payment_details: paymentDetails.filter(p => p.amount_base > 0).map(p => ({
+          line_no: p.line_no,
+          payment_mode: p.payment_mode,
+          amount_base: p.amount_base,
+          description: p.description || undefined
         }))
       };
 
