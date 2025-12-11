@@ -32,8 +32,10 @@ export const accountExtensions = {
   getContraVouchers: () => api.get('/api/v1/account/contra'),
   createContra: (data: any) => api.post('/api/v1/account/contra', data),
   getCreditNotes: () => api.get('/api/v1/account/credit-notes'),
+  getCreditNoteById: (id: number) => api.get(`/api/v1/account/credit-notes/${id}`),
   createCreditNote: (data: any) => api.post('/api/v1/account/credit-notes', data),
   getDebitNotes: () => api.get('/api/v1/account/debit-notes'),
+  getDebitNoteById: (id: number) => api.get(`/api/v1/account/debit-notes/${id}`),
   createDebitNote: (data: any) => api.post('/api/v1/account/debit-notes', data)
 };
 

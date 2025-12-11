@@ -13,7 +13,7 @@ const ChartOfAccounts: React.FC = () => {
   const [isFormCollapsed, setIsFormCollapsed] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined);
   const [resetForm, setResetForm] = useState(false);
-  const [viewMode, setViewMode] = useState<'table' | 'tree'>('table');
+
   const { showToast } = useToast();
   const { confirmationState, showConfirmation, hideConfirmation, handleConfirm } = useConfirmation();
 
@@ -34,6 +34,7 @@ const ChartOfAccounts: React.FC = () => {
   };
 
   const handleEdit = (account: Account) => {
+    if (account.is_system_account) return;
     setEditingAccount(account);
   };
 
@@ -66,6 +67,7 @@ const ChartOfAccounts: React.FC = () => {
   };
 
   const handleDelete = async (account: Account) => {
+    if (account.is_system_account) return;
     showConfirmation(
       {
         title: 'Delete Account',
@@ -114,7 +116,7 @@ const ChartOfAccounts: React.FC = () => {
           <span className={`font-semibold ${
             balance > 0 ? 'text-green-600' : balance < 0 ? 'text-red-600' : 'text-gray-500'
           }`}>
-            ₹{Math.abs(balance).toLocaleString()}
+            {Math.abs(balance).toLocaleString()}
             {balance !== 0 && (
               <span className="text-xs ml-1">
                 {balance > 0 ? 'Dr' : 'Cr'}
@@ -134,87 +136,21 @@ const ChartOfAccounts: React.FC = () => {
           {value ? 'Active' : 'Inactive'}
         </span>
       )
+    },
+    {
+      key: 'is_system_account',
+      label: 'System',
+      render: (value: boolean) => (
+        <span className={`px-2 py-1 text-xs rounded-full ${
+          value ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'
+        }`}>
+          {value ? 'Yes' : 'No'}
+        </span>
+      )
     }
   ];
 
-  const renderAccountTree = (groupName: string, accountType: string) => {
-    const groupAccounts = accounts.filter(acc => 
-      acc.account_group_name === groupName && acc.account_type === accountType
-    );
-    
-    if (groupAccounts.length === 0) return null;
-    
-    return (
-      <div key={groupName} className="mb-4">
-        <div className="bg-gray-100 px-4 py-2 font-semibold text-sm">
-          {groupName}
-        </div>
-        {groupAccounts.map(account => (
-          <div 
-            key={account.id}
-            className="flex items-center justify-between px-6 py-2 border-b hover:bg-gray-50 cursor-pointer"
-            onClick={() => handleEdit(account)}
-          >
-            <div className="flex items-center space-x-3">
-              <span className="text-xs text-gray-500 w-16">{account.code}</span>
-              <span className="text-sm">{account.name}</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className={`text-sm font-semibold ${
-                (account.current_balance || 0) > 0 ? 'text-green-600' : 
-                (account.current_balance || 0) < 0 ? 'text-red-600' : 'text-gray-500'
-              }`}>
-                {Math.abs(account.current_balance || 0).toLocaleString()}
-                {(account.current_balance || 0) !== 0 && (
-                  <span className="text-xs ml-1">
-                    {(account.current_balance || 0) > 0 ? 'Dr' : 'Cr'}
-                  </span>
-                )}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-  
-  const renderTreeView = () => {
-    const accountTypes = ['ASSET', 'LIABILITY', 'EQUITY', 'INCOME', 'EXPENSE'];
-    const uniqueGroups = Array.from(new Set(accounts.map(acc => acc.account_group_name).filter(Boolean)));
-    
-    return (
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Account Hierarchy</h2>
-        </div>
-        <div className="p-4">
-          {accountTypes.map(type => {
-            const typeGroups = uniqueGroups.filter(group => 
-              accounts.some(acc => acc.account_group_name === group && acc.account_type === type)
-            );
-            
-            if (typeGroups.length === 0) return null;
-            
-            return (
-              <div key={type} className="mb-6">
-                <div className={`px-4 py-2 font-bold text-white rounded-t ${
-                  type === 'ASSET' ? 'bg-blue-600' :
-                  type === 'LIABILITY' ? 'bg-red-600' :
-                  type === 'EQUITY' ? 'bg-purple-600' :
-                  type === 'INCOME' ? 'bg-green-600' : 'bg-orange-600'
-                }`}>
-                  {type}
-                </div>
-                <div className="border border-t-0 rounded-b">
-                  {typeGroups.map(group => group && renderAccountTree(group, type))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
+
 
   return (
     <div className="p-3 sm:p-6">
@@ -227,46 +163,18 @@ const ChartOfAccounts: React.FC = () => {
         resetForm={resetForm}
       />
       
-      <div className="mb-4 flex justify-end">
-        <div className="inline-flex rounded-md shadow-sm" role="group">
-          <button
-            type="button"
-            onClick={() => setViewMode('table')}
-            className={`px-4 py-2 text-sm font-medium border ${
-              viewMode === 'table' 
-                ? 'bg-primary text-white border-primary' 
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            } rounded-l-lg`}
-          >
-            Table View
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode('tree')}
-            className={`px-4 py-2 text-sm font-medium border-t border-b border-r ${
-              viewMode === 'tree' 
-                ? 'bg-primary text-white border-primary' 
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            } rounded-r-lg`}
-          >
-            Hierarchy View
-          </button>
-        </div>
-      </div>
-      
-      {viewMode === 'table' ? (
-          <DataTable
-          title="Chart of Accounts"
-          columns={columns}
-          data={accounts}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          loading={loading}
-        />
-      ) : (
-        renderTreeView()
-      )}
-      
+      <DataTable
+        title="Chart of Accounts"
+        columns={columns}
+        data={accounts}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        canEdit={(row) => !row.is_system_account}
+        canDelete={(row) => !row.is_system_account}
+        loading={loading}
+        onRefresh={loadAccounts}
+      />
+
       <ConfirmationModal
         isOpen={confirmationState.isOpen}
         title={confirmationState.title}

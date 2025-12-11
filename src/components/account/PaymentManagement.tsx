@@ -31,7 +31,7 @@ const PaymentManagement: React.FC = () => {
         page: currentPage,
         per_page: pageSize,
         search: searchTerm || undefined,
-        payment_mode: 'PAID'
+        payment_type: 'PAYMENT'
       });
       
       const paymentsData = Array.isArray(response.data) ? response.data : [];

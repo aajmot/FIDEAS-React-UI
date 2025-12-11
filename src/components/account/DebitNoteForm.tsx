@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Minus } from 'lucide-react';
 import SearchableDropdown from '../common/SearchableDropdown';
 import DatePicker from '../common/DatePicker';
 import { inventoryService } from '../../services/api';
@@ -17,6 +17,7 @@ interface DebitNoteFormProps {
 const DebitNoteForm: React.FC<DebitNoteFormProps> = ({ onSave, isCollapsed, onToggleCollapse, resetForm }) => {
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [purchaseInvoices, setPurchaseInvoices] = useState<any[]>([]);
   const { showToast } = useToast();
   const { user } = useAuth();
 
@@ -30,15 +31,52 @@ const DebitNoteForm: React.FC<DebitNoteFormProps> = ({ onSave, isCollapsed, onTo
     note_number: generateNoteNumber(),
     note_date: new Date().toISOString().split('T')[0],
     supplier_id: 0,
+    original_invoice_id: 0,
     original_invoice_number: '',
     reason: '',
-    items: [{ product_id: 0, quantity: '', rate: '', tax_rate: 0, amount: 0 }]
+    items: [{ 
+      line_no: 1,
+      product_id: 0,
+      product_name: '',
+      hsn_code: '',
+      batch_number: '',
+      quantity: 0,
+      free_quantity: 0,
+      unit_price_base: 0,
+      discount_percent: 0,
+      taxable_amount_base: 0,
+      cgst_rate: 0,
+      cgst_amount_base: 0,
+      sgst_rate: 0,
+      sgst_amount_base: 0,
+      igst_rate: 0,
+      igst_amount_base: 0,
+      ugst_rate: 0,
+      ugst_amount_base: 0,
+      tax_amount_base: 0,
+      total_amount_base: 0
+    }]
   });
 
   useEffect(() => {
     loadSuppliers();
     loadProducts();
   }, []);
+
+  useEffect(() => {
+    if (formData.supplier_id) {
+      loadPurchaseInvoices(formData.supplier_id);
+    } else {
+      setPurchaseInvoices([]);
+    }
+  }, [formData.supplier_id]);
+
+  useEffect(() => {
+    if (formData.original_invoice_id && formData.original_invoice_id > 0) {
+      loadInvoiceItems(formData.original_invoice_id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.original_invoice_id]);
 
   useEffect(() => {
     if (resetForm) {
@@ -60,10 +98,87 @@ const DebitNoteForm: React.FC<DebitNoteFormProps> = ({ onSave, isCollapsed, onTo
     } catch (error) {}
   };
 
+  const loadPurchaseInvoices = async (supplierId: number) => {
+    try {
+      const response = await inventoryService.getPurchaseInvoices({ supplier_id: supplierId, per_page: 1000 });
+      const invoices: any = response.data;
+      setPurchaseInvoices(Array.isArray(invoices) ? invoices : invoices?.data || []);
+    } catch (error) {
+      setPurchaseInvoices([]);
+    }
+  };
+
+  const loadInvoiceItems = async (invoiceId: number) => {
+    try {
+      const response = await inventoryService.getPurchaseInvoiceById(invoiceId);
+      const invoice: any = response;
+      
+      if (invoice?.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
+        const mappedItems = invoice.items.map((item: any, idx: number) => {
+          let hsn_code = item.hsn_code || '';
+          
+          if (!hsn_code && item.product_id) {
+            const product = products.find(p => p.id === item.product_id);
+            if (product) {
+              hsn_code = product.hsn_code || '';
+            }
+          }
+          
+          return {
+            line_no: idx + 1,
+            product_id: item.product_id || 0,
+            product_name: item.product_name || '',
+            hsn_code: hsn_code,
+            batch_number: item.batch_number || '',
+            quantity: parseFloat(item.quantity) || 0,
+            free_quantity: parseFloat(item.free_quantity) || 0,
+            unit_price_base: parseFloat(item.unit_price_base) || 0,
+            discount_percent: parseFloat(item.discount_percent) || 0,
+            taxable_amount_base: parseFloat(item.taxable_amount_base) || 0,
+            cgst_rate: parseFloat(item.cgst_rate) || 0,
+            cgst_amount_base: parseFloat(item.cgst_amount_base) || 0,
+            sgst_rate: parseFloat(item.sgst_rate) || 0,
+            sgst_amount_base: parseFloat(item.sgst_amount_base) || 0,
+            igst_rate: parseFloat(item.igst_rate) || 0,
+            igst_amount_base: parseFloat(item.igst_amount_base) || 0,
+            ugst_rate: parseFloat(item.ugst_rate) || 0,
+            ugst_amount_base: parseFloat(item.ugst_amount_base) || 0,
+            tax_amount_base: parseFloat(item.tax_amount_base) || 0,
+            total_amount_base: parseFloat(item.total_amount_base) || 0
+          };
+        });
+        setFormData(prev => ({ ...prev, items: mappedItems }));
+      }
+    } catch (error: any) {
+      showToast('error', error.response?.data?.detail || 'Failed to load invoice items');
+    }
+  };
+
   const addItem = () => {
     setFormData(prev => ({
       ...prev,
-      items: [...prev.items, { product_id: 0, quantity: '', rate: '', tax_rate: 0, amount: 0 }]
+      items: [...prev.items, { 
+        line_no: prev.items.length + 1,
+        product_id: 0,
+        product_name: '',
+        hsn_code: '',
+        batch_number: '',
+        quantity: 0,
+        free_quantity: 0,
+        unit_price_base: 0,
+        discount_percent: 0,
+        taxable_amount_base: 0,
+        cgst_rate: 0,
+        cgst_amount_base: 0,
+        sgst_rate: 0,
+        sgst_amount_base: 0,
+        igst_rate: 0,
+        igst_amount_base: 0,
+        ugst_rate: 0,
+        ugst_amount_base: 0,
+        tax_amount_base: 0,
+        total_amount_base: 0
+      }]
     }));
   };
 
@@ -82,19 +197,61 @@ const DebitNoteForm: React.FC<DebitNoteFormProps> = ({ onSave, isCollapsed, onTo
     const items = [...formData.items];
     items[index] = { ...items[index], [field]: value };
     
-    if (field === 'quantity' || field === 'rate') {
-      const qty = parseFloat(items[index].quantity) || 0;
-      const rate = parseFloat(items[index].rate) || 0;
-      items[index].amount = qty * rate;
+    if (field === 'product_id') {
+      const product = products.find(p => p.id === Number(value));
+      if (product) {
+        items[index].product_name = product.name || '';
+        items[index].hsn_code = product.hsn_code || '';
+        items[index].unit_price_base = product.cost_price || product.selling_price || 0;
+        const gstRate = product.gst_rate || 0;
+        items[index].cgst_rate = gstRate / 2;
+        items[index].sgst_rate = gstRate / 2;
+        items[index].igst_rate = 0;
+        items[index].ugst_rate = 0;
+      }
+    }
+    
+    if (field === 'product_id' || field === 'quantity' || field === 'unit_price_base' || field === 'discount_percent' || field === 'cgst_rate' || field === 'sgst_rate' || field === 'igst_rate' || field === 'ugst_rate') {
+      const qty = parseFloat(String(items[index].quantity)) || 0;
+      const rate = parseFloat(String(items[index].unit_price_base)) || 0;
+      const discountPercent = parseFloat(String(items[index].discount_percent)) || 0;
+      
+      const baseAmount = qty * rate;
+      const discountAmount = baseAmount * (discountPercent / 100);
+      const taxableAmount = baseAmount - discountAmount;
+      
+      const cgstRate = parseFloat(String(items[index].cgst_rate)) || 0;
+      const sgstRate = parseFloat(String(items[index].sgst_rate)) || 0;
+      const igstRate = parseFloat(String(items[index].igst_rate)) || 0;
+      const ugstRate = parseFloat(String(items[index].ugst_rate)) || 0;
+      
+      const cgstAmount = (taxableAmount * cgstRate) / 100;
+      const sgstAmount = (taxableAmount * sgstRate) / 100;
+      const igstAmount = (taxableAmount * igstRate) / 100;
+      const ugstAmount = (taxableAmount * ugstRate) / 100;
+      const taxAmount = cgstAmount + sgstAmount + igstAmount + ugstAmount;
+      
+      items[index].taxable_amount_base = taxableAmount;
+      items[index].cgst_amount_base = cgstAmount;
+      items[index].sgst_amount_base = sgstAmount;
+      items[index].igst_amount_base = igstAmount;
+      items[index].ugst_amount_base = ugstAmount;
+      items[index].tax_amount_base = taxAmount;
+      items[index].total_amount_base = taxableAmount + taxAmount;
     }
     
     setFormData(prev => ({ ...prev, items }));
   };
 
   const calculateTotals = () => {
-    const subtotal = formData.items.reduce((sum: number, item: any) => sum + item.amount, 0);
-    const tax_amount = formData.items.reduce((sum: number, item: any) => sum + (item.amount * item.tax_rate / 100), 0);
-    return { subtotal, tax_amount, total: subtotal + tax_amount };
+    const subtotal = formData.items.reduce((sum: number, item: any) => sum + (item.taxable_amount_base || 0), 0);
+    const cgst_amount = formData.items.reduce((sum: number, item: any) => sum + (item.cgst_amount_base || 0), 0);
+    const sgst_amount = formData.items.reduce((sum: number, item: any) => sum + (item.sgst_amount_base || 0), 0);
+    const igst_amount = formData.items.reduce((sum: number, item: any) => sum + (item.igst_amount_base || 0), 0);
+    const ugst_amount = formData.items.reduce((sum: number, item: any) => sum + (item.ugst_amount_base || 0), 0);
+    const tax_amount = cgst_amount + sgst_amount + igst_amount + ugst_amount;
+    const total = formData.items.reduce((sum: number, item: any) => sum + (item.total_amount_base || 0), 0);
+    return { subtotal, cgst_amount, sgst_amount, igst_amount, ugst_amount, tax_amount, total };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,24 +262,44 @@ const DebitNoteForm: React.FC<DebitNoteFormProps> = ({ onSave, isCollapsed, onTo
       return;
     }
 
-    if (formData.items.some((item: any) => !item.product_id || !item.quantity || !item.rate)) {
-      showToast('error', 'Please fill all item details');
+    const validItems = formData.items.filter((item: any) => item.product_id && item.quantity && item.unit_price_base);
+    if (validItems.length === 0) {
+      showToast('error', 'Please add at least one valid item');
       return;
     }
 
     try {
-      const { subtotal, tax_amount, total } = calculateTotals();
+      const { subtotal, cgst_amount, sgst_amount, igst_amount, ugst_amount, tax_amount, total } = calculateTotals();
       await accountExtensions.createDebitNote({
-        ...formData,
-        subtotal,
-        tax_amount,
-        total_amount: total
+        note_number: formData.note_number,
+        note_date: formData.note_date,
+        supplier_id: formData.supplier_id,
+        original_invoice_number: formData.original_invoice_number || null,
+        reason: formData.reason,
+        status: "POSTED",
+        subtotal_base: subtotal,
+        cgst_amount_base: cgst_amount,
+        sgst_amount_base: sgst_amount,
+        igst_amount_base: igst_amount,
+        ugst_amount_base: ugst_amount,
+        tax_amount_base: tax_amount,
+        total_amount_base: total,
+        items: validItems
       });
       showToast('success', 'Debit note created successfully');
       onSave();
       resetFormData();
     } catch (error: any) {
-      showToast('error', error.response?.data?.detail || 'Failed to create debit note');
+      const detail = error.response?.data?.detail;
+      let errorMessage = 'Failed to create debit note';
+      
+      if (typeof detail === 'string') {
+        errorMessage = detail;
+      } else if (Array.isArray(detail)) {
+        errorMessage = detail.map((err: any) => err.msg || JSON.stringify(err)).join(', ');
+      }
+      
+      showToast('error', errorMessage);
     }
   };
 
@@ -131,13 +308,35 @@ const DebitNoteForm: React.FC<DebitNoteFormProps> = ({ onSave, isCollapsed, onTo
       note_number: generateNoteNumber(),
       note_date: new Date().toISOString().split('T')[0],
       supplier_id: 0,
+      original_invoice_id: 0,
       original_invoice_number: '',
       reason: '',
-      items: [{ product_id: 0, quantity: '', rate: '', tax_rate: 0, amount: 0 }]
+      items: [{ 
+        line_no: 1,
+        product_id: 0,
+        product_name: '',
+        hsn_code: '',
+        batch_number: '',
+        quantity: 0,
+        free_quantity: 0,
+        unit_price_base: 0,
+        discount_percent: 0,
+        taxable_amount_base: 0,
+        cgst_rate: 0,
+        cgst_amount_base: 0,
+        sgst_rate: 0,
+        sgst_amount_base: 0,
+        igst_rate: 0,
+        igst_amount_base: 0,
+        ugst_rate: 0,
+        ugst_amount_base: 0,
+        tax_amount_base: 0,
+        total_amount_base: 0
+      }]
     });
   };
 
-  const { subtotal, tax_amount, total } = calculateTotals();
+  const { subtotal, cgst_amount, sgst_amount, igst_amount, ugst_amount, tax_amount, total } = calculateTotals();
 
   return (
     <div className="bg-white rounded-lg shadow mb-6">
@@ -169,9 +368,21 @@ const DebitNoteForm: React.FC<DebitNoteFormProps> = ({ onSave, isCollapsed, onTo
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Original Invoice No</label>
-              <input type="text" value={formData.original_invoice_number}
-                onChange={(e) => setFormData(prev => ({ ...prev, original_invoice_number: e.target.value }))}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary" />
+              <SearchableDropdown 
+                options={purchaseInvoices.map(inv => ({ value: inv.id, label: `${inv.invoice_number} - ₹${parseFloat(inv.total_amount_base || '0').toFixed(2)}` }))}
+                value={formData.original_invoice_id} 
+                onChange={(val) => {
+                  const selectedInvoice = purchaseInvoices.find(inv => inv.id === val);
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    original_invoice_id: val as number,
+                    original_invoice_number: selectedInvoice?.invoice_number || ''
+                  }));
+                }}
+                placeholder={formData.supplier_id ? "Select invoice..." : "Select supplier first..."} 
+                multiple={false} 
+                searchable={true}
+                disabled={!formData.supplier_id} />
             </div>
             <div className="sm:col-span-2">
               <label className="block text-xs font-medium text-gray-700 mb-1">Reason</label>
@@ -190,45 +401,75 @@ const DebitNoteForm: React.FC<DebitNoteFormProps> = ({ onSave, isCollapsed, onTo
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="border border-gray-200" style={{ minWidth: '600px', width: '100%' }}>
+              <table className="border border-gray-200" style={{ minWidth: '1200px', width: '100%' }}>
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-left" style={{ minWidth: '180px' }}>Product *</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>Qty *</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '90px' }}>Rate *</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>Tax %</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '90px' }}>Amount</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-left" style={{ minWidth: '180px' }}>Product</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>HSN</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>Batch</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>Price</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Qty</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Free</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Disc%</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>GST%</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>Total</th>
                     <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {formData.items.map((item: any, index: number) => (
                     <tr key={index} className="border-t">
-                      <td className="px-2 py-2" style={{ minWidth: '180px' }}>
+                      <td className="px-2 py-2">
                         <SearchableDropdown options={products.map(p => ({ value: p.id, label: p.name }))}
                           value={item.product_id} onChange={(val) => updateItem(index, 'product_id', val)}
-                          placeholder="Select..." multiple={false} searchable={true} />
+                          placeholder="Select product..." multiple={false} searchable={true} className="w-full" />
                       </td>
                       <td className="px-2 py-2">
-                        <input type="number" step="0.01" value={item.quantity}
-                          onChange={(e) => updateItem(index, 'quantity', e.target.value)}
-                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center" />
+                        <input type="text" value={item.hsn_code || ''}
+                          onChange={(e) => updateItem(index, 'hsn_code', e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center" placeholder="HSN" />
                       </td>
                       <td className="px-2 py-2">
-                        <input type="number" step="0.01" value={item.rate}
-                          onChange={(e) => updateItem(index, 'rate', e.target.value)}
-                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center" />
+                        <input type="text" value={item.batch_number || ''}
+                          onChange={(e) => updateItem(index, 'batch_number', e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center" placeholder="Batch" />
                       </td>
                       <td className="px-2 py-2">
-                        <input type="number" step="0.01" value={item.tax_rate}
-                          onChange={(e) => updateItem(index, 'tax_rate', e.target.value)}
-                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center" />
+                        <input type="number" value={item.unit_price_base} step="0.01"
+                          onChange={(e) => updateItem(index, 'unit_price_base', parseFloat(e.target.value) || 0)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center" placeholder="0.00" />
                       </td>
-                      <td className="px-2 py-2 text-sm text-center font-medium">₹{item.amount.toFixed(2)}</td>
+                      <td className="px-2 py-2">
+                        <input type="number" value={item.quantity}
+                          onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center" placeholder="0" />
+                      </td>
+                      <td className="px-2 py-2">
+                        <input type="number" value={item.free_quantity}
+                          onChange={(e) => updateItem(index, 'free_quantity', parseFloat(e.target.value) || 0)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center" placeholder="0" />
+                      </td>
+                      <td className="px-2 py-2">
+                        <input type="number" value={item.discount_percent} step="0.1"
+                          onChange={(e) => updateItem(index, 'discount_percent', parseFloat(e.target.value) || 0)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center" placeholder="0" />
+                      </td>
+                      <td className="px-2 py-2">
+                        <input type="number" value={(item.cgst_rate + item.sgst_rate + item.igst_rate + item.ugst_rate) || 0} step="0.1"
+                          onChange={(e) => {
+                            const gstRate = parseFloat(e.target.value) || 0;
+                            updateItem(index, 'cgst_rate', gstRate / 2);
+                            updateItem(index, 'sgst_rate', gstRate / 2);
+                            updateItem(index, 'igst_rate', 0);
+                            updateItem(index, 'ugst_rate', 0);
+                          }}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center" placeholder="0" />
+                      </td>
+                      <td className="px-2 py-2 text-sm text-center font-medium">{(item.total_amount_base || 0).toFixed(2)}</td>
                       <td className="px-2 py-2 text-center">
                         <button type="button" onClick={() => removeItem(index)}
-                          className="text-red-600 hover:text-red-800">
-                          <Trash2 className="h-4 w-4" />
+                          className="text-red-600 hover:text-red-800" disabled={formData.items.length === 1}>
+                          <Minus className="h-4 w-4" />
                         </button>
                       </td>
                     </tr>
@@ -247,8 +488,32 @@ const DebitNoteForm: React.FC<DebitNoteFormProps> = ({ onSave, isCollapsed, onTo
                     <span>Subtotal:</span>
                     <span>₹{subtotal.toFixed(2)}</span>
                   </div>
+                  {cgst_amount > 0 && (
+                    <div className="flex justify-between">
+                      <span>CGST:</span>
+                      <span>₹{cgst_amount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {sgst_amount > 0 && (
+                    <div className="flex justify-between">
+                      <span>SGST:</span>
+                      <span>₹{sgst_amount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {igst_amount > 0 && (
+                    <div className="flex justify-between">
+                      <span>IGST:</span>
+                      <span>₹{igst_amount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {ugst_amount > 0 && (
+                    <div className="flex justify-between">
+                      <span>UGST:</span>
+                      <span>₹{ugst_amount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
-                    <span>Tax:</span>
+                    <span>Total Tax:</span>
                     <span>₹{tax_amount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-base border-t pt-2">

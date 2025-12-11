@@ -339,6 +339,7 @@ export interface Account {
   current_balance?: number;
   is_active: boolean;
   balance: number;
+  is_system_account?: boolean;
 }
 
 export interface JournalEntry {

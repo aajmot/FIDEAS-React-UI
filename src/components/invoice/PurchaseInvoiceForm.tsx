@@ -6,6 +6,7 @@ import { inventoryService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import api from '../../services/api';
 import { Supplier, Product } from '../../types';
+import { roundAmountFields } from '../../utils/numberUtils';
 
 interface InvoiceItem {
   product_id: number;
@@ -172,7 +173,7 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
         amount_base: roundedTotal
       }]);
     }
-  }, [items, formData.discount_percent, formData.roundoff, accounts]);
+  }, [items, formData.discount_percent, accounts]);
 
   const loadSuppliers = async () => {
     try {
@@ -393,9 +394,10 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
   };
 
   const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + (item.total_amount || 0), 0);
+    const subtotal = items.reduce((sum, item) => sum + (item.taxable_amount || 0), 0);
+    const taxAmount = items.reduce((sum, item) => sum + (item.total_tax_amount || 0), 0);
     const discountAmount = subtotal * (formData.discount_percent / 100);
-    const finalTotal = subtotal - discountAmount + formData.roundoff;
+    const finalTotal = subtotal + taxAmount - discountAmount;
     return { subtotal, discountAmount, finalTotal };
   };
 
@@ -441,7 +443,7 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
         payment_term_id: formData.payment_term_id ? Number(formData.payment_term_id) : undefined,
         due_date: formData.due_date ? new Date(formData.due_date).toISOString() : undefined,
         base_currency_id: 1,
-        subtotal_base: subtotal,
+        subtotal_base: totalTaxes.taxable_amount,
         discount_percent_base: formData.discount_percent,
         discount_amount_base: discountAmount,
         cgst_amount_base: totalTaxes.cgst_amount,
@@ -507,7 +509,8 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
         });
       }
 
-      await api.post('/api/v1/inventory/purchase-invoices', invoiceData);
+      const roundedInvoiceData = roundAmountFields(invoiceData);
+      await api.post('/api/v1/inventory/purchase-invoices', roundedInvoiceData);
       onSave();
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Failed to create purchase invoice';
@@ -806,42 +809,24 @@ const PurchaseInvoiceForm: React.FC<PurchaseInvoiceFormProps> = ({ onSave, isCol
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Side - Invoice Summary */}
-            <div className="bg-gray-50 p-4 rounded">
+            <div className="bg-blue-50 p-4 rounded">
               <h4 className="font-semibold mb-3">Invoice Summary</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>{subtotal.toFixed(2)}</span>
+                  <span className="font-medium">{subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between">
                   <span>Discount %:</span>
-                  <input
-                    type="number"
-                    name="discount_percent"
-                    value={formData.discount_percent}
-                    onChange={handleInputChange}
-                    className="w-16 px-2 py-1.5 text-sm border border-gray-300 rounded"
-                    step="0.1"
-                  />
+                  <span className="font-medium">0.00%</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Discount Amount:</span>
-                  <span>{discountAmount.toFixed(2)}</span>
+                  <span className="font-medium text-red-600">-{discountAmount.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Round Off:</span>
-                  <input
-                    type="number"
-                    name="roundoff"
-                    value={formData.roundoff}
-                    onChange={handleInputChange}
-                    className="w-16 px-2 py-1.5 text-sm border border-gray-300 rounded"
-                    step="0.01"
-                  />
-                </div>
-                <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                <div className="flex justify-between font-semibold text-lg border-t border-blue-200 pt-2">
                   <span>Total:</span>
-                  <span>{finalTotal.toFixed(2)}</span>
+                  <span className="text-blue-600">{finalTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>

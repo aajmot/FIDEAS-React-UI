@@ -101,8 +101,10 @@ const StockTransferManagement: React.FC = () => {
       sortable: true,
       render: (value: string) => (
         <span className={`px-2 py-1 text-xs rounded-full ${
-          value === 'completed' ? 'bg-green-100 text-green-800' :
-          value === 'reversed' ? 'bg-red-100 text-red-800' :
+          value === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+          value === 'CANCELLED' ? 'bg-red-100 text-red-800' :
+          value === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-800' :
+          value === 'APPROVED' ? 'bg-purple-100 text-purple-800' :
           'bg-yellow-100 text-yellow-800'
         }`}>
           {value}

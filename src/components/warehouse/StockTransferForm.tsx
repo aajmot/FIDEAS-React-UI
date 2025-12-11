@@ -334,14 +334,15 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Transfer Type</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Transfer Type *</label>
               <select
                 value={formData.transfer_type}
                 onChange={(e) => setFormData({ ...formData, transfer_type: e.target.value })}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
               >
                 <option value="INTERNAL">Internal</option>
-                <option value="EXTERNAL">External</option>
+                <option value="INTERCOMPANY">Intercompany</option>
+                <option value="RETURN">Return</option>
               </select>
             </div>
 
@@ -353,8 +354,10 @@ const StockTransferForm: React.FC<StockTransferFormProps> = ({ onSave, isCollaps
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
               >
                 <option value="DRAFT">Draft</option>
-                <option value="PENDING">Pending</option>
+                <option value="APPROVED">Approved</option>
+                <option value="IN_TRANSIT">In Transit</option>
                 <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
               </select>
             </div>
 

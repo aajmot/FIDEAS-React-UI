@@ -31,7 +31,7 @@ const ReceiptManagement: React.FC = () => {
         page: currentPage,
         per_page: pageSize,
         search: searchTerm || undefined,
-        payment_mode: 'RECEIVED'
+        payment_type: 'RECEIPT'
       });
       
       const receiptsData = Array.isArray(response.data) ? response.data : [];
@@ -253,8 +253,8 @@ const ReceiptManagement: React.FC = () => {
 
   // Create a custom payment form with default payment_mode as RECEIVED and party_type as CUSTOMER
   const ReceiptForm = (props: any) => {
-    const defaultPayment = { payment_mode: 'RECEIVED', party_type: 'CUSTOMER' };
-    return <PaymentForm {...props} payment={defaultPayment} />;
+    const defaultPayment = { payment_mode: 'RECEIVED', party_type: 'CUSTOMER', payment_type: 'RECEIPT' };
+    return <PaymentForm {...props} payment={defaultPayment} isReceipt={true} />;
   };
 
   return (

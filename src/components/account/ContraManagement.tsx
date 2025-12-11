@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Printer } from 'lucide-react';
 import DataTable from '../common/DataTable';
 import SearchableDropdown from '../common/SearchableDropdown';
 import DatePicker from '../common/DatePicker';
 import FormTextarea from '../common/FormTextarea';
+import ContraView from './ContraView';
 import { accountService } from '../../services/api';
 import { accountExtensions } from '../../services/apiExtensions';
 import { useToast } from '../../context/ToastContext';
@@ -14,6 +15,7 @@ const ContraManagement: React.FC = () => {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormCollapsed, setIsFormCollapsed] = useState(false);
+  const [selectedContraId, setSelectedContraId] = useState<number | null>(null);
   const { user } = useAuth();
   const { showToast } = useToast();
 
@@ -25,8 +27,9 @@ const ContraManagement: React.FC = () => {
     const hh = String(now.getHours()).padStart(2, '0');
     const min = String(now.getMinutes()).padStart(2, '0');
     const ss = String(now.getSeconds()).padStart(2, '0');
+    const fff = String(now.getMilliseconds()).padStart(3, '0');
     const tenantId = user?.tenant_id || 1;
-    return `CNT-${tenantId}${dd}${mm}${yyyy}${hh}${min}${ss}`;
+    return `CNTR-${tenantId}${dd}${mm}${yyyy}${hh}${min}${ss}${fff}`;
   };
 
   const [formData, setFormData] = useState({
@@ -47,7 +50,7 @@ const ContraManagement: React.FC = () => {
     try {
       setLoading(true);
       const response = await accountExtensions.getContraVouchers();
-      setContras(response.data);
+      setContras(response.data?.data || []);
     } catch (error: any) {
       showToast('error', error.response?.data?.detail || 'Failed to load contra vouchers');
     } finally {
@@ -58,10 +61,8 @@ const ContraManagement: React.FC = () => {
   const loadAccounts = async () => {
     try {
       const response = await accountService.getAccounts();
-      const cashBankAccounts = response.data.filter((acc: any) => 
-        acc.account_type === 'ASSET' && (acc.name.toLowerCase().includes('cash') || acc.name.toLowerCase().includes('bank'))
-      );
-      setAccounts(cashBankAccounts);
+      const assetAccounts = response.data.filter((acc: any) => acc.account_type === 'ASSET');
+      setAccounts(assetAccounts);
     } catch (error: any) {
       showToast('error', 'Failed to load accounts');
     }
@@ -111,6 +112,14 @@ const ContraManagement: React.FC = () => {
     });
   };
 
+  const handlePrint = (contra: any) => {
+    setSelectedContraId(contra.id);
+  };
+
+  if (selectedContraId) {
+    return <ContraView contraId={selectedContraId} onBack={() => setSelectedContraId(null)} />;
+  }
+
   const columns = [
     { key: 'voucher_number', label: 'Voucher No' },
     { 
@@ -123,7 +132,23 @@ const ContraManagement: React.FC = () => {
       label: 'Amount', 
       render: (val: number) => `₹${val.toLocaleString()}` 
     },
-    { key: 'narration', label: 'Narration' }
+    { key: 'narration', label: 'Narration' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (_: any, row: any) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePrint(row);
+          }}
+          className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded"
+          title="Print"
+        >
+          <Printer className="h-4 w-4" />
+        </button>
+      )
+    }
   ];
 
   return (
@@ -247,6 +272,7 @@ const ContraManagement: React.FC = () => {
         columns={columns}
         data={contras}
         loading={loading}
+        onRowClick={handlePrint}
       />
     </div>
   );

@@ -5,6 +5,7 @@ import DatePicker from '../common/DatePicker';
 import { inventoryService, adminService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import api from '../../services/api';
+import { roundAmountFields } from '../../utils/numberUtils';
 
 interface InvoiceItem {
   product_id: number;
@@ -119,15 +120,15 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
         line_no: 1,
         payment_mode: 'CASH',
         amount_base: roundedTotal,
-        description: ''
+        description: 'Full payment'
       }]);
-    } else if (paymentDetails.length === 1 && paymentDetails[0].description === 'Full payment') {
+    } else if (paymentDetails.length === 1 && (paymentDetails[0].description === 'Full payment' || paymentDetails[0].description === '')) {
       setPaymentDetails([{
         ...paymentDetails[0],
         amount_base: roundedTotal
       }]);
     }
-  }, [items, formData.discount_percent, formData.roundoff]);
+  }, [items, formData.discount_percent]);
 
   useEffect(() => {
     if (resetForm) {
@@ -344,9 +345,10 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
   };
 
   const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + item.total_amount, 0);
+    const subtotal = items.reduce((sum, item) => sum + item.taxable_amount, 0);
+    const taxAmount = items.reduce((sum, item) => sum + item.total_tax_amount, 0);
     const discountAmount = subtotal * (formData.discount_percent / 100);
-    const finalTotal = subtotal - discountAmount;
+    const finalTotal = subtotal + taxAmount - discountAmount;
     return { subtotal, discountAmount, finalTotal };
   };
 
@@ -372,6 +374,8 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
       const sgstTotal = validItems.reduce((sum, item) => sum + item.sgst_amount, 0);
       const taxTotal = validItems.reduce((sum, item) => sum + item.total_tax_amount, 0);
       
+      const taxableTotal = validItems.reduce((sum, item) => sum + item.taxable_amount, 0);
+      
       const invoiceData = {
         invoice_number: formData.invoice_number,
         customer_id: Number(formData.customer_id),
@@ -379,7 +383,7 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
         invoice_date: formData.invoice_date,
         due_date: formData.due_date || undefined,
         total_amount_base: finalTotal,
-        subtotal_base: subtotal,
+        subtotal_base: taxableTotal,
         discount_amount_base: discountAmount,
         tax_amount_base: taxTotal,
         cgst_amount_base: cgstTotal,
@@ -420,7 +424,8 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
         }))
       };
 
-      await api.post('/api/v1/invoice/sales-invoices', invoiceData);
+      const roundedInvoiceData = roundAmountFields(invoiceData);
+      await api.post('/api/v1/invoice/sales-invoices', roundedInvoiceData);
       onSave();
     } catch (error: any) {
       const detail = error.response?.data?.detail;
@@ -675,15 +680,9 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
                   <span>Subtotal:</span>
                   <span className="font-medium">{subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between">
                   <span>Discount %:</span>
-                  <input
-                    type="number"
-                    value={formData.discount_percent}
-                    onChange={(e) => setFormData({ ...formData, discount_percent: parseFloat(e.target.value) || 0 })}
-                    className="w-20 px-2 py-1 text-sm border border-gray-300 rounded"
-                    step="0.1"
-                  />
+                  <span className="font-medium">0.00%</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Discount Amount:</span>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import SearchableDropdown from '../common/SearchableDropdown';
+import FormCheckbox from '../common/FormCheckbox';
 import { accountService } from '../../services/api';
 import { Account } from '../../types';
 
@@ -111,7 +112,8 @@ const ChartOfAccountsForm: React.FC<ChartOfAccountsFormProps> = ({
                 value={formData.code}
                 onChange={handleChange}
                 required
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+                disabled={!!account}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -160,17 +162,15 @@ const ChartOfAccountsForm: React.FC<ChartOfAccountsFormProps> = ({
               />
             </div>
 
-            <div className="flex items-center pt-5">
-              <input
-                type="checkbox"
-                name="is_active"
-                checked={formData.is_active}
-                onChange={handleChange}
-                className="h-3 w-3 text-primary focus:ring-primary border-gray-300 rounded"
-              />
-              <label className="ml-1 block text-xs text-gray-700">
-                Active
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Status
               </label>
+              <FormCheckbox
+                checked={formData.is_active}
+                onChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                label="Active"
+              />
             </div>
           </div>
 

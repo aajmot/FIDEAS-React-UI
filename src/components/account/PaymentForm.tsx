@@ -14,6 +14,7 @@ interface PaymentFormProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   resetForm?: boolean;
+  isReceipt?: boolean;
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ 
@@ -22,7 +23,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   onCancel, 
   isCollapsed, 
   onToggleCollapse, 
-  resetForm
+  resetForm,
+  isReceipt = false
 }) => {
   const { user } = useAuth();
   
@@ -41,11 +43,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   
   const [accounts, setAccounts] = useState<any[]>([]);
   const [parties, setParties] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     payment_number: payment?.payment_number || generatePaymentNumber(),
-    payment_mode: payment?.payment_mode || 'PAID',
-    payment_type: 'PAYMENT',
-    party_type: 'SUPPLIER',
+    payment_mode: payment?.payment_mode || (isReceipt ? 'RECEIVED' : 'PAID'),
+    payment_type: isReceipt ? 'RECEIPT' : 'PAYMENT',
+    party_type: isReceipt ? 'CUSTOMER' : 'SUPPLIER',
     party_id: payment?.party_id || '',
     account_id: payment?.account_id || '',
     amount: payment?.amount || 0,
@@ -67,6 +70,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       setParties([]);
     }
   }, [formData.party_type]);
+
+  useEffect(() => {
+    if (formData.party_id) {
+      loadInvoices(formData.party_id);
+    } else {
+      setInvoices([]);
+    }
+  }, [formData.party_id]);
 
   const loadAccounts = async () => {
     try {
@@ -95,13 +106,31 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     }
   };
 
+  const loadInvoices = async (partyId: string | number) => {
+    try {
+      const id = typeof partyId === 'string' ? parseInt(partyId) : partyId;
+      if (isNaN(id)) return;
+      
+      if (isReceipt) {
+        const response = await inventoryService.getSalesInvoices({ customer_id: id, per_page: 1000 });
+        setInvoices(response.data || []);
+      } else {
+        const response = await inventoryService.getPurchaseInvoices({ supplier_id: id, per_page: 1000 });
+        setInvoices(response.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load invoices:', error);
+      setInvoices([]);
+    }
+  };
+
   useEffect(() => {
     if (resetForm && !payment) {
       setFormData({
         payment_number: generatePaymentNumber(),
-        payment_mode: 'PAID',
-        payment_type: 'PAYMENT',
-        party_type: 'SUPPLIER',
+        payment_mode: isReceipt ? 'RECEIVED' : 'PAID',
+        payment_type: isReceipt ? 'RECEIPT' : 'PAYMENT',
+        party_type: isReceipt ? 'CUSTOMER' : 'SUPPLIER',
         party_id: '',
         account_id: '',
         amount: 0,
@@ -114,9 +143,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     } else if (payment) {
       setFormData({
         payment_number: payment.payment_number,
-        payment_mode: payment.payment_mode || 'PAID',
-        payment_type: 'PAYMENT',
-        party_type: 'SUPPLIER',
+        payment_mode: payment.payment_mode || (isReceipt ? 'RECEIVED' : 'PAID'),
+        payment_type: isReceipt ? 'RECEIPT' : 'PAYMENT',
+        party_type: isReceipt ? 'CUSTOMER' : 'SUPPLIER',
         party_id: payment.party_id || '',
         account_id: payment.account_id || '',
         amount: payment.amount,
@@ -127,17 +156,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         remarks: payment.remarks || ''
       });
     }
-  }, [payment, resetForm, user]);
+  }, [payment, resetForm, user, isReceipt]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validation
-    if (!formData.account_id) {
-      alert('Please select a Cash/Bank account');
-      return;
-    }
-    
     if (formData.amount <= 0) {
       alert('Amount must be greater than zero');
       return;
@@ -146,9 +170,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     // Set date field for API compatibility
     const paymentDataToSave = {
       ...formData,
-      payment_type: 'PAYMENT',
+      payment_type: isReceipt ? 'RECEIPT' : 'PAYMENT',
       date: formData.payment_date,
-      description: formData.remarks || formData.reference_number || 'Payment transaction'
+      description: formData.remarks || formData.reference_number || (isReceipt ? 'Receipt transaction' : 'Payment transaction')
     };
     
     onSave(paymentDataToSave);
@@ -199,10 +223,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 Party Type
               </label>
               <SearchableDropdown
-                options={[{ value: 'SUPPLIER', label: 'Supplier' }]}
+                options={[{ value: formData.party_type, label: isReceipt ? 'Customer' : 'Supplier' }]}
                 value={formData.party_type}
                 onChange={() => {}}
-                placeholder="Supplier"
+                placeholder={isReceipt ? 'Customer' : 'Supplier'}
                 multiple={false}
                 searchable={false}
                 disabled={true}
@@ -227,19 +251,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Cash/Bank Account *
-              </label>
-              <SearchableDropdown
-                options={accounts.map(acc => ({ value: acc.id, label: `${acc.name} (${acc.code})` }))}
-                value={formData.account_id}
-                onChange={(value) => setFormData(prev => ({ ...prev, account_id: value as string }))}
-                placeholder="Select account..."
-                multiple={false}
-                searchable={true}
-              />
-            </div>
+
 
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -268,35 +280,23 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Reference Type
-              </label>
-              <SearchableDropdown
-                options={[
-                  { value: 'GENERAL', label: 'General' },
-                  { value: 'SALES', label: 'Sales' },
-                  { value: 'PURCHASE', label: 'Purchase' }
-                ]}
-                value={formData.reference_type}
-                onChange={(value) => setFormData(prev => ({ ...prev, reference_type: value as string }))}
-                placeholder="Select reference..."
-                multiple={false}
-                searchable={false}
-              />
-            </div>
+
 
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
-                Reference Number
+                Invoice Number
               </label>
-              <input
-                type="text"
-                name="reference_number"
+              <SearchableDropdown
+                options={invoices.map(inv => ({ 
+                  value: inv.invoice_number, 
+                  label: `${inv.invoice_number} - ${inv.total_amount_base || inv.total_amount || 0}` 
+                }))}
                 value={formData.reference_number}
-                onChange={handleChange}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
-                placeholder="SO-001, PO-001, etc."
+                onChange={(value) => setFormData(prev => ({ ...prev, reference_number: value as string }))}
+                placeholder={formData.party_id ? 'Select invoice...' : 'Select party first...'}
+                multiple={false}
+                searchable={true}
+                disabled={!formData.party_id}
               />
             </div>
 

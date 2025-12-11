@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { accountService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useConfirmation } from '../../hooks/useConfirmation';
 import SearchableDropdown from '../common/SearchableDropdown';
+import DataTable from '../common/DataTable';
+import ConfirmationModal from '../common/ConfirmationModal';
 
 const AccountGroupManagement: React.FC = () => {
   const [groups, setGroups] = useState<any[]>([]);
@@ -17,6 +20,7 @@ const AccountGroupManagement: React.FC = () => {
     account_type: 'ASSET'
   });
   const { showToast } = useToast();
+  const { confirmationState, showConfirmation, hideConfirmation, handleConfirm } = useConfirmation();
 
   useEffect(() => {
     loadGroups();
@@ -75,6 +79,7 @@ const AccountGroupManagement: React.FC = () => {
   };
 
   const handleEdit = (group: any) => {
+    if (group.is_system_assigned) return;
     setEditingGroup(group);
     setFormData({
       name: group.name,
@@ -86,55 +91,73 @@ const AccountGroupManagement: React.FC = () => {
   };
   
   const handleDelete = async (group: any) => {
-    if (!window.confirm(`Are you sure you want to delete account group "${group.name}"? This will fail if accounts exist under this group.`)) {
-      return;
-    }
-    try {
-      await accountService.deleteAccountGroup(group.id);
-      showToast('success', 'Account group deleted successfully');
-      loadGroups();
-    } catch (error: any) {
-      showToast('error', error.response?.data?.detail || 'Failed to delete account group. It may have accounts under it.');
-    }
+    if (group.is_system_assigned) return;
+    showConfirmation(
+      {
+        title: 'Delete Account Group',
+        message: `Are you sure you want to delete account group "${group.name}"? This will fail if accounts exist under this group.`,
+        confirmText: 'Delete',
+        variant: 'danger'
+      },
+      async () => {
+        try {
+          await accountService.deleteAccountGroup(group.id);
+          showToast('success', 'Account group deleted successfully');
+          loadGroups();
+        } catch (error: any) {
+          showToast('error', error.response?.data?.detail || 'Failed to delete account group. It may have accounts under it.');
+        }
+      }
+    );
   };
 
-  const renderGroupTree = (parentId: number | null = null, level: number = 0) => {
-    return groups
-      .filter(g => g.parent_id === parentId)
-      .map(group => (
-        <div key={group.id}>
-          <div 
-            className={`flex items-center justify-between p-3 border-b hover:bg-gray-50`}
-            style={{ paddingLeft: `${level * 20 + 12}px` }}
-          >
-            <div className="flex items-center space-x-3 flex-1 cursor-pointer" onClick={() => handleEdit(group)}>
-              <span className="text-sm font-medium text-gray-900">{group.name}</span>
-              <span className="text-xs text-gray-500">({group.code})</span>
-              <span className={`px-2 py-1 text-xs rounded-full ${
-                group.account_type === 'ASSET' ? 'bg-blue-100 text-blue-800' :
-                group.account_type === 'LIABILITY' ? 'bg-red-100 text-red-800' :
-                group.account_type === 'EQUITY' ? 'bg-purple-100 text-purple-800' :
-                group.account_type === 'INCOME' ? 'bg-green-100 text-green-800' :
-                'bg-orange-100 text-orange-800'
-              }`}>
-                {group.account_type}
-              </span>
-            </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(group);
-              }}
-              className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
-              title="Delete Group"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
-          {renderGroupTree(group.id, level + 1)}
-        </div>
-      ));
-  };
+  const columns = [
+    {
+      key: 'name',
+      label: 'Group Name',
+      render: (value: any, row: any) => (
+        <span className="font-medium">{value}</span>
+      )
+    },
+    {
+      key: 'code',
+      label: 'Code',
+      render: (value: any) => (
+        <span className="text-gray-600">{value}</span>
+      )
+    },
+    {
+      key: 'account_type',
+      label: 'Type',
+      render: (value: any) => (
+        <span className={`px-2 py-1 text-xs rounded-full ${
+          value === 'ASSET' ? 'bg-blue-100 text-blue-800' :
+          value === 'LIABILITY' ? 'bg-red-100 text-red-800' :
+          value === 'EQUITY' ? 'bg-purple-100 text-purple-800' :
+          value === 'INCOME' ? 'bg-green-100 text-green-800' :
+          'bg-orange-100 text-orange-800'
+        }`}>
+          {value}
+        </span>
+      )
+    },
+    {
+      key: 'parent_name',
+      label: 'Parent Group',
+      render: (value: any) => value || '-'
+    },
+    {
+      key: 'is_system_assigned',
+      label: 'System',
+      render: (value: any) => (
+        <span className={`px-2 py-1 text-xs rounded-full ${
+          value ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'
+        }`}>
+          {value ? 'Yes' : 'No'}
+        </span>
+      )
+    }
+  ];
 
   return (
     <div className="p-3 sm:p-6">
@@ -235,20 +258,28 @@ const AccountGroupManagement: React.FC = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Account Group Hierarchy</h2>
-        </div>
-        <div className="divide-y">
-          {loading ? (
-            <div className="p-6 text-center text-gray-500">Loading...</div>
-          ) : groups.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">No account groups found</div>
-          ) : (
-            renderGroupTree()
-          )}
-        </div>
-      </div>
+      <DataTable
+        title="Account Groups"
+        columns={columns}
+        data={groups}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        canEdit={(row) => !row.is_system_assigned}
+        canDelete={(row) => !row.is_system_assigned}
+        loading={loading}
+        onRefresh={loadGroups}
+      />
+
+      <ConfirmationModal
+        isOpen={confirmationState.isOpen}
+        title={confirmationState.title}
+        message={confirmationState.message}
+        confirmText={confirmationState.confirmText}
+        cancelText={confirmationState.cancelText}
+        variant={confirmationState.variant}
+        onConfirm={handleConfirm}
+        onCancel={hideConfirmation}
+      />
     </div>
   );
 };

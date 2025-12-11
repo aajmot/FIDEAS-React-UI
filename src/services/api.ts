@@ -897,6 +897,38 @@ export const inventoryService = {
     const response = await api.get<PaginatedResponse>(`/api/v1/inventory/stock-movements?${queryParams.toString()}`);
     return response.data;
   },
+
+  // Purchase Invoices
+  getPurchaseInvoices: async (params?: { supplier_id?: number; page?: number; per_page?: number }): Promise<PaginatedResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.supplier_id) queryParams.append('supplier_id', params.supplier_id.toString());
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
+    
+    const response = await api.get<PaginatedResponse>(`/api/v1/inventory/purchase-invoices?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  // Sales Invoices
+  getSalesInvoices: async (params?: { customer_id?: number; page?: number; per_page?: number }): Promise<PaginatedResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.customer_id) queryParams.append('customer_id', params.customer_id.toString());
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
+    
+    const response = await api.get<PaginatedResponse>(`/api/v1/inventory/sales-invoices?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  getSalesInvoiceById: async (invoiceId: number): Promise<BaseResponse> => {
+    const response = await api.get<BaseResponse>(`/api/v1/invoice/sales-invoices/${invoiceId}`);
+    return response.data;
+  },
+
+  getPurchaseInvoiceById: async (invoiceId: number): Promise<BaseResponse> => {
+    const response = await api.get<BaseResponse>(`/api/v1/invoice/purchase-invoices/${invoiceId}`);
+    return response.data;
+  },
 };
 
 export const accountService = {
@@ -1033,12 +1065,13 @@ export const accountService = {
   },
   
   // Payments
-  getPayments: async (params?: { page?: number; per_page?: number; search?: string; payment_mode?: string }): Promise<PaginatedResponse> => {
+  getPayments: async (params?: { page?: number; per_page?: number; search?: string; payment_mode?: string; payment_type?: string }): Promise<PaginatedResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     if (params?.payment_mode) queryParams.append('payment_mode', params.payment_mode);
+    if (params?.payment_type) queryParams.append('payment_type', params.payment_type);
     
     const response = await api.get<PaginatedResponse>(`/api/v1/account/payments?${queryParams.toString()}`);
     return response.data;
@@ -1277,32 +1310,32 @@ export const clinicService = {
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     
-    const response = await api.get<PaginatedResponse>(`/api/v1/clinic/patients?${queryParams.toString()}`);
+    const response = await api.get<PaginatedResponse>(`/api/v1/health/patients?${queryParams.toString()}`);
     return response.data;
   },
   
   createPatient: async (patientData: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/clinic/patients', patientData);
+    const response = await api.post<BaseResponse>('/api/v1/health/patients', patientData);
     return response.data;
   },
   
   getPatient: async (id: number): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>(`/api/v1/clinic/patients/${id}`);
+    const response = await api.get<BaseResponse>(`/api/v1/health/patients/${id}`);
     return response.data;
   },
   
   updatePatient: async (id: number, patientData: any): Promise<BaseResponse> => {
-    const response = await api.put<BaseResponse>(`/api/v1/clinic/patients/${id}`, patientData);
+    const response = await api.put<BaseResponse>(`/api/v1/health/patients/${id}`, patientData);
     return response.data;
   },
   
   deletePatient: async (id: number): Promise<BaseResponse> => {
-    const response = await api.delete<BaseResponse>(`/api/v1/clinic/patients/${id}`);
+    const response = await api.delete<BaseResponse>(`/api/v1/health/patients/${id}`);
     return response.data;
   },
   
   downloadPatientsTemplate: async (): Promise<Blob> => {
-    const response = await api.get('/api/v1/clinic/patients/export-template', {
+    const response = await api.get('/api/v1/health/patients/export-template', {
       responseType: 'blob'
     });
     return response.data;
@@ -1311,7 +1344,7 @@ export const clinicService = {
   importPatients: async (file: File): Promise<BaseResponse> => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await api.post<BaseResponse>('/api/v1/clinic/patients/import', formData, {
+    const response = await api.post<BaseResponse>('/api/v1/health/patients/import', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -1326,32 +1359,32 @@ export const clinicService = {
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     
-    const response = await api.get<PaginatedResponse>(`/api/v1/clinic/doctors?${queryParams.toString()}`);
+    const response = await api.get<PaginatedResponse>(`/api/v1/health/doctors?${queryParams.toString()}`);
     return response.data;
   },
   
   createDoctor: async (doctorData: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/clinic/doctors', doctorData);
+    const response = await api.post<BaseResponse>('/api/v1/health/doctors', doctorData);
     return response.data;
   },
   
   getDoctor: async (id: number): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>(`/api/v1/clinic/doctors/${id}`);
+    const response = await api.get<BaseResponse>(`/api/v1/health/doctors/${id}`);
     return response.data;
   },
   
   updateDoctor: async (id: number, doctorData: any): Promise<BaseResponse> => {
-    const response = await api.put<BaseResponse>(`/api/v1/clinic/doctors/${id}`, doctorData);
+    const response = await api.put<BaseResponse>(`/api/v1/health/doctors/${id}`, doctorData);
     return response.data;
   },
   
   deleteDoctor: async (id: number): Promise<BaseResponse> => {
-    const response = await api.delete<BaseResponse>(`/api/v1/clinic/doctors/${id}`);
+    const response = await api.delete<BaseResponse>(`/api/v1/health/doctors/${id}`);
     return response.data;
   },
   
   downloadDoctorsTemplate: async (): Promise<Blob> => {
-    const response = await api.get('/api/v1/clinic/doctors/export-template', {
+    const response = await api.get('/api/v1/health/doctors/export-template', {
       responseType: 'blob'
     });
     return response.data;
@@ -1360,7 +1393,7 @@ export const clinicService = {
   importDoctors: async (file: File): Promise<BaseResponse> => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await api.post<BaseResponse>('/api/v1/clinic/doctors/import', formData, {
+    const response = await api.post<BaseResponse>('/api/v1/health/doctors/import', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -1375,39 +1408,39 @@ export const clinicService = {
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     
-    const response = await api.get<PaginatedResponse>(`/api/v1/clinic/appointments?${queryParams.toString()}`);
+    const response = await api.get<PaginatedResponse>(`/api/v1/health/appointments?${queryParams.toString()}`);
     return response.data;
   },
   
   createAppointment: async (appointmentData: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/clinic/appointments', appointmentData);
+    const response = await api.post<BaseResponse>('/api/v1/health/appointments', appointmentData);
     return response.data;
   },
   
   getAppointment: async (id: number): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>(`/api/v1/clinic/appointments/${id}`);
+    const response = await api.get<BaseResponse>(`/api/v1/health/appointments/${id}`);
     return response.data;
   },
   
   updateAppointment: async (id: number, appointmentData: any): Promise<BaseResponse> => {
-    const response = await api.put<BaseResponse>(`/api/v1/clinic/appointments/${id}`, appointmentData);
+    const response = await api.put<BaseResponse>(`/api/v1/health/appointments/${id}`, appointmentData);
     return response.data;
   },
   
   deleteAppointment: async (id: number): Promise<BaseResponse> => {
-    const response = await api.delete<BaseResponse>(`/api/v1/clinic/appointments/${id}`);
+    const response = await api.delete<BaseResponse>(`/api/v1/health/appointments/${id}`);
     return response.data;
   },
   
   exportAppointmentTemplate: async (): Promise<string> => {
-    const response = await api.get('/api/v1/clinic/appointments/export-template', {
+    const response = await api.get('/api/v1/health/appointments/export-template', {
       responseType: 'text'
     });
     return response.data;
   },
   
   importAppointments: async (csvContent: string): Promise<{ imported: number; errors: string[] }> => {
-    const response = await api.post('/api/v1/clinic/appointments/import', { csv_content: csvContent });
+    const response = await api.post('/api/v1/health/appointments/import', { csv_content: csvContent });
     return response.data;
   },
   
@@ -1418,44 +1451,44 @@ export const clinicService = {
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     
-    const response = await api.get<PaginatedResponse>(`/api/v1/clinic/medical-records?${queryParams.toString()}`);
+    const response = await api.get<PaginatedResponse>(`/api/v1/health/medical-records?${queryParams.toString()}`);
     return response.data;
   },
   
   createMedicalRecord: async (recordData: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/clinic/medical-records', recordData);
+    const response = await api.post<BaseResponse>('/api/v1/health/medical-records', recordData);
     return response.data;
   },
   
   getMedicalRecord: async (id: number): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>(`/api/v1/clinic/medical-records/${id}`);
+    const response = await api.get<BaseResponse>(`/api/v1/health/medical-records/${id}`);
     return response.data;
   },
   
   exportMedicalRecordTemplate: async (): Promise<string> => {
-    const response = await api.get('/api/v1/clinic/medical-records/export-template', {
+    const response = await api.get('/api/v1/health/medical-records/export-template', {
       responseType: 'text'
     });
     return response.data;
   },
   
   importMedicalRecords: async (csvContent: string): Promise<{ imported: number; errors: string[] }> => {
-    const response = await api.post('/api/v1/clinic/medical-records/import', { csv_content: csvContent });
+    const response = await api.post('/api/v1/health/medical-records/import', { csv_content: csvContent });
     return response.data;
   },
   
   getMedicalRecordByAppointment: async (appointmentId: number): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>(`/api/v1/clinic/medical-records/appointment/${appointmentId}`);
+    const response = await api.get<BaseResponse>(`/api/v1/health/medical-records/appointment/${appointmentId}`);
     return response.data;
   },
   
   updateMedicalRecord: async (id: number, recordData: any): Promise<BaseResponse> => {
-    const response = await api.put<BaseResponse>(`/api/v1/clinic/medical-records/${id}`, recordData);
+    const response = await api.put<BaseResponse>(`/api/v1/health/medical-records/${id}`, recordData);
     return response.data;
   },
   
   deleteMedicalRecord: async (id: number): Promise<BaseResponse> => {
-    const response = await api.delete<BaseResponse>(`/api/v1/clinic/medical-records/${id}`);
+    const response = await api.delete<BaseResponse>(`/api/v1/health/medical-records/${id}`);
     return response.data;
   },
   
@@ -1466,53 +1499,53 @@ export const clinicService = {
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     
-    const response = await api.get<PaginatedResponse>(`/api/v1/clinic/prescriptions?${queryParams.toString()}`);
+    const response = await api.get<PaginatedResponse>(`/api/v1/health/prescriptions?${queryParams.toString()}`);
     return response.data;
   },
   
   createPrescription: async (prescriptionData: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/clinic/prescriptions', prescriptionData);
+    const response = await api.post<BaseResponse>('/api/v1/health/prescriptions', prescriptionData);
     return response.data;
   },
   
   getPrescription: async (id: number): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>(`/api/v1/clinic/prescriptions/${id}`);
+    const response = await api.get<BaseResponse>(`/api/v1/health/prescriptions/${id}`);
     return response.data;
   },
   
   updatePrescription: async (id: number, prescriptionData: any): Promise<BaseResponse> => {
-    const response = await api.put<BaseResponse>(`/api/v1/clinic/prescriptions/${id}`, prescriptionData);
+    const response = await api.put<BaseResponse>(`/api/v1/health/prescriptions/${id}`, prescriptionData);
     return response.data;
   },
   
   deletePrescription: async (id: number): Promise<BaseResponse> => {
-    const response = await api.delete<BaseResponse>(`/api/v1/clinic/prescriptions/${id}`);
+    const response = await api.delete<BaseResponse>(`/api/v1/health/prescriptions/${id}`);
     return response.data;
   },
   
   // Billing/Invoices
   getInvoices: async (): Promise<PaginatedResponse> => {
-    const response = await api.get<PaginatedResponse>('/api/v1/clinic/invoices');
+    const response = await api.get<PaginatedResponse>('/api/v1/health/invoices');
     return response.data;
   },
   
   createInvoice: async (invoiceData: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/clinic/invoices', invoiceData);
+    const response = await api.post<BaseResponse>('/api/v1/health/invoices', invoiceData);
     return response.data;
   },
   
   getInvoice: async (id: number): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>(`/api/v1/clinic/invoices/${id}`);
+    const response = await api.get<BaseResponse>(`/api/v1/health/invoices/${id}`);
     return response.data;
   },
   
   updateInvoice: async (id: number, invoiceData: any): Promise<BaseResponse> => {
-    const response = await api.put<BaseResponse>(`/api/v1/clinic/invoices/${id}`, invoiceData);
+    const response = await api.put<BaseResponse>(`/api/v1/health/invoices/${id}`, invoiceData);
     return response.data;
   },
   
   deleteInvoice: async (id: number): Promise<BaseResponse> => {
-    const response = await api.delete<BaseResponse>(`/api/v1/clinic/invoices/${id}`);
+    const response = await api.delete<BaseResponse>(`/api/v1/health/invoices/${id}`);
     return response.data;
   },
   
@@ -1523,39 +1556,39 @@ export const clinicService = {
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     
-    const response = await api.get<PaginatedResponse>(`/api/v1/clinic/billing-masters?${queryParams.toString()}`);
+    const response = await api.get<PaginatedResponse>(`/api/v1/health/billing-masters?${queryParams.toString()}`);
     return response.data;
   },
   
   createBillingMaster: async (billingMasterData: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/clinic/billing-masters', billingMasterData);
+    const response = await api.post<BaseResponse>('/api/v1/health/billing-masters', billingMasterData);
     return response.data;
   },
   
   getBillingMaster: async (id: number): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>(`/api/v1/clinic/billing-masters/${id}`);
+    const response = await api.get<BaseResponse>(`/api/v1/health/billing-masters/${id}`);
     return response.data;
   },
   
   updateBillingMaster: async (id: number, billingMasterData: any): Promise<BaseResponse> => {
-    const response = await api.put<BaseResponse>(`/api/v1/clinic/billing-masters/${id}`, billingMasterData);
+    const response = await api.put<BaseResponse>(`/api/v1/health/billing-masters/${id}`, billingMasterData);
     return response.data;
   },
   
   deleteBillingMaster: async (id: number): Promise<BaseResponse> => {
-    const response = await api.delete<BaseResponse>(`/api/v1/clinic/billing-masters/${id}`);
+    const response = await api.delete<BaseResponse>(`/api/v1/health/billing-masters/${id}`);
     return response.data;
   },
   
   downloadBillingMastersTemplate: async (): Promise<Blob> => {
-    const response = await api.get('/api/v1/clinic/billing-masters/export-template', {
+    const response = await api.get('/api/v1/health/billing-masters/export-template', {
       responseType: 'blob'
     });
     return response.data;
   },
   
   importBillingMasters: async (csvContent: string): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/clinic/billing-masters/import', { csv_content: csvContent });
+    const response = await api.post<BaseResponse>('/api/v1/health/billing-masters/import', { csv_content: csvContent });
     return response.data;
   },
   
@@ -1662,7 +1695,7 @@ export const diagnosticService = {
   },
   
   getTest: async (id: number): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>(`/api/v1/care/tests/${id}`);
+    const response = await api.get<BaseResponse>(`/api/v1/health/tests/${id}`);
     return response.data;
   }
 };
@@ -1675,27 +1708,27 @@ export const careService = {
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     
-    const response = await api.get<PaginatedResponse>(`/api/v1/care/testcategories?${queryParams.toString()}`);
+    const response = await api.get<PaginatedResponse>(`/api/v1/health/testcategories?${queryParams.toString()}`);
     return response.data;
   },
   
   createTestCategory: async (data: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/care/testcategories', data);
+    const response = await api.post<BaseResponse>('/api/v1/health/testcategories', data);
     return response.data;
   },
   
   updateTestCategory: async (id: number, data: any): Promise<BaseResponse> => {
-    const response = await api.put<BaseResponse>(`/api/v1/care/testcategories/${id}`, data);
+    const response = await api.put<BaseResponse>(`/api/v1/health/testcategories/${id}`, data);
     return response.data;
   },
   
   deleteTestCategory: async (id: number): Promise<BaseResponse> => {
-    const response = await api.delete<BaseResponse>(`/api/v1/care/testcategories/${id}`);
+    const response = await api.delete<BaseResponse>(`/api/v1/health/testcategories/${id}`);
     return response.data;
   },
   
   exportTestCategoriesTemplate: async (): Promise<void> => {
-    const response = await api.get('/api/v1/care/testcategories/export-template', { responseType: 'blob' });
+    const response = await api.get('/api/v1/health/testcategories/export-template', { responseType: 'blob' });
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
@@ -1708,7 +1741,7 @@ export const careService = {
   importTestCategories: async (file: File): Promise<BaseResponse> => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await api.post<BaseResponse>('/api/v1/care/testcategories/import', formData, {
+    const response = await api.post<BaseResponse>('/api/v1/health/testcategories/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return response.data;
@@ -1721,32 +1754,32 @@ export const careService = {
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     
-    const response = await api.get<PaginatedResponse>(`/api/v1/care/tests?${queryParams.toString()}`);
+    const response = await api.get<PaginatedResponse>(`/api/v1/health/tests?${queryParams.toString()}`);
     return response.data;
   },
   
   getTest: async (id: number): Promise<BaseResponse> => {
-    const response = await api.get<BaseResponse>(`/api/v1/care/tests/${id}`);
+    const response = await api.get<BaseResponse>(`/api/v1/health/tests/${id}`);
     return response.data;
   },
   
   createTest: async (data: any): Promise<BaseResponse> => {
-    const response = await api.post<BaseResponse>('/api/v1/care/tests', data);
+    const response = await api.post<BaseResponse>('/api/v1/health/tests', data);
     return response.data;
   },
   
   updateTest: async (id: number, data: any): Promise<BaseResponse> => {
-    const response = await api.put<BaseResponse>(`/api/v1/care/tests/${id}`, data);
+    const response = await api.put<BaseResponse>(`/api/v1/health/tests/${id}`, data);
     return response.data;
   },
   
   deleteTest: async (id: number): Promise<BaseResponse> => {
-    const response = await api.delete<BaseResponse>(`/api/v1/care/tests/${id}`);
+    const response = await api.delete<BaseResponse>(`/api/v1/health/tests/${id}`);
     return response.data;
   },
   
   exportTestsTemplate: async (): Promise<void> => {
-    const response = await api.get('/api/v1/care/tests/export-template', { responseType: 'blob' });
+    const response = await api.get('/api/v1/health/tests/export-template', { responseType: 'blob' });
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
@@ -1759,7 +1792,7 @@ export const careService = {
   importTests: async (file: File): Promise<BaseResponse> => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await api.post<BaseResponse>('/api/v1/care/tests/import', formData, {
+    const response = await api.post<BaseResponse>('/api/v1/health/tests/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return response.data;

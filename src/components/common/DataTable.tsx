@@ -22,6 +22,8 @@ interface DataTableProps {
   onPageChange?: (page: number) => void;
   onSearch?: (searchTerm: string) => void;
   onRefresh?: () => void;
+  canEdit?: (row: any) => boolean;
+  canDelete?: (row: any) => boolean;
 }
 
 const DataTable: React.FC<DataTableProps> = ({
@@ -37,7 +39,9 @@ const DataTable: React.FC<DataTableProps> = ({
   currentPage: externalCurrentPage,
   onPageChange,
   onSearch,
-  onRefresh
+  onRefresh,
+  canEdit,
+  canDelete
 }) => {
   const [internalCurrentPage, setInternalCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
@@ -230,16 +234,26 @@ const DataTable: React.FC<DataTableProps> = ({
                         <div className="flex space-x-1">
                           {onEdit && (
                             <button
-                              onClick={() => onEdit(row)}
-                              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                              onClick={() => (canEdit ? canEdit(row) : true) && onEdit(row)}
+                              disabled={canEdit ? !canEdit(row) : false}
+                              className={`p-1 rounded ${
+                                canEdit && !canEdit(row)
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : 'text-blue-600 hover:text-blue-900 hover:bg-blue-50'
+                              }`}
                             >
                               <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                             </button>
                           )}
                           {onDelete && (
                             <button
-                              onClick={() => onDelete(row)}
-                              className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                              onClick={() => (canDelete ? canDelete(row) : true) && onDelete(row)}
+                              disabled={canDelete ? !canDelete(row) : false}
+                              className={`p-1 rounded ${
+                                canDelete && !canDelete(row)
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : 'text-red-600 hover:text-red-900 hover:bg-red-50'
+                              }`}
                             >
                               <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                             </button>
