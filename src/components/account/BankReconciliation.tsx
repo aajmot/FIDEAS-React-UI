@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { reconciliationService } from '../../services/apiExtensions';
+import { reconciliationService } from '../../services/api';
 
 const BankReconciliation: React.FC = () => {
   const [unreconciled, setUnreconciled] = useState<any[]>([]);

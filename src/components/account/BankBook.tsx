@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import DataTable from '../common/DataTable';
 import SearchableDropdown from '../common/SearchableDropdown';
 import DatePicker from '../common/DatePicker';
-import { accountService } from '../../services/api';
+import { accountService, ledgerService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 const BankBook: React.FC = () => {
@@ -61,7 +61,7 @@ const BankBook: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await accountService.getLedgerEntries({
+      const response = await ledgerService.getLedgerEntries({
         ...filters,
         page: 1,
         per_page: 1000

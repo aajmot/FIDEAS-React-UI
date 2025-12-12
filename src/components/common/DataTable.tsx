@@ -52,6 +52,10 @@ const DataTable: React.FC<DataTableProps> = ({
   const currentPage = isExternalPagination ? (externalCurrentPage || 1) : internalCurrentPage;
   
   const filteredAndSortedData = useMemo(() => {
+    if (!Array.isArray(data)) {
+      return [];
+    }
+    
     if (isExternalPagination && !searchTerm) {
       return data; // Data is already paginated from API
     }

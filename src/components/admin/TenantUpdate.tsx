@@ -4,7 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import FormTextarea from '../common/FormTextarea';
 import FormCheckbox from '../common/FormCheckbox';
 import SearchableDropdown from '../common/SearchableDropdown';
-import { currencyService } from '../../services/apiExtensions';
+import { currencyService } from '../../services/api';
 
 interface TenantData {
   id: number;

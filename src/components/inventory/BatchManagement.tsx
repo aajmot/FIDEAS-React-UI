@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { batchService } from '../../services/apiExtensions';
+import { batchService } from '../../services/api';
 
 const BatchManagement: React.FC = () => {
   const [nearExpiry, setNearExpiry] = useState<any[]>([]);

@@ -3,7 +3,7 @@ import { Printer } from 'lucide-react';
 import CreditNoteForm from './CreditNoteForm';
 import CreditNoteView from './CreditNoteView';
 import DataTable from '../common/DataTable';
-import { accountExtensions } from '../../services/apiExtensions';
+import { accountExtensions } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 const CreditNoteManagement: React.FC = () => {

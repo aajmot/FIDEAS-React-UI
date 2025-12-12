@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, Plus, Minus } from 'lucide-react';
 import SearchableDropdown from '../common/SearchableDropdown';
 import DatePicker from '../common/DatePicker';
 import { inventoryService } from '../../services/api';
-import { accountExtensions } from '../../services/apiExtensions';
+import { accountExtensions } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -24,7 +24,14 @@ const DebitNoteForm: React.FC<DebitNoteFormProps> = ({ onSave, isCollapsed, onTo
   const generateNoteNumber = () => {
     const now = new Date();
     const tenantId = user?.tenant_id || 1;
-    return `DN-${tenantId}${now.getTime()}`;
+    const dd = String(now.getDate()).padStart(2, '0');
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const fff = String(now.getMilliseconds()).padStart(3, '0');
+    return `DN-${tenantId}${dd}${mm}${yyyy}${hh}${min}${ss}${fff}`;
   };
 
   const [formData, setFormData] = useState({

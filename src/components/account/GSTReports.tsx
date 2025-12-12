@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { FileText, Download } from 'lucide-react';
-import DatePicker from '../common/DatePicker';
+import SearchableDropdown from '../common/SearchableDropdown';
 import { useToast } from '../../context/ToastContext';
-import { accountService } from '../../services/api';
+import { reportService } from '../../services';
 
 const GSTReports: React.FC = () => {
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const currentDate = new Date();
+  const [month, setMonth] = useState(currentDate.getMonth() + 1);
+  const [year, setYear] = useState(currentDate.getFullYear());
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
   const { showToast } = useToast();
@@ -13,7 +15,7 @@ const GSTReports: React.FC = () => {
   const generateGSTR1 = async () => {
     setLoading(true);
     try {
-      const response = await accountService.getGSTR1(month);
+      const response = await reportService.getGSTR1(month, year);
       setReportData({ type: 'GSTR1', data: response.data });
       showToast('success', 'GSTR-1 generated successfully');
     } catch (error: any) {
@@ -26,7 +28,7 @@ const GSTReports: React.FC = () => {
   const generateGSTR3B = async () => {
     setLoading(true);
     try {
-      const response = await accountService.getGSTR3B(month);
+      const response = await reportService.getGSTR3B(month, year);
       setReportData({ type: 'GSTR3B', data: response.data });
       showToast('success', 'GSTR-3B generated successfully');
     } catch (error: any) {
@@ -37,17 +39,38 @@ const GSTReports: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">GST Reports</h1>
-      
+    <div className="p-3 sm:p-6">
       <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <label className="block text-sm font-medium mb-2">Select Month</label>
-        <input
-          type="month"
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          className="border rounded px-3 py-2"
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Month</label>
+            <SearchableDropdown
+              options={Array.from({ length: 12 }, (_, i) => ({
+                value: i + 1,
+                label: new Date(2000, i).toLocaleString('default', { month: 'long' })
+              }))}
+              value={month}
+              onChange={(value) => setMonth(value as number)}
+              placeholder="Select month..."
+              multiple={false}
+              searchable={true}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Year</label>
+            <SearchableDropdown
+              options={Array.from({ length: 10 }, (_, i) => ({
+                value: currentDate.getFullYear() - i,
+                label: String(currentDate.getFullYear() - i)
+              }))}
+              value={year}
+              onChange={(value) => setYear(value as number)}
+              placeholder="Select year..."
+              multiple={false}
+              searchable={true}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

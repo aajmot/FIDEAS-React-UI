@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Check, X, RefreshCw } from 'lucide-react';
-import { currencyService } from '../../services/apiExtensions';
+import { currencyService } from '../../services/api';
 import DataTable from '../common/DataTable';
 import { useToast } from '../../context/ToastContext';
 

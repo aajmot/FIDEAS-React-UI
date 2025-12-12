@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { dashboardService } from '../services/apiExtensions';
+import { dashboardService } from '../services/api';
 import { useToast } from '../context/ToastContext';
 
 const Dashboard: React.FC = () => {

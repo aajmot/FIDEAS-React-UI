@@ -102,9 +102,10 @@ const ProductWasteForm: React.FC<ProductWasteFormProps> = ({ onSave, isCollapsed
   const loadWarehouses = async () => {
     try {
       const response = await inventoryService.getWarehouses();
-      setWarehouses(response.data);
+      setWarehouses(response.data.data || response.data || []);
     } catch (error) {
       showToast('error', 'Failed to load warehouses');
+      setWarehouses([]);
     }
   };
 

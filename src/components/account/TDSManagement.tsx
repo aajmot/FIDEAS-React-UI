@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DataTable from '../common/DataTable';
-import { accountExtensions } from '../../services/apiExtensions';
+import { accountExtensions } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 const TDSManagement: React.FC = () => {

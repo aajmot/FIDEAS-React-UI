@@ -257,9 +257,10 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
   const loadWarehouses = async () => {
     try {
       const response = await inventoryService.getWarehouses({ per_page: 100 });
-      setWarehouses(response.data);
+      setWarehouses(response.data.data || response.data || []);
     } catch (error) {
       showToast('error', 'Failed to load warehouses');
+      setWarehouses([]);
     }
   };
 

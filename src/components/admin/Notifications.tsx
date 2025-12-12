@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { notificationService } from '../../services/apiExtensions';
+import { notificationService } from '../../services/api';
 
 const Notifications: React.FC = () => {
   const [voucherId, setVoucherId] = useState('');

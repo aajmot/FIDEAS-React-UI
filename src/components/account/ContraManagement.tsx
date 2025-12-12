@@ -6,7 +6,7 @@ import DatePicker from '../common/DatePicker';
 import FormTextarea from '../common/FormTextarea';
 import ContraView from './ContraView';
 import { accountService } from '../../services/api';
-import { accountExtensions } from '../../services/apiExtensions';
+import { accountExtensions } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 

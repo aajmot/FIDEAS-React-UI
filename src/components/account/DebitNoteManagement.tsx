@@ -3,7 +3,7 @@ import { Printer } from 'lucide-react';
 import DebitNoteForm from './DebitNoteForm';
 import DebitNoteView from './DebitNoteView';
 import DataTable from '../common/DataTable';
-import { accountExtensions } from '../../services/apiExtensions';
+import { accountExtensions } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 const DebitNoteManagement: React.FC = () => {

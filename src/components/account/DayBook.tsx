@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import DataTable from '../common/DataTable';
 import DatePicker from '../common/DatePicker';
-import { accountService } from '../../services/api';
+import { accountService, ledgerService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 const DayBook: React.FC = () => {
@@ -28,7 +28,7 @@ const DayBook: React.FC = () => {
   const loadDayBook = async () => {
     try {
       setLoading(true);
-      const response = await accountService.getLedgerEntries({
+      const response = await ledgerService.getLedgerEntries({
         ...filters,
         page: 1,
         per_page: 1000

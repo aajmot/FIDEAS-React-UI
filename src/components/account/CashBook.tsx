@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import DataTable from '../common/DataTable';
 import DatePicker from '../common/DatePicker';
 import SearchableDropdown from '../common/SearchableDropdown';
-import { accountService } from '../../services/api';
+import { accountService, ledgerService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 const CashBook: React.FC = () => {
@@ -50,7 +50,7 @@ const CashBook: React.FC = () => {
   const loadCashBook = async () => {
     try {
       setLoading(true);
-      const response = await accountService.getLedgerEntries({
+      const response = await ledgerService.getLedgerEntries({
         account_id: filters.account_id,
         from_date: filters.from_date,
         to_date: filters.to_date,

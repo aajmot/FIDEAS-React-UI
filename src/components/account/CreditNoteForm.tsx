@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, Plus, Minus } from 'lucide-react';
 import SearchableDropdown from '../common/SearchableDropdown';
 import DatePicker from '../common/DatePicker';
 import { inventoryService } from '../../services/api';
-import { accountExtensions } from '../../services/apiExtensions';
+import { accountExtensions } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 

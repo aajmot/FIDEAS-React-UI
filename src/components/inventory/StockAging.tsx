@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { inventoryService } from '../../services/apiExtensions';
+import { inventoryService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import DataTable from '../common/DataTable';
 

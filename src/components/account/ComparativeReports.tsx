@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, TrendingDown, Calendar, FileText } from 'lucide-react';
 import DataTable from '../common/DataTable';
 import DatePicker from '../common/DatePicker';
-import { accountService } from '../../services/api';
+import { reportService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 const ComparativeReports: React.FC = () => {
@@ -25,12 +25,12 @@ const ComparativeReports: React.FC = () => {
       // Load data for both periods
       const endpoint = reportType === 'profit-loss' ? 'getProfitLoss' : 'getBalanceSheet';
       
-      const period1Data = await accountService[endpoint](
+      const period1Data = await reportService[endpoint](
         filters.period1_from,
         filters.period1_to
       );
       
-      const period2Data = await accountService[endpoint](
+      const period2Data = await reportService[endpoint](
         filters.period2_from,
         filters.period2_to
       );

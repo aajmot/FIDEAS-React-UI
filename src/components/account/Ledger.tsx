@@ -4,7 +4,7 @@ import { RefreshCw, FileText } from 'lucide-react';
 import DataTable from '../common/DataTable';
 import SearchableDropdown from '../common/SearchableDropdown';
 import DatePicker from '../common/DatePicker';
-import { accountService } from '../../services/api';
+import { accountService, ledgerService } from '../../services';
 import { useToast } from '../../context/ToastContext';
 import { LedgerEntry } from '../../types';
 
@@ -18,7 +18,7 @@ const Ledger: React.FC = () => {
     account_id: '',
     from_date: '',
     to_date: '',
-    voucher_type: ''
+    reference_type: ''
   });
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -44,16 +44,17 @@ const Ledger: React.FC = () => {
   const loadLedger = async (page = 1, search = '') => {
     try {
       setLoading(true);
-      const response = await accountService.getLedgerEntries({
+      const response = await ledgerService.getLedgerEntries({
         ...filters,
         page,
         per_page: 10,
         search
       });
-      setEntries(response.data);
+      const entriesData = Array.isArray(response.data) ? response.data : [];
+      setEntries(entriesData);
       setTotalItems(response.total);
       setCurrentPage(page);
-      calculateTotals(response.data);
+      calculateTotals(entriesData);
       
       // Load summary only on first page or when filters change
       if (page === 1) {
@@ -80,7 +81,7 @@ const Ledger: React.FC = () => {
       account_id: '',
       from_date: '',
       to_date: '',
-      voucher_type: ''
+      reference_type: ''
     };
     setFilters(newFilters);
     setCurrentPage(1);
@@ -111,21 +112,15 @@ const Ledger: React.FC = () => {
   });
 
   const calculateTotals = (entriesData: LedgerEntry[]) => {
-    const totalDebit = entriesData.reduce((sum, entry) => {
-      const debitValue = Number(entry.debit) || 0;
-      return sum + debitValue;
-    }, 0);
-    const totalCredit = entriesData.reduce((sum, entry) => {
-      const creditValue = Number(entry.credit) || 0;
-      return sum + creditValue;
-    }, 0);
-    const closingBalance = totalDebit - totalCredit;
-    setTotals({ totalDebit, totalCredit, closingBalance });
+    const totalDebit = entriesData.reduce((sum, entry: any) => sum + (parseFloat(entry.debit_amount) || 0), 0);
+    const totalCredit = entriesData.reduce((sum, entry: any) => sum + (parseFloat(entry.credit_amount) || 0), 0);
+    const netChange = totalDebit - totalCredit;
+    setTotals({ totalDebit, totalCredit, closingBalance: netChange });
   };
 
   const loadSummary = async () => {
     try {
-      const response = await accountService.getLedgerSummary(filters);
+      const response = await ledgerService.getLedgerSummary(filters);
       setOverallTotals({
         totalDebit: response.data.total_debit || 0,
         totalCredit: response.data.total_credit || 0,
@@ -138,11 +133,11 @@ const Ledger: React.FC = () => {
 
   const columns = [
     {
-      key: 'date',
+      key: 'transaction_date',
       label: 'Date',
       render: (value: string) => value ? new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : '-'
     },
-    { key: 'voucher_type', label: 'Voucher Type' },
+    { key: 'reference_type', label: 'Reference Type' },
     { 
       key: 'voucher_number', 
       label: 'Voucher No.',
@@ -155,9 +150,9 @@ const Ledger: React.FC = () => {
         </button>
       )
     },
-    { key: 'description', label: 'Description' },
+    { key: 'narration', label: 'Description' },
     {
-      key: 'debit',
+      key: 'debit_amount',
       label: 'Debit',
       render: (value: number) => {
         const debitValue = Number(value) || 0;
@@ -165,7 +160,7 @@ const Ledger: React.FC = () => {
       }
     },
     {
-      key: 'credit',
+      key: 'credit_amount',
       label: 'Credit',
       render: (value: number) => {
         const creditValue = Number(value) || 0;
@@ -234,18 +229,19 @@ const Ledger: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Voucher Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Reference Type</label>
               <SearchableDropdown
                 options={[
                   { value: '', label: 'All Types' },
-                  { value: 'Sales', label: 'Sales' },
-                  { value: 'Purchase', label: 'Purchase' },
-                  { value: 'Receipt', label: 'Receipt' },
-                  { value: 'Payment', label: 'Payment' },
-                  { value: 'Journal', label: 'Journal' }
+                  { value: 'SALES_INVOICE', label: 'Sales Invoice' },
+                  { value: 'PURCHASE_INVOICE', label: 'Purchase Invoice' },
+                  { value: 'RECEIPT', label: 'Receipt' },
+                  { value: 'PAYMENT', label: 'Payment' },
+                  { value: 'JOURNAL', label: 'Journal' },
+                  { value: 'CONTRA', label: 'Contra' }
                 ]}
-                value={filters.voucher_type}
-                onChange={(value) => handleFilterChange('voucher_type', value as string)}
+                value={filters.reference_type}
+                onChange={(value) => handleFilterChange('reference_type', value as string)}
                 placeholder="Select type..."
                 multiple={false}
                 searchable={false}

@@ -363,12 +363,14 @@ export interface JournalLine {
 export interface LedgerEntry {
   id: number;
   date: string;
-  voucher_type: string;
+  reference_type: string;
   voucher_number: string;
   description: string;
   debit: number;
   credit: number;
   balance: number;
+  voucher_id?: number;
+  is_reconciled?: boolean;
 }
 
 export interface Voucher {

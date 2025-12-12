@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { currencyService } from '../../../services/apiExtensions';
+import { currencyService } from '../../../services/api';
 
 const CurrencyManagement: React.FC = () => {
   const [currencies, setCurrencies] = useState<any[]>([]);
