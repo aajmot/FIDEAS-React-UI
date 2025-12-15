@@ -8,27 +8,27 @@ export const diagnosticService = {
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     
-    const response = await apiClient.get<PaginatedResponse>(`/api/v1/care/testpanels?${queryParams.toString()}`);
+    const response = await apiClient.get<PaginatedResponse>(`/api/v1/health/testpanels?${queryParams.toString()}`);
     return response.data;
   },
   
   getTestPanel: async (id: number): Promise<BaseResponse> => {
-    const response = await apiClient.get<BaseResponse>(`/api/v1/care/testpanels/${id}`);
+    const response = await apiClient.get<BaseResponse>(`/api/v1/health/testpanels/${id}`);
     return response.data;
   },
   
   createTestPanel: async (data: any): Promise<BaseResponse> => {
-    const response = await apiClient.post<BaseResponse>('/api/v1/care/testpanels', data);
+    const response = await apiClient.post<BaseResponse>('/api/v1/health/testpanels', data);
     return response.data;
   },
   
   updateTestPanel: async (id: number, data: any): Promise<BaseResponse> => {
-    const response = await apiClient.put<BaseResponse>(`/api/v1/care/testpanels/${id}`, data);
+    const response = await apiClient.put<BaseResponse>(`/api/v1/health/testpanels/${id}`, data);
     return response.data;
   },
   
   deleteTestPanel: async (id: number): Promise<BaseResponse> => {
-    const response = await apiClient.delete<BaseResponse>(`/api/v1/care/testpanels/${id}`);
+    const response = await apiClient.delete<BaseResponse>(`/api/v1/health/testpanels/${id}`);
     return response.data;
   },
   
@@ -38,27 +38,27 @@ export const diagnosticService = {
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     
-    const response = await apiClient.get<PaginatedResponse>(`/api/v1/care/testorders?${queryParams.toString()}`);
+    const response = await apiClient.get<PaginatedResponse>(`/api/v1/health/testorders?${queryParams.toString()}`);
     return response.data;
   },
   
   getTestOrder: async (id: number): Promise<BaseResponse> => {
-    const response = await apiClient.get<BaseResponse>(`/api/v1/care/testorders/${id}`);
+    const response = await apiClient.get<BaseResponse>(`/api/v1/health/testorders/${id}`);
     return response.data;
   },
   
   createTestOrder: async (data: any): Promise<BaseResponse> => {
-    const response = await apiClient.post<BaseResponse>('/api/v1/care/testorders', data);
+    const response = await apiClient.post<BaseResponse>('/api/v1/health/testorders', data);
     return response.data;
   },
   
   updateTestOrder: async (id: number, data: any): Promise<BaseResponse> => {
-    const response = await apiClient.put<BaseResponse>(`/api/v1/care/testorders/${id}`, data);
+    const response = await apiClient.put<BaseResponse>(`/api/v1/health/testorders/${id}`, data);
     return response.data;
   },
   
   deleteTestOrder: async (id: number): Promise<BaseResponse> => {
-    const response = await apiClient.delete<BaseResponse>(`/api/v1/care/testorders/${id}`);
+    const response = await apiClient.delete<BaseResponse>(`/api/v1/health/testorders/${id}`);
     return response.data;
   },
   
@@ -68,32 +68,32 @@ export const diagnosticService = {
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     
-    const response = await apiClient.get<PaginatedResponse>(`/api/v1/care/testresults?${queryParams.toString()}`);
+    const response = await apiClient.get<PaginatedResponse>(`/api/v1/health/testresults?${queryParams.toString()}`);
     return response.data;
   },
   
   getTestResultByOrderId: async (orderId: number): Promise<BaseResponse> => {
-    const response = await apiClient.get<BaseResponse>(`/api/v1/care/testresults/order/${orderId}`);
+    const response = await apiClient.get<BaseResponse>(`/api/v1/health/testresults/order/${orderId}`);
     return response.data;
   },
   
   getTestResult: async (id: number): Promise<BaseResponse> => {
-    const response = await apiClient.get<BaseResponse>(`/api/v1/care/testresults/${id}`);
+    const response = await apiClient.get<BaseResponse>(`/api/v1/health/testresults/${id}`);
     return response.data;
   },
   
   createTestResult: async (data: any): Promise<BaseResponse> => {
-    const response = await apiClient.post<BaseResponse>('/api/v1/care/testresults', data);
+    const response = await apiClient.post<BaseResponse>('/api/v1/health/testresults', data);
     return response.data;
   },
   
   updateTestResult: async (id: number, data: any): Promise<BaseResponse> => {
-    const response = await apiClient.put<BaseResponse>(`/api/v1/care/testresults/${id}`, data);
+    const response = await apiClient.put<BaseResponse>(`/api/v1/health/testresults/${id}`, data);
     return response.data;
   },
   
   deleteTestResult: async (id: number): Promise<BaseResponse> => {
-    const response = await apiClient.delete<BaseResponse>(`/api/v1/care/testresults/${id}`);
+    const response = await apiClient.delete<BaseResponse>(`/api/v1/health/testresults/${id}`);
     return response.data;
   },
   

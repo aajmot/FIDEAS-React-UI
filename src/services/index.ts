@@ -33,7 +33,7 @@ export {
   diagnosticService, 
   prescriptionService, 
   billingService 
-} from './modules/care';
+} from './modules/health';
 
 // Dashboard
 export { 

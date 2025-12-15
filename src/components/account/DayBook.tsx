@@ -28,18 +28,21 @@ const DayBook: React.FC = () => {
   const loadDayBook = async () => {
     try {
       setLoading(true);
-      const response = await ledgerService.getLedgerEntries({
-        ...filters,
+      const response = await ledgerService.getBooks({
+        book_type: 'DAILY_BOOK',
+        from_date: filters.from_date,
+        to_date: filters.to_date,
         page: 1,
         per_page: 1000
       });
-      setEntries(response.data);
+      setEntries(response.data || []);
       
-      const totalDebit = response.data.reduce((sum: number, entry: any) => sum + (entry.debit || 0), 0);
-      const totalCredit = response.data.reduce((sum: number, entry: any) => sum + (entry.credit || 0), 0);
+      const totalDebit = (response.data || []).reduce((sum: number, entry: any) => sum + (entry.debit_amount || 0), 0);
+      const totalCredit = (response.data || []).reduce((sum: number, entry: any) => sum + (entry.credit_amount || 0), 0);
       setSummary({ total_debit: totalDebit, total_credit: totalCredit });
     } catch (error) {
       showToast('error', 'Failed to load day book');
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -55,7 +58,7 @@ const DayBook: React.FC = () => {
 
   const columns = [
     {
-      key: 'date',
+      key: 'transaction_date',
       label: 'Date',
       render: (value: string) => value ? new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : '-'
     },
@@ -72,21 +75,30 @@ const DayBook: React.FC = () => {
       )
     },
     { key: 'voucher_type', label: 'Type' },
-    { key: 'description', label: 'Particulars' },
+    { key: 'narration', label: 'Particulars' },
+    { key: 'account_name', label: 'Account' },
     {
-      key: 'debit',
+      key: 'debit_amount',
       label: 'Debit',
       render: (value: number) => {
         const debitValue = Number(value) || 0;
-        return debitValue > 0 ? debitValue.toLocaleString() : '-';
+        return debitValue > 0 ? debitValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-';
       }
     },
     {
-      key: 'credit',
+      key: 'credit_amount',
       label: 'Credit',
       render: (value: number) => {
         const creditValue = Number(value) || 0;
-        return creditValue > 0 ? creditValue.toLocaleString() : '-';
+        return creditValue > 0 ? creditValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-';
+      }
+    },
+    {
+      key: 'balance',
+      label: 'Balance',
+      render: (value: number) => {
+        const balanceValue = Number(value) || 0;
+        return balanceValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
     }
   ];

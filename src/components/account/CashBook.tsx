@@ -50,34 +50,22 @@ const CashBook: React.FC = () => {
   const loadCashBook = async () => {
     try {
       setLoading(true);
-      const response = await ledgerService.getLedgerEntries({
-        account_id: filters.account_id,
+      const response = await ledgerService.getBooks({
+        book_type: 'CASH_BOOK',
+        account_id: parseInt(filters.account_id),
         from_date: filters.from_date,
         to_date: filters.to_date,
         page: 1,
         per_page: 1000
       });
 
-      const ledgerData = response.data;
-      let runningBalance = 0;
+      const ledgerData = response.data || [];
 
-      const entriesWithBalance = ledgerData.map((entry: any) => {
-        const cashIn = entry.debit || 0;
-        const cashOut = entry.credit || 0;
-        runningBalance += cashIn - cashOut;
-        return {
-          ...entry,
-          cash_in: cashIn,
-          cash_out: cashOut,
-          balance: runningBalance
-        };
-      });
-
-      setEntries(entriesWithBalance);
-
-      const totalCashIn = ledgerData.reduce((sum: number, e: any) => sum + (e.debit || 0), 0);
-      const totalCashOut = ledgerData.reduce((sum: number, e: any) => sum + (e.credit || 0), 0);
+      const totalCashIn = ledgerData.reduce((sum: number, e: any) => sum + (e.debit_amount || 0), 0);
+      const totalCashOut = ledgerData.reduce((sum: number, e: any) => sum + (e.credit_amount || 0), 0);
       const closingBalance = totalCashIn - totalCashOut;
+
+      setEntries(ledgerData);
 
       setSummary({
         opening_balance: 0,
@@ -87,6 +75,7 @@ const CashBook: React.FC = () => {
       });
     } catch (error) {
       showToast('error', 'Failed to load cash book');
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -102,31 +91,40 @@ const CashBook: React.FC = () => {
 
   const columns = [
     {
-      key: 'date',
+      key: 'transaction_date',
       label: 'Date',
       render: (value: string) => value ? new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : '-'
     },
     { key: 'voucher_number', label: 'Voucher No.' },
     { key: 'voucher_type', label: 'Type' },
-    { key: 'description', label: 'Particulars' },
+    { key: 'narration', label: 'Particulars' },
     {
-      key: 'cash_in',
+      key: 'debit_amount',
       label: 'Cash In',
-      render: (value: number) => value > 0 ? `₹${value.toLocaleString()}` : '-'
+      render: (value: number) => {
+        const cashIn = Number(value) || 0;
+        return cashIn > 0 ? `₹${cashIn.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+      }
     },
     {
-      key: 'cash_out',
+      key: 'credit_amount',
       label: 'Cash Out',
-      render: (value: number) => value > 0 ? `₹${value.toLocaleString()}` : '-'
+      render: (value: number) => {
+        const cashOut = Number(value) || 0;
+        return cashOut > 0 ? `₹${cashOut.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+      }
     },
     {
       key: 'balance',
       label: 'Balance',
-      render: (value: number) => (
-        <span className={value >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-          ₹{value.toLocaleString()}
-        </span>
-      )
+      render: (value: number) => {
+        const balance = Number(value) || 0;
+        return (
+          <span className={balance >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+            ₹{balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+        );
+      }
     }
   ];
 

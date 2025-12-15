@@ -9,9 +9,9 @@
 
 import apiClient from './apiClient';
 import { userService, roleService, tenantService } from './modules/admin';
-import { patientService, doctorService, appointmentService, billingService } from './modules/care';
+import { patientService, doctorService, appointmentService, billingService } from './modules/health';
 import { productService, customerService, supplierService } from './modules/inventory';
-import { diagnosticService, prescriptionService } from './modules/care';
+import { diagnosticService, prescriptionService } from './modules/health';
 import { dashboardService } from './modules/dashboard';
 
 // Re-export all services from new modular structure
@@ -222,22 +222,47 @@ export const clinicService = {
 };
 
 // Care service (tests and categories)
-export const careService = {
+export const healthService = {
   ...diagnosticService,
   ...prescriptionService,
   importTestCategories: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    return apiClient.post('/api/v1/care/test-categories/import', formData);
+    return apiClient.post('/api/v1/health/testcategories/import', formData);
   },
-  exportTestCategoriesTemplate: () => apiClient.get('/api/v1/care/test-categories/template', { responseType: 'blob' }),
+  exportTestCategoriesTemplate: async () => {
+    const response = await apiClient.get('/api/v1/health/testcategories/export-template', { responseType: 'blob' });
+    const blob = response.data;
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'test_categories_template.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  },
   importTests: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    return apiClient.post('/api/v1/care/tests/import', formData);
+    return apiClient.post('/api/v1/health/tests/import', formData);
   },
-  exportTestsTemplate: () => apiClient.get('/api/v1/care/tests/template', { responseType: 'blob' })
+  exportTestsTemplate: async () => {
+    const response = await apiClient.get('/api/v1/health/tests/export-template', { responseType: 'blob' });
+    const blob = response.data;
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'tests_template.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
 };
+
+// Keep careService as alias for backward compatibility
+export const careService = healthService;
 
 // Combine inventory services (already exported individually)
 export const inventoryService = {
