@@ -74,6 +74,7 @@ import DiagnosticDoctorManagement from './components/clinic/DoctorManagement';
 import TestOrderManagement from './components/diagnostic/TestOrderManagement';
 import TestResultManagement from './components/diagnostic/TestResultManagement';
 import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
 import ARAgingPage from './pages/ARAgingPage';
 import APAgingPage from './pages/APAgingPage';
 import AuditTrailPage from './pages/AuditTrailPage';
@@ -136,6 +137,7 @@ function App() {
               }>
                 <Route index element={<Navigate to="/home/dashboard" replace />} />
                 <Route path="home/dashboard" element={<Dashboard />} />
+                <Route path="profile" element={<Profile />} />
                 <Route path="admin/user-management" element={<UserManagement />} />
                 <Route path="admin/role-management" element={<RoleManagement />} />
                 <Route path="admin/user-role-mapping" element={<UserRoleMapping />} />

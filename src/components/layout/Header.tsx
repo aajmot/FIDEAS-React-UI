@@ -158,25 +158,47 @@ const Header: React.FC<HeaderProps> = ({ tenantName, menus }) => {
             </div>
           ))}
 
-          <div className="relative ml-2 lg:ml-4">
+          <div className="relative ml-4">
             <button
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center px-2 lg:px-3 py-2 text-xs lg:text-sm font-medium text-white bg-accent hover:bg-blue-700 rounded-md transition-colors"
+              className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors group"
             >
-              <User className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">{user?.username || 'Guest'}</span>
-              <ChevronDown className="ml-1 h-4 w-4" />
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shadow-md">
+                {(user?.username || 'G').charAt(0).toUpperCase()}
+              </div>
+              {/* <ChevronDown className="h-4 w-4 text-gray-400 group-hover:text-gray-600" /> */}
             </button>
 
             {userMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {user?.username || 'Guest'}
+                    {user?.roles && user.roles.length > 0 && (
+                      <span className="text-xs font-normal text-gray-500">
+                        ({user.roles[0]}{user.roles.length > 1 ? `+${user.roles.length - 1}` : ''})
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{user?.email || 'No email'}</p>
+                </div>
                 <div className="py-1">
                   <button
-                    onClick={logout}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => {
+                      navigate('/profile');
+                      setUserMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3 transition-colors"
                   >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
+                    <User className="h-4 w-4" />
+                    <span>Profile</span>
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
                   </button>
                 </div>
               </div>
@@ -236,9 +258,30 @@ const Header: React.FC<HeaderProps> = ({ tenantName, menus }) => {
             ))}
 
             <div className="border-t border-gray-200 pt-2 mt-2">
+              <div className="px-3 py-2 bg-gray-50 rounded-md mb-2">
+                <p className="text-sm font-semibold text-gray-900">
+                  {user?.username || 'Guest'}
+                  {user?.roles && user.roles.length > 0 && (
+                    <span className="text-xs font-normal text-gray-500">
+                      ({user.roles[0]}{user.roles.length > 1 ? `+${user.roles.length - 1}` : ''})
+                    </span>
+                  )}
+                </p>
+                <p className="text-xs text-gray-500">{user?.email || 'No email'}</p>
+              </div>
+              <button
+                onClick={() => {
+                  navigate('/profile');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md flex items-center"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </button>
               <button
                 onClick={logout}
-                className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-md flex items-center"
+                className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md flex items-center"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout

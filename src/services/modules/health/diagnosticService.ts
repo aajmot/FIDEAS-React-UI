@@ -151,4 +151,48 @@ export const diagnosticService = {
     const response = await apiClient.delete<BaseResponse>(`/api/v1/health/testcategories/${id}`);
     return response.data;
   },
+  
+  importTestCategories: async (file: File): Promise<BaseResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post<BaseResponse>('/api/v1/health/testcategories/import', formData, {
+      headers: { 'Content-Type': undefined }
+    });
+    return response.data;
+  },
+  
+  exportTestCategoriesTemplate: async (): Promise<void> => {
+    const response = await apiClient.get('/api/v1/health/testcategories/export-template', { responseType: 'blob' });
+    const blob = response.data;
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'test_categories_template.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  },
+  
+  importTests: async (file: File): Promise<BaseResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post<BaseResponse>('/api/v1/health/tests/import', formData, {
+      headers: { 'Content-Type': undefined }
+    });
+    return response.data;
+  },
+  
+  exportTestsTemplate: async (): Promise<void> => {
+    const response = await apiClient.get('/api/v1/health/tests/export-template', { responseType: 'blob' });
+    const blob = response.data;
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'tests_template.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  },
 };

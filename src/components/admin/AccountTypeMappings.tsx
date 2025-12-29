@@ -50,23 +50,37 @@ const AccountTypeMappings: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [configurationsRes, accountsRes, configKeysRes] = await Promise.all([
+      
+      // Load configurations and accounts first (critical)
+      const [configurationsRes, accountsRes] = await Promise.all([
         adminService.getAccountConfigurations(),
-        adminService.getAccounts(),
-        adminService.getAccountConfigurationKeys()
+        adminService.getAccounts()
       ]);
       
       console.log('Configurations Response:', configurationsRes);
       console.log('Accounts Response:', accountsRes);
-      console.log('Config Keys Response:', configKeysRes);
       
       setConfigurations(configurationsRes.data || []);
       setAccounts(accountsRes.data || []);
-      // Config keys response has 'items' property instead of 'data'
-      setConfigurationKeys((configKeysRes as any).items || []);
-    } catch (error) {
+      
+      // Load configuration keys separately (optional, may fail)
+      try {
+        const configKeysRes = await adminService.getAccountConfigurationKeys();
+        console.log('Config Keys Response:', configKeysRes);
+        // Config keys response has 'items' property instead of 'data'
+        setConfigurationKeys((configKeysRes as any).items || []);
+      } catch (keyError: any) {
+        console.warn('Configuration keys endpoint not available:', keyError.message);
+        // Silently fail - show empty state instead of error
+        setConfigurationKeys([]);
+      }
+    } catch (error: any) {
       console.error('Error loading data:', error);
-      showToast('error', 'Failed to load data');
+      showToast('error', 'Failed to load account configurations');
+      // Set empty arrays to prevent undefined errors
+      setConfigurations([]);
+      setAccounts([]);
+      setConfigurationKeys([]);
     } finally {
       setLoading(false);
     }

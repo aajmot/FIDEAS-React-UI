@@ -89,8 +89,11 @@ const TransactionTemplates: React.FC = () => {
       console.log('Config Keys Response:', response);
       // API returns data in 'items' property
       setConfigurationKeys((response as any).items || []);
-    } catch (error) {
-      console.error('Failed to load configuration keys');
+    } catch (error: any) {
+      console.warn('Configuration keys endpoint not available:', error.message);
+      // Silently fail - this is optional data
+      // Don't show error toast as it's not critical for the page to function
+      setConfigurationKeys([]);
     }
   };
 

@@ -148,9 +148,9 @@ const PatientManagement: React.FC = () => {
       render: (value: string) => formatDate(value)
     },
     { 
-      key: 'date_of_birth', 
+      key: 'age', 
       label: 'Age',
-      render: (value: string) => calculateAge(value)
+      render: (value: string, row: any) => calculateAge(row.date_of_birth)
     },
     { 
       key: 'gender', 
