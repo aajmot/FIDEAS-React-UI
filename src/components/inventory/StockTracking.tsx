@@ -172,7 +172,7 @@ const StockTracking: React.FC = () => {
         const quantity = value || 0;
         return (
           <span className={getMovementColor(row.movement_type)}>
-            {row.movement_type === 'out' ? '-' : '+'}{quantity.toFixed(2)}
+            {row.movement_type === 'out' ? '-' : '+'}{quantity?.toFixed(2)}
           </span>
         );
       }
@@ -201,16 +201,16 @@ const StockTracking: React.FC = () => {
           <div className="text-sm text-gray-600">Total Movements</div>
         </div>
         <div className="bg-green-50 p-4 rounded-lg shadow">
-          <div className="text-2xl font-bold text-green-600">{summaryData.total_in.toFixed(2)}</div>
+          <div className="text-2xl font-bold text-green-600">{summaryData?.total_in?.toFixed(2)}</div>
           <div className="text-sm text-green-600">Stock In</div>
         </div>
         <div className="bg-red-50 p-4 rounded-lg shadow">
-          <div className="text-2xl font-bold text-red-600">{summaryData.total_out.toFixed(2)}</div>
+          <div className="text-2xl font-bold text-red-600">{summaryData?.total_out?.toFixed(2)}</div>
           <div className="text-sm text-red-600">Stock Out</div>
         </div>
         <div className="bg-blue-50 p-4 rounded-lg shadow">
-          <div className={`text-2xl font-bold ${summaryData.net_movement >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {summaryData.net_movement >= 0 ? '+' : ''}{summaryData.net_movement.toFixed(2)}
+          <div className={`text-2xl font-bold ${summaryData?.net_movement >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {summaryData?.net_movement >= 0 ? '+' : ''}{summaryData?.net_movement?.toFixed(2)}
           </div>
           <div className="text-sm text-blue-600">Net Movement</div>
         </div>

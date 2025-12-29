@@ -99,12 +99,87 @@ const MenuAccessScreen: React.FC = () => {
   const loadRoleMenus = async (roleId: number) => {
     try {
       setLoading(true);
-      const response = await adminService.getRoleMenus(roleId);
-      const menuData = response.data || [];
-      setMenus(menuData);
-      
-      // Check if role has any existing menu access
-      const hasExistingAccess = menuData.some((m: MenuPermission) => m.is_assigned);
+      // Fetch all menus and role-specific assigned menus, then merge
+      const [allMenusResp, assignedResp] = await Promise.all([
+        adminService.getAllMenus(),
+        adminService.getRoleMenus(roleId)
+      ]);
+
+      const allMenus = allMenusResp?.data || [];
+      const assigned = assignedResp?.data || [];
+
+      // Normalize and merge: build MenuPermission objects from all menus
+      const merged: MenuPermission[] = allMenus.map((m: any) => {
+        // Normalize IDs to numbers so map lookups work reliably
+        const menuId = m.id !== undefined && m.id !== null ? Number(m.id) : (m.menu_id !== undefined && m.menu_id !== null ? Number(m.menu_id) : NaN);
+        const parentRaw = m.parent_id ?? m.parent_menu_id ?? null;
+        const parentId = parentRaw !== null && parentRaw !== undefined ? Number(parentRaw) : null;
+
+        // assigned item could reference menu by menu_id or id; coerce to number for comparison
+        const assignedItem = assigned.find((a: any) => {
+          const aMenuId = a.menu_id ?? a.id;
+          return aMenuId !== undefined && aMenuId !== null && Number(aMenuId) === menuId;
+        });
+
+        const canCreate = !!(assignedItem?.can_create);
+        const canUpdate = !!(assignedItem?.can_update);
+        const canDelete = !!(assignedItem?.can_delete);
+        const canImport = !!(assignedItem?.can_import);
+        const canExport = !!(assignedItem?.can_export);
+        const canPrint = !!(assignedItem?.can_print);
+
+        const isAssigned = !!(assignedItem && (canCreate || canUpdate || canDelete || canImport || canExport || canPrint));
+
+        return {
+          menu_id: menuId,
+          menu_name: m.name || m.menu_name || m.title || '',
+          menu_code: m.code || m.menu_code || '',
+          module_code: m.module_code || m.module || '',
+          parent_menu_id: parentId,
+          icon: m.icon ?? null,
+          route: m.route ?? null,
+          is_assigned: isAssigned,
+          can_create: canCreate,
+          can_update: canUpdate,
+          can_delete: canDelete,
+          can_import: canImport,
+          can_export: canExport,
+          can_print: canPrint
+        } as MenuPermission;
+      });
+
+      // Also include any assigned menus not present in allMenus (defensive)
+      const extraAssigned = assigned.filter((a: any) => !allMenus.some((m: any) => {
+        const mId = m.id ?? m.menu_id;
+        const aId = a.menu_id ?? a.id;
+        return mId !== undefined && aId !== undefined && Number(mId) === Number(aId);
+      }));
+      extraAssigned.forEach((a: any) => {
+        const menuId = a.menu_id ?? a.id;
+        const parentRaw = a.parent_menu_id ?? a.parent_id ?? null;
+        merged.push({
+          menu_id: menuId !== undefined && menuId !== null ? Number(menuId) : NaN,
+          menu_name: a.menu_name ?? a.name ?? '',
+          menu_code: a.menu_code ?? a.code ?? '',
+          module_code: a.module_code ?? a.module ?? '',
+          parent_menu_id: parentRaw !== null && parentRaw !== undefined ? Number(parentRaw) : null,
+          icon: a.icon ?? null,
+          route: a.route ?? null,
+          is_assigned: !!(a.is_assigned || a.can_create || a.can_update || a.can_delete || a.can_import || a.can_export || a.can_print),
+          can_create: !!a.can_create,
+          can_update: !!a.can_update,
+          can_delete: !!a.can_delete,
+          can_import: !!a.can_import,
+          can_export: !!a.can_export,
+          can_print: !!a.can_print
+        });
+      });
+
+      setMenus(merged);
+
+      // Update editingRoleMenu info if role has existing access
+      const assignedCount = merged.filter((m: MenuPermission) => m.is_assigned).length;
+      const hasExistingAccess = assignedCount > 0;
       if (hasExistingAccess && !editingRoleMenu) {
         const role = roles.find(r => r.id === roleId);
         if (role) {
@@ -112,7 +187,7 @@ const MenuAccessScreen: React.FC = () => {
             role_id: roleId,
             role_name: role.name,
             role_description: role.description,
-            menu_count: menuData.filter((m: MenuPermission) => m.is_assigned).length,
+            menu_count: assignedCount,
             menus: ''
           });
         }

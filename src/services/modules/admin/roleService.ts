@@ -70,13 +70,18 @@ export const roleService = {
     return response.data;
   },
   
+  getAllMenus: async (): Promise<BaseResponse> => {
+    const response = await apiClient.get<BaseResponse>('/api/v1/admin/menus');
+    return response.data;
+  },
+  
   updateRoleMenus: async (roleId: number, menuMappings: any[]): Promise<BaseResponse> => {
     const response = await apiClient.put<BaseResponse>(`/api/v1/admin/role-menu-mappings/${roleId}/menus`, menuMappings);
     return response.data;
   },
   
   getUserMenus: async (): Promise<BaseResponse> => {
-    const response = await apiClient.get<BaseResponse>('/api/v1/admin/menus');
+    const response = await apiClient.get<BaseResponse>('/api/v1/admin/menus/me');
     return response.data;
   },
 };
