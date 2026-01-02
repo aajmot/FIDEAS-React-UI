@@ -225,6 +225,14 @@ export const clinicService = {
 export const healthService = {
   ...diagnosticService,
   ...prescriptionService,
+  getTestInvoices: () => apiClient.get('/api/v1/health/testinvoices'),
+  getTestInvoice: (id: number, includeBarcode = false) => {
+    const params = includeBarcode ? '?include_barcode=true' : '';
+    return apiClient.get(`/api/v1/health/testinvoices/${id}${params}`);
+  },
+  createTestInvoice: (data: any) => apiClient.post('/api/v1/health/testinvoices', data),
+  updateTestInvoice: (id: number, data: any) => apiClient.put(`/api/v1/health/testinvoices/${id}`, data),
+  deleteTestInvoice: (id: number) => apiClient.delete(`/api/v1/health/testinvoices/${id}`),
   importTestCategories: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);

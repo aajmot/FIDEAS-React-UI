@@ -3,7 +3,7 @@ import { ArrowLeft, Printer } from 'lucide-react';
 import { diagnosticService, adminService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Tenant } from '../../types';
-import '../inventory/PurchaseOrderPrint.css';
+import '../../reports.css';
 
 interface TestResultViewProps {
   result: any;
@@ -66,15 +66,7 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
   };
 
   const handlePrint = () => {
-    const printContent = document.querySelector('.test-result-content');
-    const originalContent = document.body.innerHTML;
-    
-    if (printContent) {
-      document.body.innerHTML = printContent.innerHTML;
-      window.print();
-      document.body.innerHTML = originalContent;
-      window.location.reload();
-    }
+    window.print();
   };
 
   if (loading) {
@@ -97,7 +89,7 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
   }
 
   return (
-    <div className="purchase-order-view bg-white min-h-screen">
+    <div className="report-view bg-white">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center print:hidden bg-gray-50">
         <div className="flex items-center">
           <button
@@ -118,11 +110,11 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
         </button>
       </div>
 
-      <div className="test-result-content print-container max-w-4xl mx-auto p-8 print:p-3 print:max-w-none">
-        <div className="print-header border-b-2 border-blue-600 pb-3 mb-4 print:pb-2 print:mb-2">
+      <div className="report-content report-container max-w-4xl mx-auto p-8">
+        <div className="report-header border-b-2 border-blue-600 pb-3 mb-4">
           <div className="flex justify-between items-start">
             <div className="flex-1">
-              <h1 className="print-company-name text-3xl font-bold text-blue-600 mb-2">{tenant?.name || 'Company Name'}</h1>
+              <h1 className="report-company-name text-3xl font-bold text-blue-600 mb-2">{tenant?.name || 'Company Name'}</h1>
               {tenant?.address && (
                 <div className="text-gray-600 mb-2">
                   <div className="whitespace-pre-line">{tenant.address}</div>
@@ -135,7 +127,7 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
               </div>
             </div>
             <div className="text-right">
-              <h2 className="print-po-title text-2xl font-bold text-gray-800 mb-2">TEST RESULT</h2>
+              <h2 className="report-title text-2xl font-bold text-gray-800 mb-2">TEST RESULT</h2>
               <div className="text-sm text-gray-600">
                 <div>Date: {new Date().toLocaleDateString('en-US', { 
                   year: 'numeric', 
@@ -147,10 +139,10 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
           </div>
         </div>
 
-        <div className="print-section grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 print:gap-2 print:mb-2">
-          <div className="print-order-details bg-gray-50 p-4 rounded-lg print:p-2">
-            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Result Information</h3>
-            <div className="space-y-1 print:space-y-0">
+        <div className="report-section grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="report-details bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1">Result Information</h3>
+            <div className="space-y-1">
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Result Number:</span>
                 <span className="font-semibold text-gray-900">{resultDetails.result_number}</span>
@@ -170,9 +162,9 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
             </div>
           </div>
           
-          <div className="print-order-details bg-blue-50 p-4 rounded-lg print:p-2">
-            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Performed By</h3>
-            <div className="space-y-1 print:space-y-0">
+          <div className="report-details bg-blue-50 p-4 rounded-lg">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1">Performed By</h3>
+            <div className="space-y-1">
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Name:</span>
                 <span className="font-semibold text-gray-900">{resultDetails.performed_by || 'N/A'}</span>
@@ -186,16 +178,16 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
         </div>
 
         {(resultDetails.overall_report || resultDetails.notes) && (
-          <div className="print-section grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 print:gap-2 print:mb-2">
+          <div className="report-section grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {resultDetails.overall_report && (
-              <div className="print-order-details bg-yellow-50 p-4 rounded-lg print:p-2">
-                <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Overall Report</h3>
+              <div className="report-details bg-yellow-50 p-4 rounded-lg">
+                <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1">Overall Report</h3>
                 <p className="text-sm text-gray-700">{resultDetails.overall_report}</p>
               </div>
             )}
             {resultDetails.notes && (
-              <div className="print-order-details bg-yellow-50 p-4 rounded-lg print:p-2">
-                <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Notes</h3>
+              <div className="report-details bg-yellow-50 p-4 rounded-lg">
+                <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1">Notes</h3>
                 <p className="text-sm text-gray-700">{resultDetails.notes}</p>
               </div>
             )}
@@ -203,10 +195,10 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
         )}
 
         {resultDetails.details && resultDetails.details.length > 0 && (
-          <div className="print-section mb-4 print:mb-2">
-            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Parameter Details</h3>
-            <div className="overflow-x-auto shadow-sm border border-gray-200 rounded-lg print:overflow-visible">
-              <table className="print-table w-full">
+          <div className="report-section mb-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1">Parameter Details</h3>
+            <div className="overflow-x-auto shadow-sm border border-gray-200 rounded-lg">
+              <table className="report-table w-full">
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Parameter Name</th>
@@ -257,10 +249,10 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
         )}
 
         {resultDetails.files && resultDetails.files.length > 0 && (
-          <div className="print-section mb-4 print:mb-2">
-            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Image Details</h3>
-            <div className="overflow-x-auto shadow-sm border border-gray-200 rounded-lg print:overflow-visible">
-              <table className="print-table w-full">
+          <div className="report-section mb-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1">Image Details</h3>
+            <div className="overflow-x-auto shadow-sm border border-gray-200 rounded-lg">
+              <table className="report-table w-full">
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">File Name</th>
@@ -290,13 +282,13 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
           </div>
         )}
 
-        <div className="print-footer border-t border-gray-200 pt-3 mt-4 print:pt-2 print:mt-2">
+        <div className="report-footer border-t border-gray-200 pt-3 mt-4">
           <div className="text-right">
-            <div className="print-signature-space mb-8 print:mb-4">
-              <p className="text-xs text-gray-600 mb-1 print:text-xs">Authorized Signature</p>
-              <div className="border-b border-gray-300 w-32 ml-auto print:w-24"></div>
+            <div className="report-signature mb-8">
+              <p className="text-xs text-gray-600 mb-1">Authorized Signature</p>
+              <div className="border-b border-gray-300 w-32 ml-auto"></div>
             </div>
-            <div className="text-xs text-gray-500 print:text-xs">
+            <div className="text-xs text-gray-500">
               <p>This is a computer generated document.</p>
               <p>Generated on: {new Date().toLocaleString()}</p>
             </div>

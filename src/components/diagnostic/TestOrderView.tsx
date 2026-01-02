@@ -3,7 +3,7 @@ import { ArrowLeft, Printer } from 'lucide-react';
 import { diagnosticService, adminService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Tenant } from '../../types';
-import '../inventory/PurchaseOrderPrint.css';
+import '../../reports.css';
 
 interface TestOrderViewProps {
   order: any;
@@ -38,15 +38,7 @@ const TestOrderView: React.FC<TestOrderViewProps> = ({ order, onBack }) => {
   };
 
   const handlePrint = () => {
-    const printContent = document.querySelector('.test-order-content');
-    const originalContent = document.body.innerHTML;
-    
-    if (printContent) {
-      document.body.innerHTML = printContent.innerHTML;
-      window.print();
-      document.body.innerHTML = originalContent;
-      window.location.reload();
-    }
+    window.print();
   };
 
   if (loading) {
@@ -69,7 +61,7 @@ const TestOrderView: React.FC<TestOrderViewProps> = ({ order, onBack }) => {
   }
 
   return (
-    <div className="purchase-order-view bg-white min-h-screen">
+    <div className="report-view bg-white">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center print:hidden bg-gray-50">
         <div className="flex items-center">
           <button
@@ -90,11 +82,11 @@ const TestOrderView: React.FC<TestOrderViewProps> = ({ order, onBack }) => {
         </button>
       </div>
 
-      <div className="test-order-content print-container max-w-4xl mx-auto p-8 print:p-3 print:max-w-none">
-        <div className="print-header border-b-2 border-blue-600 pb-3 mb-4 print:pb-2 print:mb-2">
+      <div className="report-content report-container max-w-4xl mx-auto p-8">
+        <div className="report-header border-b-2 border-blue-600 pb-3 mb-4">
           <div className="flex justify-between items-start">
             <div className="flex-1">
-              <h1 className="print-company-name text-3xl font-bold text-blue-600 mb-2">{tenant?.name || 'Company Name'}</h1>
+              <h1 className="report-company-name text-3xl font-bold text-blue-600 mb-2">{tenant?.name || 'Company Name'}</h1>
               {tenant?.address && (
                 <div className="text-gray-600 mb-2">
                   <div className="whitespace-pre-line">{tenant.address}</div>
@@ -107,7 +99,7 @@ const TestOrderView: React.FC<TestOrderViewProps> = ({ order, onBack }) => {
               </div>
             </div>
             <div className="text-right">
-              <h2 className="print-po-title text-2xl font-bold text-gray-800 mb-2">TEST ORDER</h2>
+              <h2 className="report-title text-2xl font-bold text-gray-800 mb-2">TEST ORDER</h2>
               <div className="text-sm text-gray-600">
                 <div>Date: {new Date().toLocaleDateString('en-US', { 
                   year: 'numeric', 
@@ -119,10 +111,10 @@ const TestOrderView: React.FC<TestOrderViewProps> = ({ order, onBack }) => {
           </div>
         </div>
 
-        <div className="print-section grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 print:gap-2 print:mb-2">
-          <div className="print-order-details bg-gray-50 p-4 rounded-lg print:p-2">
-            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Order Information</h3>
-            <div className="space-y-1 print:space-y-0">
+        <div className="report-section grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="report-details bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1">Order Information</h3>
+            <div className="space-y-1">
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Order Number:</span>
                 <span className="font-semibold text-gray-900">{orderDetails.test_order_number}</span>
@@ -146,9 +138,9 @@ const TestOrderView: React.FC<TestOrderViewProps> = ({ order, onBack }) => {
             </div>
           </div>
           
-          <div className="print-order-details bg-blue-50 p-4 rounded-lg print:p-2">
-            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Patient Information</h3>
-            <div className="space-y-1 print:space-y-0">
+          <div className="report-details bg-blue-50 p-4 rounded-lg">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1">Patient Information</h3>
+            <div className="space-y-1">
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Name:</span>
                 <span className="font-semibold text-gray-900">{orderDetails.patient_name}</span>
@@ -161,10 +153,10 @@ const TestOrderView: React.FC<TestOrderViewProps> = ({ order, onBack }) => {
           </div>
         </div>
 
-        <div className="print-section grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 print:gap-2 print:mb-2">
-          <div className="print-order-details bg-green-50 p-4 rounded-lg print:p-2">
-            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Doctor Information</h3>
-            <div className="space-y-1 print:space-y-0">
+        <div className="report-section grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="report-details bg-green-50 p-4 rounded-lg">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1">Doctor Information</h3>
+            <div className="space-y-1">
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Name:</span>
                 <span className="font-semibold text-gray-900">{orderDetails.doctor_name || '-'}</span>
@@ -181,17 +173,17 @@ const TestOrderView: React.FC<TestOrderViewProps> = ({ order, onBack }) => {
           </div>
 
           {orderDetails.notes && (
-            <div className="print-order-details bg-yellow-50 p-4 rounded-lg print:p-2">
-              <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Notes</h3>
+            <div className="report-details bg-yellow-50 p-4 rounded-lg">
+              <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1">Notes</h3>
               <p className="text-sm text-gray-700">{orderDetails.notes}</p>
             </div>
           )}
         </div>
 
-        <div className="print-section mb-4 print:mb-2">
-          <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1 print:text-xs print:mb-1">Order Items</h3>
-          <div className="overflow-x-auto shadow-sm border border-gray-200 rounded-lg print:overflow-visible">
-            <table className="print-table w-full">
+        <div className="report-section mb-4">
+          <h3 className="text-sm font-semibold text-gray-800 mb-2 border-b border-gray-200 pb-1">Order Items</h3>
+          <div className="overflow-x-auto shadow-sm border border-gray-200 rounded-lg">
+            <table className="report-table w-full">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Test/Panel</th>
@@ -224,18 +216,18 @@ const TestOrderView: React.FC<TestOrderViewProps> = ({ order, onBack }) => {
           </div>
         </div>
 
-        <div className="print-section grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 print:gap-2 print:mb-2">
+        <div className="report-section grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <h4 className="font-medium text-gray-800 mb-0 text-xs print:text-xs">Terms & Conditions:</h4>
-            <ul className="text-xs text-gray-600 leading-tight print:text-xs print:leading-none">
+            <h4 className="font-medium text-gray-800 mb-0 text-xs">Terms & Conditions:</h4>
+            <ul className="text-xs text-gray-600 leading-tight">
               <li>• Test results will be available as per standard turnaround time</li>
               <li>• Sample collection as per appointment schedule</li>
               <li>• All disputes subject to local jurisdiction</li>
             </ul>
           </div>
-          <div className="print-summary bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg shadow-sm border border-blue-200 print:p-2">
-            <h4 className="text-sm font-semibold text-gray-800 mb-2 border-b border-blue-200 pb-1 print:text-xs print:mb-1">Order Summary</h4>
-            <div className="space-y-1 print:space-y-0">
+          <div className="report-summary bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg shadow-sm border border-blue-200">
+            <h4 className="text-sm font-semibold text-gray-800 mb-2 border-b border-blue-200 pb-1">Order Summary</h4>
+            <div className="space-y-1">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Subtotal:</span>
                 <span className="font-medium text-gray-900">{(orderDetails.total_amount || 0).toFixed(2)}</span>
@@ -255,20 +247,20 @@ const TestOrderView: React.FC<TestOrderViewProps> = ({ order, onBack }) => {
               <div className="border-t border-blue-200 pt-3">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold text-gray-800">Total Amount:</span>
-                  <span className="print-total text-2xl font-bold text-blue-600">{(orderDetails.final_amount || 0).toFixed(2)}</span>
+                  <span className="report-total text-2xl font-bold text-blue-600">{(orderDetails.final_amount || 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="print-footer border-t border-gray-200 pt-3 mt-4 print:pt-2 print:mt-2">
+        <div className="report-footer border-t border-gray-200 pt-3 mt-4">
           <div className="text-right">
-            <div className="print-signature-space mb-8 print:mb-4">
-              <p className="text-xs text-gray-600 mb-1 print:text-xs">Authorized Signature</p>
-              <div className="border-b border-gray-300 w-32 ml-auto print:w-24"></div>
+            <div className="report-signature mb-8">
+              <p className="text-xs text-gray-600 mb-1">Authorized Signature</p>
+              <div className="border-b border-gray-300 w-32 ml-auto"></div>
             </div>
-            <div className="text-xs text-gray-500 print:text-xs">
+            <div className="text-xs text-gray-500">
               <p>This is a computer generated document.</p>
               <p>Generated on: {new Date().toLocaleString()}</p>
             </div>

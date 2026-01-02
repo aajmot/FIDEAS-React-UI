@@ -1,0 +1,142 @@
+/* ========================================
+   FIDEAS ERP - Report Print Styles
+   Centralized print styles for all reports
+   ======================================== */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0.3in;
+  }
+  
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  body * {
+    visibility: hidden;
+  }
+  
+  .report-content,
+  .report-content * {
+    visibility: visible;
+  }
+  
+  .report-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  
+  /* Hide non-printable elements */
+  .print\:hidden {
+    display: none !important;
+  }
+  
+  /* Report Container */
+  .report-container {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 9px !important;
+    line-height: 1.2 !important;
+  }
+  
+  /* Report Header */
+  .report-header {
+    margin-bottom: 8px !important;
+    padding-bottom: 4px !important;
+  }
+  
+  .report-company-name {
+    font-size: 16px !important;
+    margin-bottom: 2px !important;
+  }
+  
+  .report-title {
+    font-size: 14px !important;
+    margin-bottom: 2px !important;
+  }
+  
+  /* Report Sections */
+  .report-section {
+    margin-bottom: 6px !important;
+    page-break-inside: avoid;
+  }
+  
+  .report-section.grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+  }
+  
+  /* Report Details Box */
+  .report-details {
+    padding: 6px !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .report-details h3 {
+    font-size: 9px !important;
+    margin-bottom: 3px !important;
+  }
+  
+  /* Report Table */
+  .report-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .report-table th,
+  .report-table td {
+    border: 1px solid #000 !important;
+    padding: 2px 4px !important;
+    font-size: 8px !important;
+    line-height: 1.1 !important;
+  }
+  
+  .report-table th {
+    background-color: #f5f5f5 !important;
+    font-weight: bold !important;
+  }
+  
+  /* Report Summary */
+  .report-summary {
+    width: 250px !important;
+    margin-left: auto !important;
+    font-size: 9px !important;
+    padding: 6px !important;
+  }
+  
+  .report-total {
+    font-size: 12px !important;
+    font-weight: bold !important;
+  }
+  
+  /* Report Footer */
+  .report-footer {
+    margin-top: 10px !important;
+    padding-top: 6px !important;
+    font-size: 8px !important;
+    page-break-inside: avoid;
+  }
+  
+  .report-signature {
+    margin-bottom: 10px !important;
+  }
+}
+
+/* Screen Preview Styles */
+@media screen {
+  .report-view {
+    background-color: #f8f9fa;
+  }
+  
+  .report-content {
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+}
