@@ -338,8 +338,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
     <div ref={datePickerRef} className={`relative ${className}`}>
       <div
         onClick={() => !disabled && setIsOpen(!isOpen)}
+        style={{
+          height: 'var(--erp-input-height)',
+          padding: 'var(--erp-input-padding)',
+          fontSize: 'var(--erp-font-size)'
+        }}
         className={`
-          w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer flex items-center justify-between bg-white transition-all duration-200
+          w-full border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer flex items-center justify-between bg-white transition-all duration-200
           ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'hover:border-gray-400'}
           ${isOpen ? 'ring-1 ring-primary border-primary' : ''}
         `}

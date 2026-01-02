@@ -195,7 +195,7 @@ const ProductManagement: React.FC = () => {
   ];
 
   return (
-    <div className="p-3 sm:p-6">
+    <div style={{ padding: 'var(--erp-spacing-lg)' }}>
       <ProductForm
         product={editingProduct}
         onSave={handleSave}

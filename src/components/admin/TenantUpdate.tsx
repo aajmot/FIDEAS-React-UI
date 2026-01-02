@@ -136,21 +136,21 @@ const TenantUpdate: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="p-3 sm:p-6 flex justify-center">
+      <div style={{ padding: 'var(--erp-spacing-lg)' }} className="flex justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-3 sm:p-6">
+    <div style={{ padding: 'var(--erp-spacing-lg)' }}>
       <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Tenant Information</h2>
+        <div className="border-b border-gray-200" style={{ padding: 'var(--erp-section-padding)' }}>
+          <h2 className="font-medium text-gray-800" style={{ fontSize: 'var(--erp-datatable-title-font-size)', lineHeight: 'var(--erp-line-height)' }}>Tenant Information</h2>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <form onSubmit={handleSubmit} style={{ padding: 'var(--erp-card-padding)' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 'var(--erp-spacing-lg)' }}>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Tenant Name
@@ -183,11 +183,12 @@ const TenantUpdate: React.FC = () => {
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Description
               </label>
-              <FormTextarea
+              <textarea
                 name="description"
                 value={tenantData.description}
-                onChange={(value) => setTenantData(prev => ({ ...prev, description: value }))}
-                rows={3}
+                onChange={handleChange}
+                rows={1}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary resize-none overflow-y-auto h-9"
               />
             </div>
 
@@ -209,11 +210,12 @@ const TenantUpdate: React.FC = () => {
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Tagline
               </label>
-              <FormTextarea
+              <textarea
                 name="tagline"
                 value={tenantData.tagline}
-                onChange={(value) => setTenantData(prev => ({ ...prev, tagline: value }))}
-                rows={2}
+                onChange={handleChange}
+                rows={1}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary resize-none overflow-y-auto h-9"
               />
             </div>
 
@@ -327,11 +329,11 @@ const TenantUpdate: React.FC = () => {
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
+          <div className="flex flex-col sm:flex-row justify-end" style={{ gap: 'var(--erp-spacing-sm)', marginTop: 'var(--erp-spacing-lg)' }}>
             <button
               type="submit"
               disabled={saving}
-              className="px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-secondary rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              className="erp-form-btn text-white bg-primary hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? 'Updating...' : 'Update Tenant'}
             </button>

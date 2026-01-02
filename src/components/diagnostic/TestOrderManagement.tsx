@@ -6,6 +6,7 @@ import DataTable from '../common/DataTable';
 import ConfirmationModal from '../common/ConfirmationModal';
 import { diagnosticService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { formatUTCToLocal } from '../../utils/dateUtils';
 
 interface TestOrder {
   id: number;
@@ -16,6 +17,10 @@ interface TestOrder {
   status: string;
   urgency: string;
   final_amount: number;
+  cgst_amount?: number;
+  sgst_amount?: number;
+  igst_amount?: number;
+  cess_amount?: number;
 }
 
 const TestOrderManagement: React.FC = () => {
@@ -111,18 +116,20 @@ const TestOrderManagement: React.FC = () => {
       key: 'order_date',
       label: 'Date',
       sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }),
+      render: (value: string) => formatUTCToLocal(value),
     },
     {
       key: 'urgency',
       label: 'Urgency',
       sortable: true,
       render: (value: string) => (
-        <span className={`px-2 py-1 text-xs rounded-full ${
-          value === 'urgent' ? 'bg-red-100 text-red-800' :
-          value === 'normal' ? 'bg-blue-100 text-blue-800' :
-          'bg-gray-100 text-gray-800'
-        }`}>
+        <span style={{
+          padding: '1px 6px',
+          fontSize: 'var(--erp-font-size-xs)',
+          borderRadius: '4px',
+          backgroundColor: value === 'urgent' ? '#fee2e2' : value === 'normal' ? '#dbeafe' : '#f3f4f6',
+          color: value === 'urgent' ? '#991b1b' : value === 'normal' ? '#1e40af' : '#6b7280'
+        }}>
           {value || 'Normal'}
         </span>
       ),
@@ -132,14 +139,43 @@ const TestOrderManagement: React.FC = () => {
       label: 'Status',
       sortable: true,
       render: (value: string) => (
-        <span className={`px-2 py-1 text-xs rounded-full ${
-          value === 'completed' ? 'bg-green-100 text-green-800' :
-          value === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-          'bg-gray-100 text-gray-800'
-        }`}>
+        <span style={{
+          padding: '1px 6px',
+          fontSize: 'var(--erp-font-size-xs)',
+          borderRadius: '4px',
+          backgroundColor: value === 'completed' ? '#dcfce7' : value === 'pending' ? '#fef3c7' : '#f3f4f6',
+          color: value === 'completed' ? '#166534' : value === 'pending' ? '#854d0e' : '#6b7280'
+        }}>
           {value || 'Pending'}
         </span>
       ),
+    },
+     {
+      key: 'subtotal_amount',
+      label: 'Sub Total',
+      sortable: true,
+      render: (value: number) => (value || 0).toFixed(2),
+    },
+     {
+      key: 'items_total_discount_amount',
+      label: 'Item Disc',
+      sortable: true,
+      render: (value: number) => (value || 0).toFixed(2),
+    },
+     {
+      key: 'taxable_amount',
+      label: 'Taxable',
+      sortable: true,
+      render: (value: number) => (value || 0).toFixed(2),
+    },
+    {
+      key: 'total_tax',
+      label: 'Total Tax',
+      sortable: true,
+      render: (_: any, order: TestOrder) => {
+        const total = (order.cgst_amount || 0) + (order.sgst_amount || 0) + (order.igst_amount || 0) + (order.cess_amount || 0);
+        return total.toFixed(2);
+      },
     },
     {
       key: 'final_amount',
@@ -151,7 +187,7 @@ const TestOrderManagement: React.FC = () => {
       key: 'actions',
       label: 'Actions',
       render: (_: any, order: TestOrder) => (
-        <div className="flex space-x-2">
+        <div className="flex space-x-0">
           <button
             onClick={() => handleView(order)}
             className="text-blue-600 hover:text-blue-800"
@@ -191,7 +227,7 @@ const TestOrderManagement: React.FC = () => {
   }
 
   return (
-    <div className="p-3 sm:p-6">
+    <div style={{ padding: 'var(--erp-spacing-lg)' }}>
       <TestOrderForm
         onSave={handleSave}
         onCancel={handleCancel}
@@ -201,19 +237,12 @@ const TestOrderManagement: React.FC = () => {
         editData={editingOrder}
       />
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Test Orders</h2>
-        </div>
-        <div className="p-6">
-          <DataTable
-            title="Test Orders"
-            data={orders}
-            columns={columns}
-            loading={loading}
-          />
-        </div>
-      </div>
+      <DataTable
+        title="Test Orders"
+        data={orders}
+        columns={columns}
+        loading={loading}
+      />
 
       <ConfirmationModal
         isOpen={deleteModal.isOpen}

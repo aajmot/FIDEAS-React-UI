@@ -21,10 +21,17 @@ interface OrderItem {
   panel_name: string;
   is_panel: boolean;
   rate: number;
-  gst: number;
-  cess: number;
+  cgst_rate: number;
+  sgst_rate: number;
+  igst_rate: number;
+  cess_rate: number;
   disc_percentage: number;
   disc_amount: number;
+  taxable_amount: number;
+  cgst_amount: number;
+  sgst_amount: number;
+  igst_amount: number;
+  cess_amount: number;
   total_amount: number;
 }
 
@@ -57,8 +64,8 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
     doctor_phone: '',
     doctor_license_number: '',
     order_date: new Date().toISOString().split('T')[0],
-    status: 'pending',
-    urgency: 'normal',
+    status: 'DRAFT',
+    urgency: 'ROUTINE',
     notes: '',
     agency_id: '',
     disc_percentage: 0,
@@ -72,10 +79,17 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
     panel_name: '',
     is_panel: false,
     rate: 0,
-    gst: 0,
-    cess: 0,
+    cgst_rate: 0,
+    sgst_rate: 0,
+    igst_rate: 0,
+    cess_rate: 0,
     disc_percentage: 0,
     disc_amount: 0,
+    taxable_amount: 0,
+    cgst_amount: 0,
+    sgst_amount: 0,
+    igst_amount: 0,
+    cess_amount: 0,
     total_amount: 0
   }]);
 
@@ -99,8 +113,8 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
         doctor_phone: '',
         doctor_license_number: '',
         order_date: new Date().toISOString().split('T')[0],
-        status: 'pending',
-        urgency: 'normal',
+        status: 'DRAFT',
+        urgency: 'ROUTINE',
         notes: '',
         agency_id: '',
         disc_percentage: 0,
@@ -113,10 +127,17 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
         panel_name: '',
         is_panel: false,
         rate: 0,
-        gst: 0,
-        cess: 0,
+        cgst_rate: 0,
+        sgst_rate: 0,
+        igst_rate: 0,
+        cess_rate: 0,
         disc_percentage: 0,
         disc_amount: 0,
+        taxable_amount: 0,
+        cgst_amount: 0,
+        sgst_amount: 0,
+        igst_amount: 0,
+        cess_amount: 0,
         total_amount: 0
       }]);
     }
@@ -149,10 +170,17 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
           panel_name: item.panel_name || '',
           is_panel: !!item.panel_id,
           rate: item.rate || 0,
-          gst: item.gst || 0,
-          cess: item.cess || 0,
+          cgst_rate: item.cgst_rate || 0,
+          sgst_rate: item.sgst_rate || 0,
+          igst_rate: item.igst_rate || 0,
+          cess_rate: item.cess_rate || 0,
           disc_percentage: item.disc_percentage || 0,
           disc_amount: item.disc_amount || 0,
+          taxable_amount: item.taxable_amount || 0,
+          cgst_amount: item.cgst_amount || 0,
+          sgst_amount: item.sgst_amount || 0,
+          igst_amount: item.igst_amount || 0,
+          cess_amount: item.cess_amount || 0,
           total_amount: item.total_amount || 0
         })));
       }
@@ -204,10 +232,19 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name.includes('percentage') || name === 'roundoff' ? parseFloat(value) || 0 : value
-    }));
+    if (name === 'disc_percentage') {
+      setFormData(prev => ({ ...prev, disc_percentage: parseFloat(value) || 0 }));
+    } else if (name === 'disc_amount') {
+      const discAmount = parseFloat(value) || 0;
+      const { itemsTotal } = calculateTotals();
+      const discPercentage = itemsTotal > 0 ? (discAmount / itemsTotal) * 100 : 0;
+      setFormData(prev => ({ ...prev, disc_percentage: discPercentage }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: name === 'roundoff' ? parseFloat(value) || 0 : value
+      }));
+    }
   };
 
   const handleAppointmentChange = (value: string | number | (string | number)[]) => {
@@ -236,8 +273,11 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
       panel_id: 0,
       panel_name: '',
       rate: test?.rate || 0,
-      gst: test?.gst || 0,
-      cess: test?.cess || 0
+      disc_percentage:0,
+      cgst_rate: (test?.gst || 0) / 2,
+      sgst_rate: (test?.gst || 0) / 2,
+      igst_rate: 0,
+      cess_rate: test?.cess || 0
     };
     
     setItems(newItems);
@@ -256,8 +296,10 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
       panel_id: Number(panelId),
       panel_name: panel?.name || '',
       rate: panel?.cost || 0,
-      gst: panel?.gst || 0,
-      cess: panel?.cess || 0
+      cgst_rate: (panel?.gst || 0) / 2,
+      sgst_rate: (panel?.gst || 0) / 2,
+      igst_rate: 0,
+      cess_rate: panel?.cess || 0
     };
     
     setItems(newItems);
@@ -275,14 +317,21 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
     const item = itemsArray[index];
     const baseAmount = item.rate;
     const discountAmount = baseAmount * (item.disc_percentage / 100);
-    const discountedAmount = baseAmount - discountAmount;
-    const gstAmount = discountedAmount * (item.gst / 100);
-    const cessAmount = discountedAmount * (item.cess / 100);
-    const total = discountedAmount + gstAmount + cessAmount;
+    const taxableAmount = baseAmount - discountAmount;
+    const cgstAmount = taxableAmount * (item.cgst_rate / 100);
+    const sgstAmount = taxableAmount * (item.sgst_rate / 100);
+    const igstAmount = taxableAmount * (item.igst_rate / 100);
+    const cessAmount = taxableAmount * (item.cess_rate / 100);
+    const total = taxableAmount + cgstAmount + sgstAmount + igstAmount + cessAmount;
 
     itemsArray[index] = {
       ...item,
       disc_amount: discountAmount,
+      taxable_amount: taxableAmount,
+      cgst_amount: cgstAmount,
+      sgst_amount: sgstAmount,
+      igst_amount: igstAmount,
+      cess_amount: cessAmount,
       total_amount: total
     };
     setItems([...itemsArray]);
@@ -296,10 +345,17 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
       panel_name: '',
       is_panel: false,
       rate: 0,
-      gst: 0,
-      cess: 0,
+      cgst_rate: 0,
+      sgst_rate: 0,
+      igst_rate: 0,
+      cess_rate: 0,
       disc_percentage: 0,
       disc_amount: 0,
+      taxable_amount: 0,
+      cgst_amount: 0,
+      sgst_amount: 0,
+      igst_amount: 0,
+      cess_amount: 0,
       total_amount: 0
     }]);
   };
@@ -311,10 +367,17 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
   };
 
   const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + item.total_amount, 0);
-    const discountAmount = subtotal * (formData.disc_percentage / 100);
-    const finalTotal = subtotal - discountAmount + formData.roundoff;
-    return { subtotal, discountAmount, finalTotal };
+    const subtotal = items.reduce((sum, item) => sum + item.rate, 0);
+    const itemsDiscountAmount = items.reduce((sum, item) => sum + item.disc_amount, 0);
+    const taxableAmount = items.reduce((sum, item) => sum + item.taxable_amount, 0);
+    const cgstAmount = items.reduce((sum, item) => sum + item.cgst_amount, 0);
+    const sgstAmount = items.reduce((sum, item) => sum + item.sgst_amount, 0);
+    const igstAmount = items.reduce((sum, item) => sum + item.igst_amount, 0);
+    const cessAmount = items.reduce((sum, item) => sum + item.cess_amount, 0);
+    const itemsTotal = items.reduce((sum, item) => sum + item.total_amount, 0);
+    const overallDiscAmount = itemsTotal * (formData.disc_percentage / 100);
+    const finalTotal = itemsTotal - overallDiscAmount + formData.roundoff;
+    return { subtotal, itemsDiscountAmount, taxableAmount, cgstAmount, sgstAmount, igstAmount, cessAmount, itemsTotal, overallDiscAmount, finalTotal };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -325,17 +388,27 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
       return;
     }
 
-    const validItems = items.filter(item => (item.test_id > 0 || item.panel_id > 0)).map(item => ({
-      test_id: item.test_id || null,
+    const validItems = items.filter(item => (item.test_id > 0 || item.panel_id > 0)).map((item, idx) => ({
+      line_no: idx + 1,
+      test_id: item.test_id > 0 ? item.test_id : null,
       test_name: item.test_name,
-      panel_id: item.panel_id || null,
+      panel_id: item.panel_id > 0 ? item.panel_id : null,
       panel_name: item.panel_name,
       rate: item.rate,
-      gst: item.gst,
-      cess: item.cess,
       disc_percentage: item.disc_percentage,
       disc_amount: item.disc_amount,
-      total_amount: item.total_amount
+      taxable_amount: item.taxable_amount,
+      cgst_rate: item.cgst_rate,
+      cgst_amount: item.cgst_amount,
+      sgst_rate: item.sgst_rate,
+      sgst_amount: item.sgst_amount,
+      igst_rate: item.igst_rate,
+      igst_amount: item.igst_amount,
+      cess_rate: item.cess_rate,
+      cess_amount: item.cess_amount,
+      total_amount: item.total_amount,
+      item_status: 'PENDING',
+      remarks: ''
     }));
 
     if (validItems.length === 0) {
@@ -344,26 +417,37 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
     }
 
     try {
-      const { subtotal, discountAmount, finalTotal } = calculateTotals();
+      const { subtotal, itemsDiscountAmount, taxableAmount, cgstAmount, sgstAmount, igstAmount, cessAmount, overallDiscAmount, finalTotal } = calculateTotals();
       
       const orderData = {
         test_order_number: formData.test_order_number,
-        appointment_id: formData.appointment_id ? Number(formData.appointment_id) : null,
+        order_date: new Date(formData.order_date).toISOString(),
+        patient_id: formData.appointment_id ? Number(formData.appointment_id) : null,
         patient_name: formData.patient_name,
         patient_phone: formData.patient_phone,
+        doctor_id: null,
         doctor_name: formData.doctor_name,
         doctor_phone: formData.doctor_phone,
         doctor_license_number: formData.doctor_license_number,
-        order_date: new Date(formData.order_date).toISOString(),
-        status: formData.status,
-        urgency: formData.urgency,
-        notes: formData.notes,
+        appointment_id: formData.appointment_id ? Number(formData.appointment_id) : null,
         agency_id: formData.agency_id ? Number(formData.agency_id) : null,
-        total_amount: subtotal,
-        disc_percentage: formData.disc_percentage,
-        disc_amount: discountAmount,
+        subtotal_amount: subtotal,
+        items_total_discount_amount: itemsDiscountAmount,
+        taxable_amount: taxableAmount,
+        cgst_amount: cgstAmount,
+        sgst_amount: sgstAmount,
+        igst_amount: igstAmount,
+        cess_amount: cessAmount,
+        overall_disc_percentage: formData.disc_percentage,
+        overall_disc_amount: overallDiscAmount,
+        overall_cess_percentage: 0,
+        overall_cess_amount: 0,
         roundoff: formData.roundoff,
         final_amount: finalTotal,
+        urgency: formData.urgency,
+        status: formData.status,
+        notes: formData.notes,
+        tags: null,
         items: validItems
       };
 
@@ -384,24 +468,24 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
     }
   };
 
-  const { subtotal, discountAmount, finalTotal } = calculateTotals();
+  const { subtotal, itemsDiscountAmount, taxableAmount, cgstAmount, sgstAmount, igstAmount, cessAmount, itemsTotal, overallDiscAmount, finalTotal } = calculateTotals();
 
   return (
     <div className="bg-white rounded-lg shadow mb-6">
-      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900">Create Test Order</h2>
+      <div className="border-b border-gray-200 flex justify-between items-center" style={{ padding: 'var(--erp-section-padding)' }}>
+        <h2 className="font-medium text-gray-800" style={{ fontSize: 'var(--erp-datatable-title-font-size)', lineHeight: 'var(--erp-line-height)' }}>Create Test Order</h2>
         <button
           type="button"
           onClick={onToggleCollapse}
           className="text-gray-500 hover:text-gray-700"
         >
-          {isCollapsed ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+          {isCollapsed ? <ChevronDown className="erp-form-btn-icon" style={{ marginRight: 0 }} /> : <ChevronUp className="erp-form-btn-icon" style={{ marginRight: 0 }} />}
         </button>
       </div>
 
       {!isCollapsed && (
-        <form onSubmit={handleSubmit} className="p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
+        <form onSubmit={handleSubmit} style={{ padding: 'var(--erp-card-padding)' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-6" style={{ gap: 'var(--erp-spacing-lg)', marginBottom: 'var(--erp-spacing-xl)' }}>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Order Number</label>
               <input
@@ -465,9 +549,7 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
                 allowAdd={true}
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Patient Name *</label>
               <input
@@ -490,7 +572,9 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
               />
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-6 gap-3 mb-6">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Doctor Name</label>
               <input
@@ -512,9 +596,7 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Doctor License</label>
               <input
@@ -530,9 +612,10 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
               <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
               <SearchableDropdown
                 options={[
-                  { value: 'pending', label: 'Pending' },
-                  { value: 'completed', label: 'Completed' },
-                  { value: 'cancelled', label: 'Cancelled' }
+                  { value: 'DRAFT', label: 'Draft' },
+                  { value: 'PENDING', label: 'Pending' },
+                  { value: 'COMPLETED', label: 'Completed' },
+                  { value: 'CANCELLED', label: 'Cancelled' }
                 ]}
                 value={formData.status}
                 onChange={(value) => setFormData(prev => ({ ...prev, status: value.toString() }))}
@@ -546,8 +629,10 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
               <label className="block text-xs font-medium text-gray-700 mb-1">Urgency</label>
               <SearchableDropdown
                 options={[
-                  { value: 'normal', label: 'Normal' },
-                  { value: 'urgent', label: 'Urgent' }
+                  { value: 'ROUTINE', label: 'Routine' },
+                  { value: 'URGENT', label: 'Urgent' },
+                  { value: 'STAT', label: 'Stat' },
+                  { value: 'CRITICAL', label: 'Critical' }
                 ]}
                 value={formData.urgency}
                 onChange={(value) => setFormData(prev => ({ ...prev, urgency: value.toString() }))}
@@ -584,27 +669,36 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
           <div className="mb-6">
             <style>{`
               .test-order-table { table-layout: fixed !important; }
-              .test-order-table th:nth-child(1), .test-order-table td:nth-child(1) { width: 8% !important; }
-              .test-order-table th:nth-child(2), .test-order-table td:nth-child(2) { width: 25% !important; }
-              .test-order-table th:nth-child(3), .test-order-table td:nth-child(3) { width: 12% !important; }
-              .test-order-table th:nth-child(4), .test-order-table td:nth-child(4) { width: 10% !important; }
-              .test-order-table th:nth-child(5), .test-order-table td:nth-child(5) { width: 10% !important; }
-              .test-order-table th:nth-child(6), .test-order-table td:nth-child(6) { width: 10% !important; }
-              .test-order-table th:nth-child(7), .test-order-table td:nth-child(7) { width: 15% !important; }
-              .test-order-table th:nth-child(8), .test-order-table td:nth-child(8) { width: 10% !important; }
+              .test-order-table th:nth-child(1), .test-order-table td:nth-child(1) { width: 5% !important; }
+              .test-order-table th:nth-child(2), .test-order-table td:nth-child(2) { width: 15% !important; }
+              .test-order-table th:nth-child(3), .test-order-table td:nth-child(3) { width: 7% !important; }
+              .test-order-table th:nth-child(4), .test-order-table td:nth-child(4) { width: 6% !important; }
+              .test-order-table th:nth-child(5), .test-order-table td:nth-child(5) { width: 6% !important; }
+              .test-order-table th:nth-child(6), .test-order-table td:nth-child(6) { width: 6% !important; }
+              .test-order-table th:nth-child(7), .test-order-table td:nth-child(7) { width: 7% !important; }
+              .test-order-table th:nth-child(8), .test-order-table td:nth-child(8) { width: 8% !important; }
+              .test-order-table th:nth-child(9), .test-order-table td:nth-child(9) { width: 8% !important; }
+              .test-order-table th:nth-child(10), .test-order-table td:nth-child(10) { width: 8% !important; }
+              .test-order-table th:nth-child(11), .test-order-table td:nth-child(11) { width: 8% !important; }
+              .test-order-table th:nth-child(12), .test-order-table td:nth-child(12) { width: 8% !important; }
+              .test-order-table th:nth-child(13), .test-order-table td:nth-child(13) { width: 4% !important; }
             `}</style>
             <div className="overflow-x-auto">
-              <table className="border border-gray-200 test-order-table" style={{ minWidth: '800px', width: '100%' }}>
+              <table className="border border-gray-200 test-order-table" style={{ minWidth: '1200px', width: '100%' }}>
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>Is Panel</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-left" style={{ minWidth: '180px' }}>Test/Panel</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '70px' }}>Rate</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>GST%</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>CESS%</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Disc%</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '80px' }}>Total</th>
-                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center" style={{ minWidth: '60px' }}>Action</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center">Panel</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-left">Test/Panel</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center">Rate</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center">Disc%</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center">Disc Amt</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center">Taxable</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center">GST%</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center">GST Amt</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center">CESS%</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center">CESS Amt</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center">Total</th>
+                    <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -663,30 +757,50 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
                       <td className="px-3 py-2 w-16">
                         <input
                           type="number"
-                          value={item.gst}
-                          onChange={(e) => handleItemChange(index, 'gst', parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
-                          step="0.1"
-                        />
-                      </td>
-                      <td className="px-3 py-2 w-16">
-                        <input
-                          type="number"
-                          value={item.cess}
-                          onChange={(e) => handleItemChange(index, 'cess', parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
-                          step="0.1"
-                        />
-                      </td>
-                      <td className="px-3 py-2 w-16">
-                        <input
-                          type="number"
                           value={item.disc_percentage}
                           onChange={(e) => handleItemChange(index, 'disc_percentage', parseFloat(e.target.value) || 0)}
                           className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
                           step="0.1"
                         />
                       </td>
+                      <td className="px-3 py-2 w-16">
+                        <input
+                          type="number"
+                          value={item.disc_amount.toFixed(2)}
+                          onChange={(e) => {
+                            const discAmount = parseFloat(e.target.value) || 0;
+                            const discPercentage = item.rate > 0 ? (discAmount / item.rate) * 100 : 0;
+                            handleItemChange(index, 'disc_percentage', discPercentage);
+                          }}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
+                          step="0.01"
+                        />
+                      </td>
+                      <td className="px-3 py-2 w-20 text-sm text-center">{item.taxable_amount.toFixed(2)}</td>
+                      <td className="px-3 py-2 w-16">
+                        <input
+                          type="number"
+                          value={item.cgst_rate + item.sgst_rate}
+                          onChange={(e) => {
+                            const totalGst = parseFloat(e.target.value) || 0;
+                            handleItemChange(index, 'cgst_rate', totalGst / 2);
+                            handleItemChange(index, 'sgst_rate', totalGst / 2);
+                          }}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
+                          step="0.1"
+                        />
+                      </td>
+                      <td className="px-3 py-2 w-20 text-sm text-center">{(item.cgst_amount + item.sgst_amount + item.igst_amount).toFixed(2)}</td>
+                      <td className="px-3 py-2 w-16">
+                        <input
+                          type="number"
+                          value={item.cess_rate}
+                          onChange={(e) => handleItemChange(index, 'cess_rate', parseFloat(e.target.value) || 0)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center"
+                          step="0.1"
+                        />
+                      </td>
+                      <td className="px-3 py-2 w-20 text-sm text-center">{item.cess_amount.toFixed(2)}</td>
                       <td className="px-3 py-2 w-24 text-sm text-center">{item.total_amount.toFixed(2)}</td>
                       <td className="px-3 py-2 w-16 text-center">
                         <button
@@ -706,58 +820,65 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
           </div>
 
           <div className="flex flex-col md:flex-row justify-end">
-            <div className="w-full md:w-1/2 bg-gray-50 p-4 rounded">
-              <h4 className="font-semibold mb-3">Order Summary</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span>{subtotal.toFixed(2)}</span>
+            <div className="w-full md:w-1/2 erp-summary-container">
+              <h4 className="font-semibold" style={{ marginBottom: 'var(--erp-spacing-lg)' }}>Order Summary</h4>
+              <div>
+                <div className="erp-summary-row">
+                  <span className="erp-summary-label">Subtotal:</span>
+                  <span className="erp-summary-value">{subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Discount %:</span>
+                <div className="erp-summary-row">
+                  <span className="erp-summary-label">Discount %:</span>
                   <input
                     type="number"
                     name="disc_percentage"
                     value={formData.disc_percentage}
                     onChange={handleInputChange}
-                    className="w-16 px-2 py-1.5 text-sm border border-gray-300 rounded"
+                    className="erp-summary-input"
                     step="0.1"
                   />
                 </div>
-                <div className="flex justify-between">
-                  <span>Discount Amount:</span>
-                  <span>{discountAmount.toFixed(2)}</span>
+                <div className="erp-summary-row">
+                  <span className="erp-summary-label">Discount Amount:</span>
+                  <input
+                    type="number"
+                    name="disc_amount"
+                    value={overallDiscAmount.toFixed(2)}
+                    onChange={handleInputChange}
+                    className="erp-summary-input"
+                    step="0.01"
+                  />
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Round Off:</span>
+                <div className="erp-summary-row">
+                  <span className="erp-summary-label">Round Off:</span>
                   <input
                     type="number"
                     name="roundoff"
                     value={formData.roundoff}
                     onChange={handleInputChange}
-                    className="w-16 px-2 py-1.5 text-sm border border-gray-300 rounded"
+                    className="erp-summary-input"
                     step="0.01"
                   />
                 </div>
-                <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                  <span>Total:</span>
-                  <span>{finalTotal.toFixed(2)}</span>
+                <div className="erp-summary-row erp-summary-total">
+                  <span className="erp-summary-label">Total:</span>
+                  <span className="erp-summary-value">{finalTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 mt-6">
+          <div className="flex flex-col sm:flex-row justify-end" style={{ gap: 'var(--erp-spacing-sm)', marginTop: 'var(--erp-spacing-xl)' }}>
             <button
               type="button"
               onClick={onCancel}
-              className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded"
+              className="erp-form-btn text-gray-700 bg-gray-100 hover:bg-gray-200"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-secondary rounded"
+              className="erp-form-btn text-white bg-primary hover:bg-secondary"
             >
               {editData ? 'Update' : 'Create'}
             </button>

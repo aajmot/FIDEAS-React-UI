@@ -2,8 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================
+   FIDEAS ERP - Global Compact Theme
+   Centralized configuration for density
+   ======================================== */
+
+/*
+overriding style
+*/
+.mb-6
+{
+    margin-bottom: .3rem!important;
+}
+
+
+
+:root {
+  /* Typography */
+  --erp-font-size: 12px;
+  --erp-font-size-xs: 10px;
+  --erp-font-size-sm: 11px;
+  --erp-font-size-lg: 13px;
+  --erp-header-font-size: 12px;
+  --erp-line-height: 1.1;
+  --erp-table-line-height: 1.0;
+  
+  /* Spacing */
+  --erp-spacing-xs: 2px;
+  --erp-spacing-sm: 4px;
+  --erp-spacing-md: 6px;
+  --erp-spacing-lg: 8px;
+  --erp-spacing-xl: 12px;
+  
+  /* Component Heights */
+  --erp-input-height: 26px;
+  --erp-button-height: 26px;
+  --erp-header-height: 40px;
+  --erp-table-row-height: 20px;
+  
+  /* DataTable Specific */
+  --erp-datatable-font-size: 11px;
+  --erp-datatable-header-font-size: 10px;
+  --erp-datatable-title-font-size: 12px;
+  --erp-datatable-table-header-font-size: 9px;
+  --erp-datatable-icon-size: 12px;
+  --erp-datatable-pagination-icon-size: 16px;
+  --erp-datatable-search-width: 200px;
+  
+  /* Form Action Buttons */
+  --erp-form-button-height: 24px;
+  --erp-form-button-padding: 2px 8px;
+  --erp-form-button-font-size: 11px;
+  --erp-form-button-icon-size: 11px;
+  
+  /* Padding */
+  --erp-row-padding: 4px 4px;
+  --erp-cell-padding: 4px 4px;
+  --erp-input-padding: 3px 6px;
+  --erp-button-padding: 3px 10px;
+  --erp-section-padding: 4px 8px;
+  --erp-card-padding: 10px;
+  
+  /* Margins */
+  --erp-margin-bottom: 6px;
+  --erp-section-margin: 10px;
+  
+  /* Summary Section */
+  --erp-summary-input-width: 80px;
+  --erp-summary-font-size: 12px;
+  --erp-summary-label-spacing: 8px;
+  --erp-summary-row-spacing: 8px;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 640px) {
+  :root {
+    --erp-font-size: 11px;
+    --erp-font-size-xs: 9px;
+    --erp-datatable-font-size: 10px;
+    --erp-datatable-header-font-size: 9px;
+    --erp-datatable-icon-size: 11px;
+    --erp-input-height: 24px;
+    --erp-button-height: 24px;
+    --erp-table-row-height: 18px;
+    --erp-row-padding: 2px 3px;
+    --erp-cell-padding: 2px 3px;
+    --erp-section-padding: 4px 6px;
+  }
+}
+
+/* Responsive adjustments for tablets */
+@media (min-width: 641px) and (max-width: 1024px) {
+  :root {
+    --erp-font-size: 11px;
+    --erp-datatable-font-size: 10px;
+    --erp-table-row-height: 19px;
+  }
+}
+
 html {
   overflow-y: scroll;
+  font-size: var(--erp-font-size);
 }
 
 body {
@@ -13,11 +112,220 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: var(--erp-font-size);
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* ========================================
+   Component-Level Compact Styles
+   ======================================== */
+
+@layer components {
+  /* Form Controls */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="tel"],
+  select,
+  textarea {
+    height: var(--erp-input-height) !important;
+    padding: var(--erp-input-padding) !important;
+    font-size: var(--erp-font-size) !important;
+  }
+  
+  textarea {
+    height: auto !important;
+    min-height: calc(var(--erp-input-height) * 1) !important;
+    max-height: 200px !important;
+    resize: vertical !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Buttons */
+  button {
+    height: var(--erp-button-height) !important;
+    padding: var(--erp-button-padding) !important;
+    font-size: var(--erp-font-size) !important;
+  }
+  
+  button.icon-only {
+    padding: var(--erp-spacing-sm) !important;
+    width: var(--erp-button-height) !important;
+  }
+  
+  /* Tables */
+  table thead th {
+    padding: var(--erp-row-padding);
+    font-size: var(--erp-font-size-xs);
+    height: var(--erp-table-row-height);
+    line-height: var(--erp-table-line-height);
+  }
+  
+  table tbody td {
+    padding: var(--erp-cell-padding);
+    font-size: var(--erp-font-size);
+    height: var(--erp-table-row-height);
+    line-height: var(--erp-table-line-height);
+  }
+  
+  /* Cards & Sections */
+  .card-header,
+  .section-header {
+    padding: var(--erp-section-padding);
+    font-size: var(--erp-header-font-size);
+    line-height: var(--erp-line-height);
+  }
+  
+  .card-body,
+  .section-body {
+    padding: var(--erp-card-padding);
+  }
+  
+  /* Form Groups */
+  .form-group {
+    margin-bottom: var(--erp-margin-bottom);
+  }
+  
+  .form-label {
+    font-size: var(--erp-font-size);
+    margin-bottom: var(--erp-spacing-sm);
+  }
+  
+  /* Header */
+  header {
+    height: var(--erp-header-height);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  /* Form Action Buttons - Match Header Menu Style */
+  .erp-form-btn {
+    padding: var(--erp-button-padding);
+    font-size: var(--erp-font-size);
+    height: var(--erp-button-height);
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  
+  .erp-form-btn-icon {
+    height: var(--erp-datatable-icon-size);
+    width: var(--erp-datatable-icon-size);
+    margin-right: var(--erp-spacing-xs);
+  }
+  
+  /* Import/Export Buttons */
+  .erp-btn-template,
+  .erp-btn-import {
+    padding: var(--erp-form-button-padding) !important;
+    font-size: var(--erp-form-button-font-size) !important;
+    height: var(--erp-form-button-height) !important;
+  }
+  
+  .erp-btn-template .erp-form-btn-icon,
+  .erp-btn-import .erp-form-btn-icon {
+    height: var(--erp-form-button-icon-size);
+    width: var(--erp-form-button-icon-size);
+  }
+  
+  .erp-btn-template {
+    background-color: #2563eb;
+    color: white;
+  }
+  
+  .erp-btn-template:hover:not(:disabled) {
+    background-color: #1d4ed8;
+  }
+  
+  .erp-btn-import {
+    background-color: #16a34a;
+    color: white;
+  }
+  
+  .erp-btn-import:hover:not(:disabled) {
+    background-color: #15803d;
+  }
+  
+  .erp-btn-import:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* Summary Section Styles */
+  .erp-summary-container {
+    background-color: #f9fafb;
+    padding: var(--erp-card-padding);
+    border-radius: 0.375rem;
+  }
+  
+  .erp-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--erp-summary-row-spacing);
+  }
+  
+  .erp-summary-label {
+    font-size: var(--erp-summary-font-size);
+    margin-right: var(--erp-summary-label-spacing);
+  }
+  
+  .erp-summary-input {
+    width: var(--erp-summary-input-width);
+    padding: var(--erp-input-padding);
+    font-size: var(--erp-summary-font-size);
+    height: var(--erp-input-height);
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    text-align: right;
+  }
+  
+  .erp-summary-value {
+    font-size: var(--erp-summary-font-size);
+    text-align: right;
+    min-width: var(--erp-summary-input-width);
+  }
+  
+  .erp-summary-total {
+    border-top: 1px solid #d1d5db;
+    padding-top: var(--erp-summary-row-spacing);
+    margin-top: var(--erp-summary-row-spacing);
+    font-weight: 600;
+    font-size: calc(var(--erp-summary-font-size) * 1.2);
+  }
+  
+  /* DataTable Action Buttons */
+  .datatable-actions {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+  }
+  
+  .datatable-actions svg {
+    flex-shrink: 0;
+  }
+  
+  /* Global text sizing */
+  body, p, span, div, label, a {
+    /* font-size: var(--erp-font-size) !important; */
+    line-height: var(--erp-line-height) !important;
+  }
+  
+  /* h1 { font-size: calc(var(--erp-font-size) * 1.8) !important; }
+  h2 { font-size: calc(var(--erp-font-size) * 1.5) !important; }
+  h3 { font-size: calc(var(--erp-font-size) * 1.3) !important; }
+  h4 { font-size: var(--erp-font-size-lg) !important; }
+  h5, h6 { font-size: var(--erp-font-size) !important; } */
 }
 
 @keyframes slide-in {

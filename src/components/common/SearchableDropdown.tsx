@@ -202,15 +202,16 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       <div
         ref={inputRef}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer flex items-center justify-between ${
+        className={`w-full border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer flex items-center justify-between ${
           disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
         }`}
+        style={{ padding: 'var(--erp-input-padding)', fontSize: 'var(--erp-font-size)', height: 'var(--erp-input-height)' }}
       >
         <div className="flex-1 flex items-center flex-wrap gap-1">
           {multiple && selectedLabels.length > 1 ? (
-            <span className="text-gray-700">{displayText()}</span>
+            <span className="text-gray-700" style={{ fontSize: 'var(--erp-font-size)' }}>{displayText()}</span>
           ) : multiple && selectedLabels.length === 1 ? (
-            <div className="flex items-center bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">
+            <div className="flex items-center bg-blue-100 text-blue-800 rounded" style={{ padding: '1px 4px', fontSize: 'var(--erp-font-size-xs)' }}>
               {selectedLabels[0]}
               <button
                 onClick={(e) => {
@@ -222,11 +223,11 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                 }}
                 className="ml-1 hover:text-blue-600"
               >
-                <X className="h-3 w-3" />
+                <X style={{ height: 'var(--erp-datatable-icon-size)', width: 'var(--erp-datatable-icon-size)' }} />
               </button>
             </div>
           ) : (
-            <span className={selectedLabels.length === 0 ? 'text-gray-500' : 'text-gray-700'}>
+            <span className={selectedLabels.length === 0 ? 'text-gray-500' : 'text-gray-700'} style={{ fontSize: 'var(--erp-font-size)' }}>
               {displayText()}
             </span>
           )}
@@ -238,10 +239,10 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               className="hover:text-gray-600 text-gray-400"
               title="Clear selection"
             >
-              <X className="h-4 w-4" />
+              <X style={{ height: 'var(--erp-datatable-icon-size)', width: 'var(--erp-datatable-icon-size)' }} />
             </button>
           )}
-          <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown style={{ height: 'var(--erp-datatable-icon-size)', width: 'var(--erp-datatable-icon-size)' }} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </div>
       </div>
 
@@ -259,7 +260,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
           {searchable && (
             <div className="p-2 border-b border-gray-200">
               <div className="relative">
-                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                {/* <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" /> */}
                 <input
                   ref={searchInputRef}
                   type="text"

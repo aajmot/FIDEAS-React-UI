@@ -135,7 +135,7 @@ const TestResultManagement: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
+    <div style={{ padding: 'var(--erp-spacing-lg)' }}>
       <TestResultForm
         testResult={selectedResult}
         onSave={handleSave}

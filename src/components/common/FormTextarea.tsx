@@ -32,7 +32,6 @@ const FormTextarea: React.FC<FormTextareaProps> = ({
     <div className="relative">
       <textarea
         name={name}
-        // guard against null values — React warns when textarea value is null
         value={value ?? ''}
         onChange={(e) => {
           onChange(e.target.value);
@@ -41,8 +40,7 @@ const FormTextarea: React.FC<FormTextareaProps> = ({
         placeholder={placeholder}
         rows={rows}
         required={required}
-        className={`w-full px-2 py-1.5 pr-6 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary resize-none ${className}`}
-        style={{ height: '34px', overflowY: 'hidden' }}
+        className={`w-full border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary ${className}`}
       />
       <div className="absolute right-1.5 bottom-1.5 pointer-events-none text-gray-400" style={{ zIndex: 1 }}>
         <svg width="10" height="10" viewBox="0 0 10 10">

@@ -66,12 +66,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         menus={mockMenus} 
       />
       
-      <main className="flex-1 overflow-auto px-2 sm:px-0">
+      <main className="flex-1 overflow-auto" style={{ padding: 'var(--erp-spacing-md) var(--erp-spacing-lg)' }}>
         {children}
       </main>
       
-      <footer className="bg-white border-t border-gray-200 py-3 mt-auto">
-        <div className="text-center text-sm text-gray-500">
+      <footer className="bg-white border-t border-gray-200 mt-auto">
+        <div className="text-center text-gray-500" style={{ padding: 'var(--erp-spacing-md)', fontSize: 'var(--erp-font-size-xs)' }}>
           fideas@2025
         </div>
       </footer>

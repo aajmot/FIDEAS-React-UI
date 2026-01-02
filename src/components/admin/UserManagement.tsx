@@ -124,7 +124,7 @@ const UserManagement: React.FC = () => {
       key: 'roles',
       label: 'Roles',
       render: (roles: string[]) => (
-        <span className="text-xs">
+        <span style={{ fontSize: 'var(--erp-font-size-xs)' }}>
           {roles && roles.length > 0 ? roles.join(', ') : 'No roles'}
         </span>
       )
@@ -133,9 +133,13 @@ const UserManagement: React.FC = () => {
       key: 'is_active',
       label: 'Status',
       render: (value: boolean) => (
-        <span className={`px-2 py-1 text-xs rounded-full ${
-          value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>
+        <span style={{
+          padding: '1px 6px',
+          fontSize: 'var(--erp-font-size-xs)',
+          borderRadius: '4px',
+          backgroundColor: value ? '#dcfce7' : '#fee2e2',
+          color: value ? '#166534' : '#991b1b'
+        }}>
           {value ? 'Active' : 'Inactive'}
         </span>
       )
@@ -143,7 +147,7 @@ const UserManagement: React.FC = () => {
   ];
 
   return (
-    <div className="p-3 sm:p-6">
+    <div style={{ padding: 'var(--erp-spacing-lg)' }}>
       <UserForm
         user={editingUser}
         onSave={handleSave}

@@ -77,6 +77,33 @@ The app uses a consistent design system matching the desktop application:
 - **Typography**: System fonts with proper hierarchy
 - **Icons**: Lucide React icons and emoji for consistency
 
+### Compact Theme Configuration
+
+The application uses a centralized CSS variable system for managing visual density and spacing. All theme settings are controlled from a single location in `src/index.css`.
+
+**Quick Adjustment:**
+```css
+/* Edit these variables in src/index.css to change app density */
+:root {
+  --erp-font-size: 13px;        /* Base font size */
+  --erp-input-height: 28px;     /* Input field height */
+  --erp-row-padding: 4px 8px;   /* Table row padding */
+  --erp-header-height: 48px;    /* Header height */
+}
+```
+
+**Documentation:**
+- 📖 **[Complete Theme Guide](THEME_CONFIG.md)** - Full documentation with presets
+- 🎯 **[Quick Reference](THEME_QUICK_REF.md)** - Developer quick reference card
+- 📝 **[Refactoring Summary](REFACTORING_SUMMARY.md)** - Implementation details
+
+**Benefits:**
+- ✅ Centralized control - adjust entire app from one place
+- ✅ Compact density - 20-30% more content visible on screen
+- ✅ Consistent spacing - uniform padding and margins
+- ✅ Easy customization - switch between preset configurations
+- ✅ No code changes - pure CSS solution
+
 ## Modules
 
 ### Account Module

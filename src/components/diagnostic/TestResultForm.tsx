@@ -317,8 +317,8 @@ const TestResultForm: React.FC<TestResultFormProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow mb-6">
-      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900">
+      <div className="border-b border-gray-200 flex justify-between items-center" style={{ padding: 'var(--erp-section-padding)' }}>
+        <h2 className="font-medium text-gray-800" style={{ fontSize: 'var(--erp-datatable-title-font-size)', lineHeight: 'var(--erp-line-height)' }}>
           {testResult ? 'Edit Test Result' : 'Create New Test Result'}
         </h2>
         <button
@@ -331,7 +331,7 @@ const TestResultForm: React.FC<TestResultFormProps> = ({
       </div>
       
       {!isCollapsed && (
-        <form onSubmit={handleSubmit} className="p-4">
+        <form onSubmit={handleSubmit} style={{ padding: 'var(--erp-card-padding)' }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -874,7 +874,7 @@ const TestResultForm: React.FC<TestResultFormProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
+          <div className="flex flex-col sm:flex-row justify-end" style={{ gap: 'var(--erp-spacing-sm)', marginTop: 'var(--erp-spacing-lg)' }}>
             <button
               type="button"
               onClick={onCancel}

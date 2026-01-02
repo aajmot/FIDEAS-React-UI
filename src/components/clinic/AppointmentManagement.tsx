@@ -179,7 +179,19 @@ const AppointmentManagement: React.FC = () => {
       key: 'status',
       label: 'Status',
       render: (value: string) => (
-        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(value)}`}>
+        <span style={{
+          padding: '1px 6px',
+          fontSize: 'var(--erp-font-size-xs)',
+          borderRadius: '4px',
+          backgroundColor: value?.toLowerCase() === 'scheduled' ? '#dbeafe' : 
+                          value?.toLowerCase() === 'confirmed' ? '#dcfce7' :
+                          value?.toLowerCase() === 'completed' ? '#f3f4f6' :
+                          value?.toLowerCase() === 'cancelled' ? '#fee2e2' : '#fef3c7',
+          color: value?.toLowerCase() === 'scheduled' ? '#1e40af' : 
+                value?.toLowerCase() === 'confirmed' ? '#166534' :
+                value?.toLowerCase() === 'completed' ? '#6b7280' :
+                value?.toLowerCase() === 'cancelled' ? '#991b1b' : '#854d0e'
+        }}>
           {value || 'scheduled'}
         </span>
       )
@@ -187,7 +199,7 @@ const AppointmentManagement: React.FC = () => {
   ];
 
   return (
-    <div className="p-3 sm:p-6">
+    <div style={{ padding: 'var(--erp-spacing-lg)' }}>
       <AppointmentForm
         appointment={editingAppointment}
         onSave={handleSave}

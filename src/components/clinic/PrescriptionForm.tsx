@@ -229,8 +229,8 @@ const PrescriptionForm: React.FC<PrescriptionFormProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow mb-6">
-      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900">
+      <div className="border-b border-gray-200 flex justify-between items-center" style={{ padding: 'var(--erp-section-padding)' }}>
+        <h2 className="font-medium text-gray-800" style={{ fontSize: 'var(--erp-datatable-title-font-size)', lineHeight: 'var(--erp-line-height)' }}>
           {prescription ? 'Edit Prescription' : 'Create New Prescription'}
         </h2>
         <button
@@ -238,13 +238,13 @@ const PrescriptionForm: React.FC<PrescriptionFormProps> = ({
           onClick={onToggleCollapse}
           className="text-gray-500 hover:text-gray-700"
         >
-          {isCollapsed ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+          {isCollapsed ? <ChevronDown className="erp-form-btn-icon" style={{ marginRight: 0 }} /> : <ChevronUp className="erp-form-btn-icon" style={{ marginRight: 0 }} />}
         </button>
       </div>
       
       {!isCollapsed && (
-        <form onSubmit={handleSubmit} className="p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <form onSubmit={handleSubmit} style={{ padding: 'var(--erp-card-padding)' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 'var(--erp-spacing-lg)', marginBottom: 'var(--erp-spacing-lg)' }}>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 RX Number
@@ -625,17 +625,17 @@ const PrescriptionForm: React.FC<PrescriptionFormProps> = ({
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
+          <div className="flex flex-col sm:flex-row justify-end" style={{ gap: 'var(--erp-spacing-sm)', marginTop: 'var(--erp-spacing-lg)' }}>
             <button
               type="button"
               onClick={onCancel}
-              className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded"
+              className="erp-form-btn text-gray-700 bg-gray-100 hover:bg-gray-200"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-secondary rounded"
+              className="erp-form-btn text-white bg-primary hover:bg-secondary"
             >
               {existingPrescription ? 'Update' : 'Create'}
             </button>

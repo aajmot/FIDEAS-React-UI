@@ -133,12 +133,12 @@ const DataTable: React.FC<DataTableProps> = ({
   return (
     <div className="bg-white rounded-lg shadow">
       {/* Header */}
-      <div className="px-3 sm:px-6 py-4 border-b border-gray-200">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-          <div className="flex items-center space-x-3 w-full sm:w-auto">
+      <div className="border-b border-gray-200" style={{ padding: 'var(--erp-section-padding)' }}>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center" style={{ gap: 'var(--erp-spacing-sm)' }}>
+          <h2 className="font-medium text-gray-800" style={{ fontSize: 'var(--erp-datatable-title-font-size)', lineHeight: 'var(--erp-line-height)' }}>{title}</h2>
+          <div className="flex items-center w-full sm:w-auto" style={{ gap: 'var(--erp-spacing-md)' }}>
             <div className="relative flex-1 sm:flex-none">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              {/* <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" style={{ height: 'var(--erp-datatable-icon-size)', width: 'var(--erp-datatable-icon-size)' }} /> */}
               <input
                 type="text"
                 placeholder="Search..."
@@ -152,24 +152,25 @@ const DataTable: React.FC<DataTableProps> = ({
                     onSearch('');
                   }
                 }}
-                className="pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-48 h-10"
+                className="border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                style={{ paddingLeft: '24px', paddingRight: 'var(--erp-spacing-sm)', height: 'var(--erp-input-height)', fontSize: 'var(--erp-font-size)', width: 'var(--erp-datatable-search-width)' }}
               />
             </div>
             {onRefresh && (
               <button
                 onClick={onRefresh}
                 title="Refresh"
-                className="flex-shrink-0 p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mr-2"
+                className="icon-only flex-shrink-0 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center"
               >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw style={{ height: 'var(--erp-datatable-icon-size)', width: 'var(--erp-datatable-icon-size)' }} />
               </button>
             )}
             <button
               onClick={exportToExcel}
               title="Export to Excel"
-              className="flex-shrink-0 p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              className="icon-only flex-shrink-0 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center justify-center"
             >
-              <Download className="h-4 w-4" />
+              <Download style={{ height: 'var(--erp-datatable-icon-size)', width: 'var(--erp-datatable-icon-size)' }} />
             </button>
           </div>
         </div>
@@ -184,21 +185,22 @@ const DataTable: React.FC<DataTableProps> = ({
                 {columns.map((column) => (
                   <th
                     key={column.key}
-                    className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    className="text-left font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort(column.key)}
+                    style={{ padding: 'var(--erp-row-padding)', fontSize: 'var(--erp-datatable-table-header-font-size)', height: 'var(--erp-table-row-height)', lineHeight: 'var(--erp-table-line-height)', fontWeight: '600' }}
                   >
-                    <div className="flex items-center space-x-1">
+                    <div className="flex items-center" style={{ gap: 'var(--erp-spacing-xs)' }}>
                       <span className="truncate">{column.label}</span>
                       {sortConfig?.key === column.key && (
                         sortConfig.direction === 'asc' ? 
-                          <ChevronUp className="h-3 w-3 flex-shrink-0" /> : 
-                          <ChevronDown className="h-3 w-3 flex-shrink-0" />
+                          <ChevronUp style={{ height: 'var(--erp-datatable-icon-size)', width: 'var(--erp-datatable-icon-size)' }} /> : 
+                          <ChevronDown style={{ height: 'var(--erp-datatable-icon-size)', width: 'var(--erp-datatable-icon-size)' }} />
                       )}
                     </div>
                   </th>
                 ))}
                 {(onEdit || onDelete) && (
-                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="text-left font-medium text-gray-500 uppercase tracking-wider" style={{ padding: 'var(--erp-row-padding)', fontSize: 'var(--erp-datatable-table-header-font-size)', height: 'var(--erp-table-row-height)', lineHeight: 'var(--erp-table-line-height)', fontWeight: '600' }}>
                     Actions
                   </th>
                 )}
@@ -207,7 +209,7 @@ const DataTable: React.FC<DataTableProps> = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={columns.length + (onEdit || onDelete ? 1 : 0)} className="px-4 py-8 text-center">
+                  <td colSpan={columns.length + (onEdit || onDelete ? 1 : 0)} className="text-center" style={{ padding: 'var(--erp-spacing-xl)' }}>
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                     </div>
@@ -215,7 +217,7 @@ const DataTable: React.FC<DataTableProps> = ({
                 </tr>
               ) : paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length + (onEdit || onDelete ? 1 : 0)} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={columns.length + (onEdit || onDelete ? 1 : 0)} className="text-center text-gray-500" style={{ padding: 'var(--erp-spacing-xl)', fontSize: 'var(--erp-font-size)' }}>
                     No data available
                   </td>
                 </tr>
@@ -225,42 +227,45 @@ const DataTable: React.FC<DataTableProps> = ({
                     key={index} 
                     className={`hover:bg-gray-50 border-b border-gray-100 ${onRowClick ? 'cursor-pointer' : ''}`}
                     onClick={() => onRowClick && onRowClick(row)}
+                    style={{ height: 'var(--erp-table-row-height)' }}
                   >
                     {columns.map((column) => (
-                      <td key={column.key} className="px-2 sm:px-4 py-2 text-xs sm:text-sm text-gray-900">
+                      <td key={column.key} className="text-gray-900" style={{ padding: 'var(--erp-cell-padding)', fontSize: 'var(--erp-datatable-font-size)', lineHeight: 'var(--erp-table-line-height)' }}>
                         <div className="max-w-xs truncate">
                           {column.render ? column.render(row[column.key], row) : row[column.key]}
                         </div>
                       </td>
                     ))}
                     {(onEdit || onDelete) && (
-                      <td className="px-2 sm:px-4 py-2 text-sm font-medium">
-                        <div className="flex space-x-1">
+                      <td className="font-medium" style={{ padding: 'var(--erp-cell-padding)', fontSize: 'var(--erp-datatable-font-size)', lineHeight: 'var(--erp-table-line-height)' }}>
+                        <div className="datatable-actions">
                           {onEdit && (
-                            <button
-                              onClick={() => (canEdit ? canEdit(row) : true) && onEdit(row)}
-                              disabled={canEdit ? !canEdit(row) : false}
-                              className={`p-1 rounded ${
+                            <Edit
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                (canEdit ? canEdit(row) : true) && onEdit(row);
+                              }}
+                              className={`cursor-pointer ${
                                 canEdit && !canEdit(row)
                                   ? 'text-gray-300 cursor-not-allowed'
-                                  : 'text-blue-600 hover:text-blue-900 hover:bg-blue-50'
+                                  : 'text-blue-600 hover:text-blue-900'
                               }`}
-                            >
-                              <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                            </button>
+                              style={{ height: 'var(--erp-datatable-icon-size)', width: 'var(--erp-datatable-icon-size)' }}
+                            />
                           )}
                           {onDelete && (
-                            <button
-                              onClick={() => (canDelete ? canDelete(row) : true) && onDelete(row)}
-                              disabled={canDelete ? !canDelete(row) : false}
-                              className={`p-1 rounded ${
+                            <Trash2
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                (canDelete ? canDelete(row) : true) && onDelete(row);
+                              }}
+                              className={`cursor-pointer ${
                                 canDelete && !canDelete(row)
                                   ? 'text-gray-300 cursor-not-allowed'
-                                  : 'text-red-600 hover:text-red-900 hover:bg-red-50'
+                                  : 'text-red-600 hover:text-red-900'
                               }`}
-                            >
-                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                            </button>
+                              style={{ height: 'var(--erp-datatable-icon-size)', width: 'var(--erp-datatable-icon-size)' }}
+                            />
                           )}
                         </div>
                       </td>
@@ -275,12 +280,12 @@ const DataTable: React.FC<DataTableProps> = ({
       
       {/* Pagination */}
       {(totalPages > 1 || (isExternalPagination ? (totalItems || 0) : filteredAndSortedData.length) > 0) && (
-        <div className="px-3 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
-          <div className="text-xs sm:text-sm text-gray-700">
+        <div className="border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between" style={{ padding: 'var(--erp-section-padding)', gap: 'var(--erp-spacing-sm)' }}>
+          <div className="text-gray-700" style={{ fontSize: 'var(--erp-font-size-xs)' }}>
             Showing {startIndex + 1} to {Math.min(startIndex + pageSize, isExternalPagination ? (totalItems || 0) : filteredAndSortedData.length)} of {isExternalPagination ? (totalItems || 0) : filteredAndSortedData.length} entries
             {!isExternalPagination && searchTerm && ` (filtered from ${data.length} total)`}
           </div>
-          <div className="flex items-center space-x-1 sm:space-x-2">
+          <div className="flex items-center" style={{ gap: 'var(--erp-spacing-xs)' }}>
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -288,12 +293,13 @@ const DataTable: React.FC<DataTableProps> = ({
                 handlePageChange(Math.max(currentPage - 1, 1));
               }}
               disabled={currentPage === 1 || totalPages <= 1}
-              className="p-2 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 flex items-center justify-center"
               type="button"
+              style={{ padding: 'var(--erp-spacing-sm)', height: 'var(--erp-button-height)', width: 'var(--erp-button-height)' }}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft style={{ height: 'var(--erp-datatable-pagination-icon-size)', width: 'var(--erp-datatable-pagination-icon-size)' }} />
             </button>
-            <span className="px-2 sm:px-3 py-1 text-xs sm:text-sm">
+            <span style={{ padding: '0 var(--erp-spacing-sm)', fontSize: 'var(--erp-font-size-xs)' }}>
               Page {currentPage} of {Math.max(totalPages, 1)}
             </span>
             <button
@@ -303,10 +309,11 @@ const DataTable: React.FC<DataTableProps> = ({
                 handlePageChange(Math.min(currentPage + 1, totalPages));
               }}
               disabled={currentPage === totalPages || totalPages <= 1}
-              className="p-2 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 flex items-center justify-center"
               type="button"
+              style={{ padding: 'var(--erp-spacing-sm)', height: 'var(--erp-button-height)', width: 'var(--erp-button-height)' }}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight style={{ height: 'var(--erp-datatable-pagination-icon-size)', width: 'var(--erp-datatable-pagination-icon-size)' }} />
             </button>
           </div>
         </div>

@@ -146,7 +146,7 @@ const CategoryManagement: React.FC = () => {
   ];
 
   return (
-    <div className="p-3 sm:p-6">
+    <div style={{ padding: 'var(--erp-spacing-lg)' }}>
       <CategoryForm
         category={editingCategory}
         onSave={handleSave}

@@ -171,9 +171,13 @@ const PatientManagement: React.FC = () => {
       key: 'is_active',
       label: 'Status',
       render: (value: boolean) => (
-        <span className={`px-2 py-1 text-xs rounded-full ${
-          value ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-        }`}>
+        <span style={{
+          padding: '1px 6px',
+          fontSize: 'var(--erp-font-size-xs)',
+          borderRadius: '4px',
+          backgroundColor: value ? '#dcfce7' : '#f3f4f6',
+          color: value ? '#166534' : '#6b7280'
+        }}>
           {value ? 'Active' : 'Inactive'}
         </span>
       )
@@ -181,7 +185,7 @@ const PatientManagement: React.FC = () => {
   ];
 
   return (
-    <div className="p-3 sm:p-6">
+    <div style={{ padding: 'var(--erp-spacing-lg)' }}>
       <PatientForm
         patient={editingPatient}
         onSave={handleSave}

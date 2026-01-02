@@ -67,11 +67,12 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     <ToastContext.Provider value={{ showToast }}>
       {children}
       
-      <div className="fixed top-4 right-4 z-50 space-y-2">
+      <div className="fixed right-4 space-y-2" style={{ top: 'calc(var(--erp-header-height) + 8px)', zIndex: 1001 }}>
         {toasts.map((toast) => (
           <div
             key={toast.id}
             className={`flex items-center p-3 rounded-lg border shadow-lg min-w-80 animate-slide-in ${getToastStyles(toast.type)}`}
+            style={{ fontSize: 'var(--erp-font-size)' }}
           >
             {getToastIcon(toast.type)}
             <span className="ml-2 text-sm font-medium flex-1">{toast.message}</span>
