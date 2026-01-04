@@ -127,10 +127,10 @@ const TestInvoiceView: React.FC<TestInvoiceViewProps> = ({ invoice, onBack }) =>
                   day: '2-digit' 
                 })}</span>
               </div> */}
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Status:</span>
                 <span className="text-gray-900">{invoice.status}</span>
-              </div>
+              </div> */}
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Order Number:</span>
                 <span className="text-gray-900">{invoice.order?.test_order_number}</span>
