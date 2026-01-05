@@ -75,6 +75,7 @@ import TestOrderManagement from './components/diagnostic/TestOrderManagement';
 import TestResultManagement from './components/diagnostic/TestResultManagement';
 import TestInvoiceManagement from './components/health/TestInvoiceManagement';
 import HealthPaymentManagement from './components/health/HealthPaymentManagement';
+import HealthAdvancePayment from './components/health/HealthAdvancePayment';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import ARAgingPage from './pages/ARAgingPage';
@@ -238,6 +239,7 @@ function App() {
                 <Route path="diagnostic/order-commission" element={<OrderCommissionManagement />} />
                 <Route path="health/test-invoice" element={<TestInvoiceManagement />} />
                 <Route path="health/payments" element={<HealthPaymentManagement />} />
+                <Route path="health/payment/advance" element={<HealthAdvancePayment />} />
 
               </Route>
             </Routes>

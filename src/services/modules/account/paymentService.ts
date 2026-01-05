@@ -43,4 +43,20 @@ export const paymentService = {
     const response = await apiClient.delete<BaseResponse>(`/api/v1/account/payments/${id}`);
     return response.data;
   },
+  
+  createAdvancePayment: async (paymentData: any): Promise<BaseResponse> => {
+    const response = await apiClient.post<BaseResponse>('/api/v1/account/payments/advance/customer', paymentData);
+    return response.data;
+  },
+  
+  getAdvancePayments: async (params?: { page?: number; page_size?: number; payment_type?: string; party_type?: string }): Promise<PaginatedResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.page_size) queryParams.append('page_size', params.page_size.toString());
+    if (params?.payment_type) queryParams.append('payment_type', params.payment_type);
+    if (params?.party_type) queryParams.append('party_type', params.party_type);
+    
+    const response = await apiClient.get<PaginatedResponse>(`/api/v1/account/payments?${queryParams.toString()}`);
+    return response.data;
+  },
 };

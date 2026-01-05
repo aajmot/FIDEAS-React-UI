@@ -6,6 +6,7 @@ import DataTable from '../common/DataTable';
 import ConfirmationModal from '../common/ConfirmationModal';
 import { healthService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { formatUTCToLocal } from '../../utils/dateUtils';
 
 interface TestInvoice {
   id: number;
@@ -121,7 +122,7 @@ const TestInvoiceManagement: React.FC = () => {
       key: 'invoice_date', 
       label: 'Date', 
       sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString()
+      render: (value: string) => formatUTCToLocal(value),  
     },
     {
       key: 'final_amount',
