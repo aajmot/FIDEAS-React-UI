@@ -2,13 +2,15 @@ import apiClient from '../../apiClient';
 import { BaseResponse, PaginatedResponse } from '../../../types';
 
 export const paymentService = {
-  getPayments: async (params?: { page?: number; per_page?: number; search?: string; payment_mode?: string; payment_type?: string }): Promise<PaginatedResponse> => {
+  getPayments: async (params?: { page?: number; per_page?: number; search?: string; payment_mode?: string; payment_type?: string; party_type?: string; status?: string }): Promise<PaginatedResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
     if (params?.payment_mode) queryParams.append('payment_mode', params.payment_mode);
     if (params?.payment_type) queryParams.append('payment_type', params.payment_type);
+    if (params?.party_type) queryParams.append('party_type', params.party_type);
+    if (params?.status) queryParams.append('status', params.status);
     
     const response = await apiClient.get<PaginatedResponse>(`/api/v1/account/payments?${queryParams.toString()}`);
     return response.data;
@@ -59,4 +61,10 @@ export const paymentService = {
     const response = await apiClient.get<PaginatedResponse>(`/api/v1/account/payments?${queryParams.toString()}`);
     return response.data;
   },
+  
+  createInvoicePayment: async (paymentData: any): Promise<BaseResponse> => {
+    const response = await apiClient.post<BaseResponse>('/api/v1/account/payments/invoice', paymentData);
+    return response.data;
+  },
+
 };
