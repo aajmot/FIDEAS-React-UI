@@ -147,14 +147,15 @@ const HealthAdvancePayment: React.FC = () => {
   const columns = [
     { key: 'payment_number', label: 'Payment #', sortable: true },
     // { key: 'party_name', label: 'Patient', sortable: true },
-    { key: 'total_amount_base', label: 'Amount', sortable: true, render: (value: number) => `${(value || 0)}` },
     { key: 'details', label: 'Mode', sortable: true,
         render: (row: any) => row?.[0]?.payment_mode ?? '-'  
      },
     { key: 'payment_date', label: 'Date', sortable: true, 
     render: (value: string) => formatUTCToLocal(value),  
-
     },
+    { key: 'total_amount_base', label: 'Amount', sortable: true, render: (value: number) => `${(value || 0)}` },
+    { key: 'allocated_amount_base', label: 'Allocated Amt', sortable: true, render: (value: number) => `${(value || 0)}` },
+    { key: 'unallocated_amount_base', label: 'Unallocated Amt', sortable: true, render: (value: number) => `${(value || 0)}` },
     {
       key: 'status',
       label: 'Status',
@@ -291,7 +292,7 @@ const HealthAdvancePayment: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row justify-end" style={{ gap: 'var(--erp-spacing-sm)' }}>
               <button type="button" onClick={resetForm} className="erp-form-btn text-gray-700 bg-gray-100 hover:bg-gray-200">Reset</button>
-              <button type="submit" className="erp-form-btn text-white bg-primary hover:bg-secondary">Save Payment</button>
+              <button type="submit" className="erp-form-btn text-white bg-primary hover:bg-secondary">Create</button>
             </div>
           </form>
         )}

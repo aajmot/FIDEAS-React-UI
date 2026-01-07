@@ -453,7 +453,7 @@ const HealthPaymentForm: React.FC<HealthPaymentFormProps> = ({ onSave, onCancel,
               Cancel
             </button>
             <button type="submit" className="px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-secondary rounded">
-              Save Payment
+              Create
             </button>
           </div>
         </form>
