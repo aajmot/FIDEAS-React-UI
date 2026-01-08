@@ -8,6 +8,7 @@ import { paymentService } from '../../services/modules/account/paymentService';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { formatUTCToLocal } from '../../utils/dateUtils';
+import { Payment, PaymentAllocation } from '../../types';
 
 interface TestInvoice {
   id: number;
@@ -91,8 +92,11 @@ const HealthInvoicePayment: React.FC = () => {
     try {
       const response = await paymentService.getPayments({ 
         payment_type: 'RECEIPT', 
-        party_type: 'PATIENTS', 
-        status: 'POSTED' 
+        party_type: 'PATIENT', 
+        status: 'POSTED',
+        is_allocated:true,
+        include_details:true,
+        include_allocations:true
       });
       setPayments(response.data || []);
     } catch (error) {
@@ -167,12 +171,40 @@ const HealthInvoicePayment: React.FC = () => {
 
   const columns = [
     { key: 'payment_number', label: 'Payment #', sortable: true },
-    { key: 'invoice_number', label: 'Invoice #', sortable: true },
-    { key: 'payment_mode', label: 'Mode', sortable: true },
+    //{ key: 'invoice_number', label: 'Invoice #', sortable: true },
+    { 
+      key: 'invoice_number', 
+      label: 'Invoice #', 
+      sortable: true,
+      render: (_: any, record: any) => {
+        return record.allocations && record.allocations.length > 0 
+          ? record.allocations[0].document_number 
+          : 'N/A';
+          }
+    },
+    { 
+      key: 'payment_mode', 
+      label: 'Mode', 
+      sortable: true,
+      render: (_: any, record: any) => {
+        return record.details && record.details.length > 0 
+          ? record.details[0].payment_mode 
+          : 'N/A';
+          }
+    },
     { key: 'payment_date', label: 'Date', sortable: true, 
       render: (value: string) => formatUTCToLocal(value)
     },
-    { key: 'amount', label: 'Amount', sortable: true, render: (value: number) => `${(value || 0)}` },
+    { 
+      key: 'payment_amount', 
+      label: 'Amount', 
+      sortable: true,
+      render: (_: any, record: any) => {
+        return record.details && record.details.length > 0 
+          ? record.details[0].amount_base 
+          : 'N/A';
+          }
+    },
     {
       key: 'status',
       label: 'Status',

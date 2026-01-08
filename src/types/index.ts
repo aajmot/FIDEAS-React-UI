@@ -416,6 +416,20 @@ export interface Payment {
   description: string;
   remarks?: string;
   status: string;
+  is_allocated?: boolean;
+  allocations?: PaymentAllocation[];
+
+}
+export interface PaymentAllocation {
+  id: number;
+  document_type: string;
+  document_id: string;
+  document_number: string;
+  allocated_amount_base: number;
+  discount_amount_base: number;
+  adjustment_amount_base: number;
+  allocation_date: string;
+  remarks: string;
 }
 
 export interface Patient {
