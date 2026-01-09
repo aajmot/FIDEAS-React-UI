@@ -84,7 +84,11 @@ const HealthAdvancePayment: React.FC = () => {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const response = await paymentService.getAdvancePayments({ page: 1, page_size: 100, payment_type: 'RECEIPT', party_type: 'PATIENT' });
+      const response = await paymentService.getAdvancePayments({ page: 1, page_size: 100, 
+        payment_type: 'RECEIPT',
+         party_type: 'PATIENT',
+         include_details:true,
+         });
       setPayments(response.data || []);
     } catch (error) {
       showToast('error', 'Failed to load payments');

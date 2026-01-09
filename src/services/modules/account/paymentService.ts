@@ -64,12 +64,17 @@ export const paymentService = {
     return response.data;
   },
 
-  getAdvancePayments: async (params?: { page?: number; page_size?: number; payment_type?: string; party_type?: string }): Promise<PaginatedResponse> => {
+  getAdvancePayments: async (params?: { page?: number; page_size?: number;
+     payment_type?: string; party_type?: string;
+     include_details?: boolean;
+   }): Promise<PaginatedResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.page_size) queryParams.append('page_size', params.page_size.toString());
     if (params?.payment_type) queryParams.append('payment_type', params.payment_type);
     if (params?.party_type) queryParams.append('party_type', params.party_type);
+    if (params?.party_type) queryParams.append('party_type', params.party_type);
+    if (params?.include_details) queryParams.append('include_details', params?.include_details.toString());
 
     const response = await apiClient.get<PaginatedResponse>(`/api/v1/account/payments?${queryParams.toString()}`);
     return response.data;

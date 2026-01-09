@@ -80,7 +80,10 @@ const HealthInvoicePayment: React.FC = () => {
 
   const fetchInvoices = async () => {
     try {
-      const response = await invoiceService.getTestInvoices();
+      const response = await invoiceService.getTestInvoices({
+        status:"POSTED",
+        payment_status:"UNPAID"
+      });
       setInvoices(response.data || []);
     } catch (error) {
       showToast('error', 'Failed to load invoices');
