@@ -20,6 +20,8 @@ interface PaymentFormData {
   payment_number: string;
   party_id: number;
   party_type: string;
+  party_name: string;
+  party_phone: string;
   amount: number;
   payment_mode: string;
   instrument_number: string;
@@ -56,6 +58,8 @@ const HealthAdvancePayment: React.FC = () => {
     payment_number: generatePaymentNumber(),
     party_id: 0,
     party_type: 'PATIENT',
+    party_name: '',
+    party_phone: '',
     amount: 0,
     payment_mode: 'CASH',
     instrument_number: '',
@@ -104,8 +108,20 @@ const HealthAdvancePayment: React.FC = () => {
       return;
     }
 
+    const selectedPatient = patients.find(p => p.id === formData.party_id);
+    if (!selectedPatient) {
+      showToast('error', 'Selected patient not found');
+      return;
+    }
+
+    const paymentData = {
+      ...formData,
+      party_name: `${selectedPatient.first_name} ${selectedPatient.last_name}`,
+      party_phone: selectedPatient.phone
+    };
+
     try {
-      await paymentService.createAdvancePayment(formData);
+      await paymentService.createAdvancePayment(paymentData);
       showToast('success', 'Advance payment recorded successfully');
       resetForm();
       fetchPayments();
@@ -119,6 +135,8 @@ const HealthAdvancePayment: React.FC = () => {
       payment_number: generatePaymentNumber(),
       party_id: 0,
       party_type: 'PATIENT',
+      party_name: '',
+      party_phone: '',
       amount: 0,
       payment_mode: 'CASH',
       instrument_number: '',
@@ -150,7 +168,8 @@ const HealthAdvancePayment: React.FC = () => {
 
   const columns = [
     { key: 'payment_number', label: 'Payment #', sortable: true },
-    // { key: 'party_name', label: 'Patient', sortable: true },
+    { key: 'party_name', label: 'Patient', sortable: true },
+    { key: 'party_phone', label: 'Phone', sortable: true },
     { key: 'details', label: 'Mode', sortable: true,
         render: (row: any) => row?.[0]?.payment_mode ?? '-'  
      },

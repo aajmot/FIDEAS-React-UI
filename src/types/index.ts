@@ -407,6 +407,8 @@ export interface Payment {
   payment_date?: string;
   party_type?: string;
   party_id?: number;
+  party_name: string;
+  party_phone: string;
   account_id?: number;
   reference_type?: string;
   reference_id?: number;
@@ -471,19 +473,25 @@ export interface Doctor {
 export interface Appointment {
   id: number;
   appointment_number: string;
-  patient_id: number;
-  patient_name?: string;
-  doctor_id: number;
-  doctor_name?: string;
-  agency_id?: number;
-  agency_name?: string;
   appointment_date: string;
   appointment_time: string;
-  duration_minutes?: number;
+  duration_minutes: number;
+  patient_id: number;
+  patient_name: string;
+  patient_phone: string;
+  doctor_id: number;
+  doctor_name: string;
+  doctor_phone: string;
+  doctor_license_number: string;
+  doctor_specialization: string;
+  agency_id?: number;
+  agency_name?: string;
+  agency_phone?: string;
+  branch_id?: number;
   status: string;
   reason?: string;
   notes?: string;
-  created_at: string;
+  created_at?: string;
 }
 
 export interface MedicalRecord {

@@ -77,6 +77,7 @@ import TestInvoiceManagement from './components/health/TestInvoiceManagement';
 import HealthPaymentManagement from './components/health/HealthPaymentManagement';
 import HealthAdvancePayment from './components/health/HealthAdvancePayment';
 import HealthInvoicePayment from './components/health/HealthInvoicePayment';
+import PaymentAllocation from './components/health/PaymentAllocation';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import ARAgingPage from './pages/ARAgingPage';
@@ -242,6 +243,7 @@ function App() {
                 <Route path="health/payments" element={<HealthPaymentManagement />} />
                 <Route path="health/payment/advance" element={<HealthAdvancePayment />} />
                 <Route path="health/payment/invoice" element={<HealthInvoicePayment />} />
+                <Route path="health/payment/allocation" element={<PaymentAllocation />} />
 
               </Route>
             </Routes>

@@ -419,13 +419,15 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
     try {
       const { subtotal, itemsDiscountAmount, taxableAmount, cgstAmount, sgstAmount, igstAmount, cessAmount, overallDiscAmount, finalTotal } = calculateTotals();
       
+      const selectedAppointment = appointments.find(apt => apt.id === Number(formData.appointment_id));
+      
       const orderData = {
         test_order_number: formData.test_order_number,
         order_date: new Date(formData.order_date).toISOString(),
-        patient_id: formData.appointment_id ? Number(formData.appointment_id) : null,
+        patient_id: selectedAppointment?.patient_id || null,
         patient_name: formData.patient_name,
         patient_phone: formData.patient_phone,
-        doctor_id: null,
+        doctor_id: selectedAppointment?.doctor_id || null,
         doctor_name: formData.doctor_name,
         doctor_phone: formData.doctor_phone,
         doctor_license_number: formData.doctor_license_number,

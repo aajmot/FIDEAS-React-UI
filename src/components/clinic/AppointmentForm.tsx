@@ -100,7 +100,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
     appointment_date: appointment?.appointment_date || getDefaultDate(),
     appointment_time: appointment?.appointment_time || getDefaultTime(),
     duration_minutes: appointment?.duration_minutes || 30,
-    status: appointment?.status || 'scheduled',
+    status: appointment?.status || 'SCHEDULED',
     reason: appointment?.reason || '',
     notes: appointment?.notes || ''
   });
@@ -121,18 +121,28 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
         appointment_date: getDefaultDate(),
         appointment_time: getDefaultTime(),
         duration_minutes: 30,
-        status: 'scheduled',
+        status: 'SCHEDULED',
         reason: '',
         notes: ''
       });
     } else if (appointment) {
+      // Handle time format - keep as HH:MM for time input
+      let timeValue = appointment.appointment_time;
+      if (appointment.appointment_time.includes('T')) {
+        const date = new Date(appointment.appointment_time);
+        timeValue = date.toTimeString().slice(0, 5);
+      } else if (appointment.appointment_time.includes(':') && appointment.appointment_time.split(':').length === 3) {
+        // If it's HH:MM:SS, convert to HH:MM
+        timeValue = appointment.appointment_time.slice(0, 5);
+      }
+      
       setFormData({
         appointment_number: appointment.appointment_number || generateAppointmentNumber(),
         patient_id: appointment.patient_id,
         doctor_id: appointment.doctor_id,
         agency_id: appointment.agency_id || '',
         appointment_date: appointment.appointment_date,
-        appointment_time: appointment.appointment_time,
+        appointment_time: timeValue,
         duration_minutes: appointment.duration_minutes || 30,
         status: appointment.status,
         reason: appointment.reason || '',
@@ -231,21 +241,53 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
       return;
     }
     
+    // Get patient and doctor details from options
+    const selectedPatient = patientOptions.find(p => p.value === formData.patient_id.toString());
+    const selectedDoctor = doctorOptions.find(d => d.value === formData.doctor_id.toString());
+    const selectedAgency = agencyOptions.find(a => a.value === formData.agency_id.toString());
+    
+    // Parse patient info from label (format: "phone | name")
+    const patientInfo = selectedPatient?.label.split(' | ') || [];
+    const patientPhone = patientInfo[0] || '';
+    const patientName = patientInfo[1] || '';
+    
+    // Parse doctor info from label (format: "phone | Dr. firstName lastName")
+    const doctorInfo = selectedDoctor?.label.split(' | ') || [];
+    const doctorPhone = doctorInfo[0] || '';
+    const doctorFullName = doctorInfo[1]?.replace('Dr. ', '') || '';
+    
+    // Parse agency info from label (format: "phone | name")
+    const agencyInfo = selectedAgency?.label.split(' | ') || [];
+    const agencyPhone = agencyInfo[0] || '';
+    const agencyName = agencyInfo[1] || '';
+    
+    // Convert time to HH:MM:SS format
+    const timeWithSeconds = formData.appointment_time.includes(':') && formData.appointment_time.split(':').length === 2 
+      ? `${formData.appointment_time}:00` 
+      : formData.appointment_time;
+    
     const submitData: any = {
       appointment_number: formData.appointment_number,
-      patient_id: parseInt(formData.patient_id.toString()),
-      doctor_id: parseInt(formData.doctor_id.toString()),
       appointment_date: formData.appointment_date,
-      appointment_time: formData.appointment_time,
+      appointment_time: timeWithSeconds,
       duration_minutes: parseInt(formData.duration_minutes.toString()),
-      status: formData.status,
+      patient_id: parseInt(formData.patient_id.toString()),
+      patient_name: patientName,
+      patient_phone: patientPhone,
+      doctor_id: parseInt(formData.doctor_id.toString()),
+      doctor_name: doctorFullName,
+      doctor_phone: doctorPhone,
+      doctor_license_number: '',
+      doctor_specialization: '',
+      status: formData.status.toUpperCase(),
       reason: formData.reason,
-      notes: formData.notes,
-      tenant_id: 1
+      notes: formData.notes
     };
     
     if (formData.agency_id) {
       submitData.agency_id = parseInt(formData.agency_id.toString());
+      submitData.agency_name = agencyName;
+      submitData.agency_phone = agencyPhone;
     }
     
     onSave(submitData);
@@ -392,11 +434,11 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
               </label>
               <SearchableDropdown
                 options={[
-                  { value: 'scheduled', label: 'Scheduled' },
-                  { value: 'confirmed', label: 'Confirmed' },
-                  { value: 'completed', label: 'Completed' },
-                  { value: 'cancelled', label: 'Cancelled' },
-                  { value: 'no-show', label: 'No Show' }
+                  { value: 'SCHEDULED', label: 'Scheduled' },
+                  { value: 'CONFIRMED', label: 'Confirmed' },
+                  { value: 'COMPLETED', label: 'Completed' },
+                  { value: 'CANCELLED', label: 'Cancelled' },
+                  { value: 'NO_SHOW', label: 'No Show' }
                 ]}
                 value={formData.status}
                 onChange={(value) => setFormData(prev => ({ ...prev, status: Array.isArray(value) ? value[0].toString() : value.toString() }))}

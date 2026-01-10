@@ -199,15 +199,15 @@ const TestInvoiceView: React.FC<TestInvoiceViewProps> = ({ invoice, onBack }) =>
                     <td className="px-2 py-2 text-sm font-medium text-gray-900 border-b">
                       {item.test_name || item.panel_name}
                     </td>
-                    <td className="px-2 py-2 text-sm text-right font-medium text-gray-900 border-b">₹{item.rate.toFixed(2)}</td>
-                    <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.disc_percentage.toFixed(1)}%</td>
-                    <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">₹{item.disc_amount.toFixed(2)}</td>
-                    <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">₹{item.taxable_amount.toFixed(2)}</td>
-                    <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{(item.cgst_rate + item.sgst_rate).toFixed(1)}%</td>
-                    <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">₹{(item.cgst_amount + item.sgst_amount + item.igst_amount).toFixed(2)}</td>
-                    <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.cess_rate.toFixed(1)}%</td>
-                    <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">₹{item.cess_amount.toFixed(2)}</td>
-                    <td className="px-2 py-2 text-sm text-right font-semibold text-gray-900 border-b">₹{item.total_amount.toFixed(2)}</td>
+                    <td className="px-2 py-2 text-sm text-right font-medium text-gray-900 border-b">{item.rate??0}</td>
+                    <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.disc_percentage??0}%</td>
+                    <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">{item.disc_amount??0}</td>
+                    <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">{item.taxable_amount??0}</td>
+                    <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{((item.cgst_rate??0) + (item.sgst_rate??0))}%</td>
+                    <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">{((item.cgst_amount??0) + (item.sgst_amount??0) + (item.igst_amount??0))}</td>
+                    <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.cess_rate??0}%</td>
+                    <td className="px-2 py-2 text-sm text-right text-gray-700 border-b">{item.cess_amount??0}</td>
+                    <td className="px-2 py-2 text-sm text-right font-semibold text-gray-900 border-b">{item.total_amount??0}</td>
                   </tr>
                 ))}
               </tbody>
@@ -229,48 +229,48 @@ const TestInvoiceView: React.FC<TestInvoiceViewProps> = ({ invoice, onBack }) =>
             <div className="space-y-1">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Subtotal:</span>
-                <span className="font-medium text-gray-900">₹{invoice.subtotal_amount.toFixed(2)}</span>
+                <span className="font-medium text-gray-900">{invoice.subtotal_amount??0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Items Discount:</span>
-                <span className="font-medium text-red-600">-₹{invoice.items_total_discount_amount.toFixed(2)}</span>
+                <span className="font-medium text-red-600">-{invoice.items_total_discount_amount??0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Taxable Amount:</span>
-                <span className="font-medium text-gray-900">₹{invoice.taxable_amount.toFixed(2)}</span>
+                <span className="font-medium text-gray-900">{invoice.taxable_amount??0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">CGST:</span>
-                <span className="font-medium text-gray-900">₹{invoice.cgst_amount.toFixed(2)}</span>
+                <span className="font-medium text-gray-900">{invoice.cgst_amount??0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">SGST:</span>
-                <span className="font-medium text-gray-900">₹{invoice.sgst_amount.toFixed(2)}</span>
+                <span className="font-medium text-gray-900">{invoice.sgst_amount??0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">IGST:</span>
-                <span className="font-medium text-gray-900">₹{invoice.igst_amount.toFixed(2)}</span>
+                <span className="font-medium text-gray-900">{invoice.igst_amount??0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">CESS:</span>
-                <span className="font-medium text-gray-900">₹{invoice.cess_amount.toFixed(2)}</span>
+                <span className="font-medium text-gray-900">{invoice.cess_amount??0}</span>
               </div>
               {invoice.overall_disc_amount > 0 && (
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Overall Discount:</span>
-                  <span className="font-medium text-red-600">-₹{invoice.overall_disc_amount.toFixed(2)}</span>
+                  <span className="font-medium text-red-600">-{invoice.overall_disc_amount??0}</span>
                 </div>
               )}
               {invoice.roundoff !== 0 && (
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Round Off:</span>
-                  <span className="font-medium text-gray-900">₹{invoice.roundoff.toFixed(2)}</span>
+                  <span className="font-medium text-gray-900">{invoice.roundoff??0}</span>
                 </div>
               )}
               <div className="border-t border-blue-200 pt-3">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold text-gray-800">Total Amount:</span>
-                  <span className="report-total text-2xl font-bold text-blue-600">₹{invoice.final_amount.toFixed(2)}</span>
+                  <span className="report-total text-2xl font-bold text-blue-600">{invoice.final_amount??0}</span>
                 </div>
               </div>
             </div>

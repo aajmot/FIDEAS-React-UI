@@ -7,9 +7,9 @@ export const paymentService = {
     search?: string; payment_mode?: string; payment_type?: string;
     party_type?: string;
     status?: string;    
-    is_allocated: boolean;
-    include_details:boolean;
-    include_allocations:boolean
+    is_allocated?: boolean;
+    include_details?:boolean;
+    include_allocations?:boolean
 
   }): Promise<PaginatedResponse> => {
     const queryParams = new URLSearchParams();
@@ -82,6 +82,13 @@ export const paymentService = {
 
   createInvoicePayment: async (paymentData: any): Promise<BaseResponse> => {
     const response = await apiClient.post<BaseResponse>('/api/v1/account/payments/invoice', paymentData);
+    return response.data;
+  },
+
+  allocatePayment: async (paymentId: number, allocations: any[]): Promise<BaseResponse> => {
+    const response = await apiClient.post<BaseResponse>(`/api/v1/account/payments/${paymentId}/allocate`, {
+      allocations
+    });
     return response.data;
   },
 
