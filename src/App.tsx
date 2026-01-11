@@ -74,6 +74,7 @@ import DiagnosticDoctorManagement from './components/clinic/DoctorManagement';
 import TestOrderManagement from './components/diagnostic/TestOrderManagement';
 import TestResultManagement from './components/diagnostic/TestResultManagement';
 import TestInvoiceManagement from './components/health/TestInvoiceManagement';
+import AppointmentInvoicePage from './pages/AppointmentInvoicePage';
 import HealthPaymentManagement from './components/health/HealthPaymentManagement';
 import HealthAdvancePayment from './components/health/HealthAdvancePayment';
 import HealthInvoicePayment from './components/health/HealthInvoicePayment';
@@ -240,6 +241,7 @@ function App() {
                 <Route path="diagnostic/test-result" element={<TestResultManagement />} />
                 <Route path="diagnostic/order-commission" element={<OrderCommissionManagement />} />
                 <Route path="health/test-invoice" element={<TestInvoiceManagement />} />
+                <Route path="health/appointment-invoice" element={<AppointmentInvoicePage />} />
                 <Route path="health/payments" element={<HealthPaymentManagement />} />
                 <Route path="health/payment/advance" element={<HealthAdvancePayment />} />
                 <Route path="health/payment/invoice" element={<HealthInvoicePayment />} />

@@ -85,11 +85,34 @@ const MedicalRecordManagement: React.FC = () => {
 
   const handleSave = async (recordData: any) => {
     try {
+      // Get appointment details to extract patient and doctor info
+      const appointmentResponse = await clinicService.getAppointment(recordData.appointment_id);
+      const appointment = appointmentResponse.data;
+      
+      // Get user info for branch_id
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      // Format data according to API expectations
+      const formattedData = {
+        appointment_id: recordData.appointment_id,
+        patient_id: appointment.patient_id,
+        patient_name: appointment.patient_name,
+        doctor_id: appointment.doctor_id,
+        doctor_name: appointment.doctor_name,
+        visit_date: recordData.visit_date,
+        chief_complaint: recordData.chief_complaint || '',
+        diagnosis: recordData.diagnosis || '',
+        treatment_plan: recordData.treatment_plan || '',
+        vital_signs: recordData.vital_signs || '',
+        lab_results: recordData.lab_results || '',
+        notes: recordData.notes || ''
+      };
+      
       if (recordData.id) {
-        await clinicService.updateMedicalRecord(recordData.id, recordData);
+        await clinicService.updateMedicalRecord(recordData.id, formattedData);
         showToast('success', 'Medical record updated successfully');
       } else {
-        await clinicService.createMedicalRecord(recordData);
+        await clinicService.createMedicalRecord(formattedData);
         showToast('success', 'Medical record created successfully');
       }
       setEditingRecord(undefined);

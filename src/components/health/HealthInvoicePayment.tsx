@@ -82,7 +82,7 @@ const HealthInvoicePayment: React.FC = () => {
     try {
       const response = await invoiceService.getTestInvoices({
         status:"POSTED",
-        payment_status:"UNPAID"
+        payment_status:"UNPAID,PARTIAL"
       });
       setInvoices(response.data || []);
     } catch (error) {
@@ -128,7 +128,12 @@ const HealthInvoicePayment: React.FC = () => {
     }
 
     try {
-      await paymentService.createInvoicePayment(formData);
+      const paymentData = {
+        ...formData,
+        party_name: selectedInvoice?.patient_name || '',
+        party_phone: selectedInvoice?.patient_phone || ''
+      };
+      await paymentService.createInvoicePayment(paymentData);
       showToast('success', 'Invoice payment recorded successfully');
       resetForm();
       fetchPayments();
