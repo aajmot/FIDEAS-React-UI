@@ -8,9 +8,10 @@ import '../../reports.css';
 interface TestResultViewProps {
   result: any;
   onBack: () => void;
+  skipApiCall?: boolean;
 }
 
-const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
+const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack, skipApiCall = false }) => {
   const [resultDetails, setResultDetails] = useState<any>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [testOrder, setTestOrder] = useState<any>(null);
@@ -18,8 +19,24 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
   const { showToast } = useToast();
 
   useEffect(() => {
-    loadResultDetails();
-  }, [result.id]);
+    if (!skipApiCall) {
+      loadResultDetails();
+    } else {
+      setResultDetails(result);
+      loadTenantOnly();
+    }
+  }, [result.id, skipApiCall]);
+
+  const loadTenantOnly = async () => {
+    try {
+      const tenantResponse = await adminService.getTenant();
+      setTenant(tenantResponse.data);
+    } catch (error) {
+      showToast('error', 'Failed to load tenant details');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadResultDetails = async () => {
     try {
@@ -126,14 +143,23 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
                 {tenant?.tax_id && <div>Tax ID: {tenant.tax_id}</div>}
               </div>
             </div>
-            <div className="text-right">
-              <h2 className="report-title text-2xl font-bold text-gray-800 mb-2">TEST RESULT</h2>
-              <div className="text-sm text-gray-600">
-                <div>Date: {new Date().toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}</div>
+            <div className="flex items-center gap-4">
+              {resultDetails.qr_code && (
+                <img 
+                  src={resultDetails.qr_code} 
+                  alt="Test Result QR Code" 
+                  className="w-12 h-12"
+                />
+              )}
+              <div className="text-right">
+                <h2 className="report-title text-2xl font-bold text-gray-800 mb-2">TEST RESULT</h2>
+                <div className="text-sm text-gray-600">
+                  <div>Date: {new Date().toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -205,7 +231,7 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
                     <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Unit</th>
                     <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Value</th>
                     <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Reference</th>
-                    <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Verdict</th>
+                    {/* <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Verdict</th> */}
                     <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Notes</th>
                   </tr>
                 </thead>
@@ -231,11 +257,11 @@ const TestResultView: React.FC<TestResultViewProps> = ({ result, onBack }) => {
                             <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{detail.unit || '-'}</td>
                             <td className="px-2 py-2 text-sm text-right font-medium text-gray-900 border-b">{detail.parameter_value}</td>
                             <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{detail.reference_value}</td>
-                            <td className="px-2 py-2 text-sm text-center font-semibold border-b">
+                            {/* <td className="px-2 py-2 text-sm text-center font-semibold border-b">
                               <span className={detail.verdict === 'Normal' ? 'text-green-600' : 'text-red-600'}>
                                 {detail.verdict}
                               </span>
-                            </td>
+                            </td> */}
                             <td className="px-2 py-2 text-sm text-gray-700 border-b">{detail.notes || '-'}</td>
                           </tr>
                         ))}

@@ -22,6 +22,11 @@ export const tenantService = {
     return response.data;
   },
   
+  updateTenantSettings: async (data: any): Promise<BaseResponse> => {
+    const response = await apiClient.put<BaseResponse>('/api/v1/admin/tenant-settings', data);
+    return response.data;
+  },
+  
   getLegalEntities: async (params?: { page?: number; per_page?: number; search?: string }): Promise<PaginatedResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());

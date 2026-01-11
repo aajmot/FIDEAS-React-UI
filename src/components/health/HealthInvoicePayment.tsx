@@ -5,6 +5,7 @@ import SearchableDropdown from '../common/SearchableDropdown';
 import DataTable from '../common/DataTable';
 import { invoiceService } from '../../services/modules/health/invoiceService';
 import { paymentService } from '../../services/modules/account/paymentService';
+import { adminService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { formatUTCToLocal } from '../../utils/dateUtils';
@@ -37,6 +38,7 @@ interface PaymentFormData {
 const HealthInvoicePayment: React.FC = () => {
   const [invoices, setInvoices] = useState<TestInvoice[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [paymentModes, setPaymentModes] = useState<string[]>(['CASH']);
   const [loading, setLoading] = useState(false);
   const [isFormCollapsed, setIsFormCollapsed] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<TestInvoice | null>(null);
@@ -73,10 +75,21 @@ const HealthInvoicePayment: React.FC = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([fetchInvoices(), fetchPayments()]);
+      await Promise.all([fetchInvoices(), fetchPayments(), fetchPaymentModes()]);
     };
     loadData();
   }, []);
+
+  const fetchPaymentModes = async () => {
+    try {
+      const response = await adminService.getTenantSettings();
+      if (response.data?.payment_modes) {
+        setPaymentModes(response.data.payment_modes);
+      }
+    } catch (error) {
+      console.log('Failed to load payment modes, using defaults');
+    }
+  };
 
   const fetchInvoices = async () => {
     try {
@@ -290,13 +303,7 @@ const HealthInvoicePayment: React.FC = () => {
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Payment Mode *</label>
                 <SearchableDropdown
-                  options={[
-                    { value: 'CASH', label: 'Cash' },
-                    { value: 'CARD', label: 'Card' },
-                    { value: 'UPI', label: 'UPI' },
-                    { value: 'CHEQUE', label: 'Cheque' },
-                    { value: 'BANK_TRANSFER', label: 'Bank Transfer' }
-                  ]}
+                  options={paymentModes.map(mode => ({ value: mode, label: mode }))}
                   value={formData.payment_mode}
                   onChange={(v) => handlePaymentModeChange(v.toString())}
                   placeholder="Select mode"

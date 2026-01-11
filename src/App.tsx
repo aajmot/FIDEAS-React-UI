@@ -6,6 +6,7 @@ import { TenantProvider } from './context/TenantContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
 import Login from './pages/Login';
+import PublicTestResultView from './components/public/PublicTestResultView';
 import TenantRegistration from './components/auth/TenantRegistration';
 import UserManagement from './components/admin/UserManagement';
 import RoleManagement from './components/admin/RoleManagement';
@@ -134,6 +135,7 @@ function App() {
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <div className="App">
             <Routes>
+              <Route path="/public/health/test-result/:resultNo" element={<PublicTestResultView />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<TenantRegistration />} />
               <Route path="/" element={

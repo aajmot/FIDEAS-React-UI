@@ -60,11 +60,16 @@ const TestResultManagement: React.FC = () => {
     }
   };
 
-  const handlePrint = (id: number) => {
-    const result = testResults.find(r => r.id === id);
-    if (result) {
-      setSelectedResult(result);
+  const handlePrint = async (id: number) => {
+    try {
+      setLoading(true);
+      const response = await diagnosticService.getTestResult(id);
+      setSelectedResult(response.data);
       setShowResultView(true);
+    } catch (error) {
+      showToast('error', 'Failed to load test result details');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -130,6 +135,7 @@ const TestResultManagement: React.FC = () => {
           setShowResultView(false);
           setSelectedResult(null);
         }}
+        skipApiCall={true}
       />
     );
   }

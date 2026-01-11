@@ -18,12 +18,15 @@ interface TenantData {
   is_active: boolean;
 }
 
-interface TenantSetting {
+interface TenantSettings {
   id: number;
-  setting: string;
-  description: string;
-  value_type: string;
-  value: string;
+  tenant_id: number;
+  enable_inventory: boolean;
+  enable_gst: boolean;
+  enable_bank_entry: boolean;
+  base_currency: string;
+  payment_modes: string[];
+  default_payment_mode: string;
 }
 
 const TenantUpdate: React.FC = () => {
@@ -39,7 +42,7 @@ const TenantUpdate: React.FC = () => {
     business_type: 'TRADING',
     is_active: true
   });
-  const [settings, setSettings] = useState<TenantSetting[]>([]);
+  const [settings, setSettings] = useState<TenantSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [currencies, setCurrencies] = useState<any[]>([]);
@@ -70,7 +73,7 @@ const TenantUpdate: React.FC = () => {
       // Load tenant settings
       try {
         const settingsResponse = await adminService.getTenantSettings();
-        setSettings(settingsResponse.data || []);
+        setSettings(settingsResponse.data || null);
       } catch (err) {
         // Settings endpoint might not exist yet, ignore error
         console.log('Settings not loaded:', err);
@@ -101,10 +104,14 @@ const TenantUpdate: React.FC = () => {
     }
   };
 
-  const handleSettingChange = (settingName: string, value: string) => {
-    setSettings(prev => prev.map(s => 
-      s.setting === settingName ? { ...s, value } : s
-    ));
+  const handleSettingChange = (settingName: keyof TenantSettings, value: any) => {
+    if (!settings) return;
+    setSettings(prev => prev ? { ...prev, [settingName]: value } : null);
+  };
+
+  const handlePaymentModeChange = (modes: string[]) => {
+    if (!settings) return;
+    setSettings(prev => prev ? { ...prev, payment_modes: modes } : null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,14 +120,18 @@ const TenantUpdate: React.FC = () => {
       setSaving(true);
       await adminService.updateTenant(tenantData);
       
-      // Update settings if endpoint exists
-      if (settings.length > 0) {
+      // Update settings if they exist
+      if (settings) {
         try {
-          for (const setting of settings) {
-            await adminService.updateTenantSetting(setting.setting, {
-              value: setting.value
-            });
-          }
+          const settingsPayload = {
+            enable_inventory: settings.enable_inventory,
+            enable_gst: settings.enable_gst,
+            enable_bank_entry: settings.enable_bank_entry,
+            base_currency: settings.base_currency,
+            payment_modes: settings.payment_modes,
+            default_payment_mode: settings.default_payment_mode
+          };
+          await adminService.updateTenantSettings(settingsPayload);
         } catch (err) {
           console.log('Settings update failed:', err);
         }
@@ -263,68 +274,90 @@ const TenantUpdate: React.FC = () => {
           </div>
 
           {/* Tenant Settings Section */}
-          {settings.length > 0 && (
+          {settings && (
             <div className="mt-6 border-t pt-4">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Tenant Settings</h3>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Setting</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {settings.map((setting) => (
-                      <tr key={setting.id}>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
-                          {setting.setting.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                        </td>
-                        <td className="px-3 py-2 text-xs text-gray-500">
-                          {setting.description}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          {setting.value_type === 'BOOLEAN' ? (
-                            <input
-                              type="checkbox"
-                              checked={setting.value === 'TRUE'}
-                              onChange={(e) => handleSettingChange(setting.setting, e.target.checked ? 'TRUE' : 'FALSE')}
-                              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                            />
-                          ) : setting.value_type === 'INTEGER' ? (
-                            <input
-                              type="number"
-                              value={setting.value}
-                              onChange={(e) => handleSettingChange(setting.setting, e.target.value)}
-                              className="w-24 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
-                            />
-                          ) : setting.value_type === 'CURRENCY' ? (
-                            <SearchableDropdown
-                              options={currencies
-                                .filter(curr => curr && curr.currency_code && curr.symbol)
-                                .map(curr => ({ 
-                                  label: `${curr.currency_code}(${curr.symbol || ''})`, 
-                                  value: curr.currency_code 
-                                }))}
-                              value={setting.value || ''}
-                              onChange={(value) => handleSettingChange(setting.setting, String(value))}
-                              className="w-48"
-                              placeholder="Select currency"
-                            />
-                          ) : (
-                            <input
-                              type="text"
-                              value={setting.value}
-                              onChange={(e) => handleSettingChange(setting.setting, e.target.value)}
-                              className="w-48 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
-                            />
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" style={{ gap: 'var(--erp-spacing-lg)' }}>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Enable Inventory
+                  </label>
+                  <FormCheckbox
+                    checked={settings.enable_inventory}
+                    onChange={(checked) => handleSettingChange('enable_inventory', checked)}
+                    label="Enable inventory module"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Enable GST
+                  </label>
+                  <FormCheckbox
+                    checked={settings.enable_gst}
+                    onChange={(checked) => handleSettingChange('enable_gst', checked)}
+                    label="Enable GST calculations"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Enable Bank Entry
+                  </label>
+                  <FormCheckbox
+                    checked={settings.enable_bank_entry}
+                    onChange={(checked) => handleSettingChange('enable_bank_entry', checked)}
+                    label="Enable bank entry module"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Base Currency
+                  </label>
+                  <SearchableDropdown
+                    options={currencies
+                      .filter(curr => curr && curr.currency_code && curr.symbol)
+                      .map(curr => ({ 
+                        label: `${curr.currency_code} (${curr.symbol || ''})`, 
+                        value: curr.currency_code 
+                      }))}
+                    value={settings.base_currency || ''}
+                    onChange={(value) => handleSettingChange('base_currency', String(value))}
+                    placeholder="Select base currency"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Default Payment Mode
+                  </label>
+                  <SearchableDropdown
+                    options={settings.payment_modes.map(mode => ({
+                      label: mode,
+                      value: mode
+                    }))}
+                    value={settings.default_payment_mode}
+                    onChange={(value) => handleSettingChange('default_payment_mode', String(value))}
+                    placeholder="Select default payment mode"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Payment Modes
+                  </label>
+                  <SearchableDropdown
+                    options={['CASH', 'UPI', 'CARD', 'BANK_TRANSFER', 'CHEQUE'].map(mode => ({
+                      label: mode,
+                      value: mode
+                    }))}
+                    value={settings.payment_modes}
+                    onChange={(value) => handlePaymentModeChange(Array.isArray(value) ? value.map(String) : [String(value)])}
+                    placeholder="Select payment modes"
+                    multiple
+                  />
+                </div>
               </div>
             </div>
           )}
