@@ -51,7 +51,7 @@ const Dashboard: React.FC = () => {
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow">
           <div className="text-sm opacity-90">Revenue</div>
           <div className="text-3xl font-bold mt-2">{kpis.revenue?.month?.toFixed(2) || '0.00'}</div>
@@ -67,9 +67,9 @@ const Dashboard: React.FC = () => {
           <div className="text-3xl font-bold mt-2">{kpis.profit?.month?.toFixed(2) || '0.00'}</div>
           <div className="text-sm mt-2">Today: {kpis.profit?.today?.toFixed(2) || '0.00'}</div>
         </div>
-      </div>
+      </div> */}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="text-gray-600 text-sm">Stock Value</div>
           <div className="text-2xl font-bold text-purple-600 mt-2">{kpis.stock_value?.toFixed(2) || '0.00'}</div>
@@ -82,12 +82,12 @@ const Dashboard: React.FC = () => {
           <div className="text-gray-600 text-sm">Payables</div>
           <div className="text-2xl font-bold text-red-600 mt-2">{kpis.payables?.toFixed(2) || '0.00'}</div>
         </div>
-      </div>
+      </div> */}
 
       {/* Charts and Tables */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Top Products */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        {/* <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Top Products</h2>
           <div className="space-y-3">
             {topProducts.length > 0 ? topProducts.map((product: any, index: number) => (
@@ -102,10 +102,10 @@ const Dashboard: React.FC = () => {
               </div>
             )) : <div className="text-gray-500 text-center py-4">No data available</div>}
           </div>
-        </div>
+        </div> */}
 
         {/* Recent Transactions */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        {/* <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
           <div className="space-y-3">
             {recentTransactions.length > 0 ? recentTransactions.map((txn: any, index: number) => (
@@ -120,11 +120,11 @@ const Dashboard: React.FC = () => {
               </div>
             )) : <div className="text-gray-500 text-center py-4">No data available</div>}
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Revenue Trend */}
-      <div className="bg-white p-6 rounded-lg shadow mt-6">
+      {/* <div className="bg-white p-6 rounded-lg shadow mt-6">
         <h2 className="text-xl font-semibold mb-4">Revenue Trend (Last 12 Months)</h2>
         <div className="flex items-end justify-between h-64 gap-2">
           {revenueTrend.length > 0 ? revenueTrend.map((item: any, index: number) => {
@@ -139,7 +139,7 @@ const Dashboard: React.FC = () => {
             );
           }) : <div className="text-gray-500 text-center py-4 w-full">No data available</div>}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
