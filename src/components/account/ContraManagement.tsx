@@ -130,7 +130,7 @@ const ContraManagement: React.FC = () => {
     { 
       key: 'amount', 
       label: 'Amount', 
-      render: (val: number) => `₹${val.toLocaleString()}` 
+      render: (val: number) => `${val.toLocaleString()}` 
     },
     { key: 'narration', label: 'Narration' },
     {

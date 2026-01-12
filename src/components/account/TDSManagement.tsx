@@ -60,7 +60,7 @@ const TDSManagement: React.FC = () => {
     { key: 'section_code', label: 'Section' },
     { key: 'description', label: 'Description' },
     { key: 'rate', label: 'Rate (%)', render: (val: number) => `${val}%` },
-    { key: 'threshold_limit', label: 'Threshold', render: (val: number) => `₹${val.toFixed(2)}` },
+    { key: 'threshold_limit', label: 'Threshold', render: (val: number) => `${val.toFixed(2)}` },
     { key: 'is_active', label: 'Status', render: (val: boolean) => val ? '✓ Active' : '✗ Inactive' }
   ];
 
@@ -145,7 +145,7 @@ const TDSManagement: React.FC = () => {
             <div className="mt-4 grid grid-cols-4 gap-4">
               <div className="bg-white p-3 rounded">
                 <div className="text-sm text-gray-600">Gross Amount</div>
-                <div className="text-lg font-bold">₹{calcData.result.amount.toFixed(2)}</div>
+                <div className="text-lg font-bold">{calcData.result.amount.toFixed(2)}</div>
               </div>
               <div className="bg-white p-3 rounded">
                 <div className="text-sm text-gray-600">TDS Rate</div>
@@ -153,11 +153,11 @@ const TDSManagement: React.FC = () => {
               </div>
               <div className="bg-white p-3 rounded">
                 <div className="text-sm text-gray-600">TDS Amount</div>
-                <div className="text-lg font-bold text-red-600">₹{calcData.result.tds_amount.toFixed(2)}</div>
+                <div className="text-lg font-bold text-red-600">{calcData.result.tds_amount.toFixed(2)}</div>
               </div>
               <div className="bg-white p-3 rounded">
                 <div className="text-sm text-gray-600">Net Amount</div>
-                <div className="text-lg font-bold text-green-600">₹{calcData.result.net_amount.toFixed(2)}</div>
+                <div className="text-lg font-bold text-green-600">{calcData.result.net_amount.toFixed(2)}</div>
               </div>
             </div>
           )}

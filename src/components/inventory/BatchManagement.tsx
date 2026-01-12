@@ -50,7 +50,7 @@ const BatchManagement: React.FC = () => {
               <td className="border p-2">{batch.product_name}</td>
               <td className="border p-2">{batch.exp_date}</td>
               <td className="border p-2">{batch.quantity}</td>
-              <td className="border p-2">₹{batch.mrp}</td>
+              <td className="border p-2">{batch.mrp}</td>
             </tr>
           ))}
         </tbody>

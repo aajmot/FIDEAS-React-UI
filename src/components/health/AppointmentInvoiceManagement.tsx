@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Edit, Trash2, FileText, Download } from 'lucide-react';
+import { Eye, Edit, Trash2, FileText, Download, Printer } from 'lucide-react';
 import DataTable from '../common/DataTable';
 import AppointmentInvoiceForm from './AppointmentInvoiceForm';
+import AppointmentInvoiceView from './AppointmentInvoiceView';
 import ConfirmationModal from '../common/ConfirmationModal';
 import { useToast } from '../../context/ToastContext';
 import apiClient from '../../services/apiClient';
+import { formatUTCToLocal } from '../../utils/dateUtils';
 
 interface AppointmentInvoice {
   id: number;
@@ -31,6 +33,8 @@ const AppointmentInvoiceManagement: React.FC = () => {
     isOpen: false,
     invoiceId: null
   });
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const [showInvoiceView, setShowInvoiceView] = useState(false);
 
   useEffect(() => {
     loadInvoices();
@@ -101,107 +105,14 @@ const AppointmentInvoiceManagement: React.FC = () => {
     setDeleteConfirmation({ isOpen: false, invoiceId: null });
   };
 
-  const handleView = async (id: number) => {
+  const handleView = async (invoice: AppointmentInvoice) => {
     try {
-      const response = await apiClient.get(`/api/v1/health/appointment-invoices/${id}`);
-      const invoice = response.data;
-      
-      // Create a new window to display the invoice
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Appointment Invoice - ${invoice.invoice_number}</title>
-              <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                .header { text-align: center; margin-bottom: 30px; }
-                .invoice-details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-                .section { margin-bottom: 20px; }
-                .section h3 { margin-bottom: 10px; color: #333; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f5f5f5; }
-                .text-right { text-align: right; }
-                .total-row { font-weight: bold; background-color: #f9f9f9; }
-                @media print { body { margin: 0; } }
-              </style>
-            </head>
-            <body>
-              <div class="header">
-                <h1>Appointment Invoice</h1>
-                <h2>${invoice.invoice_number}</h2>
-              </div>
-              
-              <div class="invoice-details">
-                <div class="section">
-                  <h3>Patient Information</h3>
-                  <p><strong>Name:</strong> ${invoice.patient_name}</p>
-                  <p><strong>Phone:</strong> ${invoice.patient_phone}</p>
-                  <p><strong>Email:</strong> ${invoice.patient_email || 'N/A'}</p>
-                </div>
-                
-                <div class="section">
-                  <h3>Doctor Information</h3>
-                  <p><strong>Name:</strong> ${invoice.doctor_name}</p>
-                  <p><strong>Speciality:</strong> ${invoice.doctor_speciality || 'N/A'}</p>
-                  <p><strong>License:</strong> ${invoice.doctor_license_number || 'N/A'}</p>
-                </div>
-              </div>
-              
-              <div class="section">
-                <h3>Invoice Details</h3>
-                <p><strong>Invoice Date:</strong> ${new Date(invoice.invoice_date).toLocaleDateString()}</p>
-                <p><strong>Due Date:</strong> ${new Date(invoice.due_date).toLocaleDateString()}</p>
-                <p><strong>Status:</strong> ${invoice.status}</p>
-              </div>
-              
-              <table>
-                <thead>
-                  <tr>
-                    <th>Description</th>
-                    <th>Quantity</th>
-                    <th>Rate</th>
-                    <th>Discount</th>
-                    <th class="text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${invoice.items?.map((item: any) => `
-                    <tr>
-                      <td>${item.description}</td>
-                      <td>${item.quantity}</td>
-                      <td>₹${item.rate.toFixed(2)}</td>
-                      <td>₹${item.disc_amount.toFixed(2)}</td>
-                      <td class="text-right">₹${item.total_amount.toFixed(2)}</td>
-                    </tr>
-                  `).join('') || ''}
-                  <tr class="total-row">
-                    <td colspan="4"><strong>Total Amount</strong></td>
-                    <td class="text-right"><strong>₹${invoice.final_amount.toFixed(2)}</strong></td>
-                  </tr>
-                </tbody>
-              </table>
-              
-              ${invoice.notes ? `
-                <div class="section">
-                  <h3>Notes</h3>
-                  <p>${invoice.notes}</p>
-                </div>
-              ` : ''}
-              
-              <script>
-                window.onload = function() {
-                  window.print();
-                };
-              </script>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-      }
+      const response = await apiClient.get(`/api/v1/health/appointment-invoices/${invoice.id}?include_barcode=true`);
+      const invoiceData = response.data.data || response.data;
+      setSelectedInvoice(invoiceData);
+      setShowInvoiceView(true);
     } catch (error: any) {
-      showToast('error', error.response?.data?.detail || 'Failed to load invoice details');
+      showToast('error', error.response?.data?.detail || 'Failed to load invoice for printing');
     }
   };
 
@@ -210,19 +121,40 @@ const AppointmentInvoiceManagement: React.FC = () => {
     { 
       key: 'invoice_date', 
       label: 'Invoice Date',
-      render: (value: string) => new Date(value).toLocaleDateString()
+      render: (value: string) =>formatUTCToLocal(value)
     },
-    { 
-      key: 'due_date', 
-      label: 'Due Date',
-      render: (value: string) => new Date(value).toLocaleDateString()
-    },
+    // { 
+    //   key: 'due_date', 
+    //   label: 'Due Date',
+    //   render: (value: string) => formatUTCToLocal(value)
+    // },
     { key: 'patient_name', label: 'Patient' },
     { key: 'doctor_name', label: 'Doctor' },
     { 
       key: 'final_amount', 
       label: 'Amount',
-      render: (value: number) => `₹${value.toFixed(2)}`
+      render: (value: number) => `${value}`
+    },
+    { 
+      key: 'balance_amount', 
+      label: 'Balance Amt',
+      render: (value: number) => `${value}`
+    },
+     {
+      key: 'payment_status',
+      label: 'Payment Status',
+      sortable: true,
+      render: (value: string) => (
+        <span style={{
+          padding: '2px 8px',
+          fontSize: 'var(--erp-font-size-xs)',
+          borderRadius: '4px',
+          backgroundColor: value === 'PAID' ? '#dcfce7' : value === 'PARTIAL' ? '#fef3c7' : '#fee2e2',
+          color: value === 'PAID' ? '#166534' : value === 'PARTIAL' ? '#854d0e' : '#991b1b'
+        }}>
+          {value || 'UNPAID'}
+        </span>
+      ),
     },
     { 
       key: 'status', 
@@ -236,29 +168,56 @@ const AppointmentInvoiceManagement: React.FC = () => {
           {value}
         </span>
       )
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (_: any, invoice: AppointmentInvoice) => {
+        const isEditable = invoice.status === 'DRAFT';
+        return (
+          <div className="flex space-x-0">
+            <button 
+              onClick={() => handleView(invoice)} 
+              className="text-green-600 hover:text-green-800 cursor-pointer"
+              title="Print Invoice"
+            >
+              <Printer className="h-4 w-4" />
+            </button>
+            <button 
+              onClick={() => isEditable && handleEdit(invoice)} 
+              className={`h-4 w-4 ${isEditable ? 'text-blue-600 hover:text-blue-800 cursor-pointer' : 'text-gray-400 cursor-not-allowed'}`}
+              title={isEditable ? 'Edit' : 'Cannot edit - Invoice is not draft'}
+              disabled={!isEditable}
+            >
+              <Edit className="h-4 w-4" />
+            </button>
+            <button 
+              onClick={() => isEditable && handleDelete(invoice.id)} 
+              className={`h-4 w-4 ${isEditable ? 'text-red-600 hover:text-red-800 cursor-pointer' : 'text-gray-400 cursor-not-allowed'}`}
+              title={isEditable ? 'Delete' : 'Cannot delete - Invoice is not draft'}
+              disabled={!isEditable}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        );
+      },
     }
   ];
 
-  const actions = [
-    {
-      label: 'View',
-      icon: Eye,
-      onClick: (invoice: AppointmentInvoice) => handleView(invoice.id),
-      className: 'text-blue-600 hover:text-blue-800'
-    },
-    {
-      label: 'Edit',
-      icon: Edit,
-      onClick: handleEdit,
-      className: 'text-green-600 hover:text-green-800'
-    },
-    {
-      label: 'Delete',
-      icon: Trash2,
-      onClick: (invoice: AppointmentInvoice) => handleDelete(invoice.id),
-      className: 'text-red-600 hover:text-red-800'
-    }
-  ];
+
+
+  if (showInvoiceView && selectedInvoice) {
+    return (
+      <AppointmentInvoiceView
+        invoice={selectedInvoice}
+        onBack={() => {
+          setShowInvoiceView(false);
+          setSelectedInvoice(null);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -275,11 +234,7 @@ const AppointmentInvoiceManagement: React.FC = () => {
         title="Appointment Invoices"
         data={invoices}
         columns={columns}
-        onEdit={handleEdit}
-        onDelete={(invoice: AppointmentInvoice) => handleDelete(invoice.id)}
         loading={loading}
-        canEdit={(invoice: AppointmentInvoice) => invoice.status === 'DRAFT'}
-        canDelete={(invoice: AppointmentInvoice) => invoice.status === 'DRAFT'}
       />
 
       <ConfirmationModal

@@ -32,7 +32,7 @@ const StockValuation: React.FC = () => {
     <div className="p-6">
       <div className="bg-white rounded-lg shadow mb-6 p-6">
         <div className="text-3xl font-bold text-green-600">
-          ₹{data.total_value?.toFixed(2) || '0.00'}
+          {data.total_value?.toFixed(2) || '0.00'}
         </div>
         <div className="text-gray-600">Total Stock Value</div>
       </div>
@@ -42,8 +42,8 @@ const StockValuation: React.FC = () => {
         columns={[
           { key: 'product_name', label: 'Product' },
           { key: 'quantity', label: 'Quantity', render: (value) => value?.toFixed(2) || '0.00' },
-          { key: 'avg_cost', label: 'Avg Cost', render: (value) => `₹${value?.toFixed(2) || '0.00'}` },
-          { key: 'value', label: 'Value', render: (value) => `₹${value?.toFixed(2) || '0.00'}` }
+          { key: 'avg_cost', label: 'Avg Cost', render: (value) => `${value?.toFixed(2) || '0.00'}` },
+          { key: 'value', label: 'Value', render: (value) => `${value?.toFixed(2) || '0.00'}` }
         ]}
         data={data.items || []}
         loading={loading}

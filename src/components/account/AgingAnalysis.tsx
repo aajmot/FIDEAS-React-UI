@@ -66,20 +66,20 @@ const AgingAnalysis: React.FC = () => {
             {data.map((row: any, index: number) => (
               <tr key={index} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-3">{row.customer || row.supplier}</td>
-                <td className="px-4 py-3 text-right">₹{row['0-30'].toFixed(2)}</td>
-                <td className="px-4 py-3 text-right">₹{row['31-60'].toFixed(2)}</td>
-                <td className="px-4 py-3 text-right">₹{row['61-90'].toFixed(2)}</td>
-                <td className="px-4 py-3 text-right text-red-600">₹{row['90+'].toFixed(2)}</td>
-                <td className="px-4 py-3 text-right font-semibold">₹{row.total.toFixed(2)}</td>
+                <td className="px-4 py-3 text-right">{row['0-30'].toFixed(2)}</td>
+                <td className="px-4 py-3 text-right">{row['31-60'].toFixed(2)}</td>
+                <td className="px-4 py-3 text-right">{row['61-90'].toFixed(2)}</td>
+                <td className="px-4 py-3 text-right text-red-600">{row['90+'].toFixed(2)}</td>
+                <td className="px-4 py-3 text-right font-semibold">{row.total.toFixed(2)}</td>
               </tr>
             ))}
             <tr className="border-t-2 bg-gray-100 font-bold">
               <td className="px-4 py-3">Total</td>
-              <td className="px-4 py-3 text-right">₹{totals['0-30'].toFixed(2)}</td>
-              <td className="px-4 py-3 text-right">₹{totals['31-60'].toFixed(2)}</td>
-              <td className="px-4 py-3 text-right">₹{totals['61-90'].toFixed(2)}</td>
-              <td className="px-4 py-3 text-right text-red-600">₹{totals['90+'].toFixed(2)}</td>
-              <td className="px-4 py-3 text-right">₹{totals.total.toFixed(2)}</td>
+              <td className="px-4 py-3 text-right">{totals['0-30'].toFixed(2)}</td>
+              <td className="px-4 py-3 text-right">{totals['31-60'].toFixed(2)}</td>
+              <td className="px-4 py-3 text-right">{totals['61-90'].toFixed(2)}</td>
+              <td className="px-4 py-3 text-right text-red-600">{totals['90+'].toFixed(2)}</td>
+              <td className="px-4 py-3 text-right">{totals.total.toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
@@ -88,19 +88,19 @@ const AgingAnalysis: React.FC = () => {
       <div className="mt-6 grid grid-cols-4 gap-4">
         <div className="bg-green-100 p-4 rounded">
           <div className="text-sm text-gray-600">Current (0-30)</div>
-          <div className="text-2xl font-bold text-green-700">₹{totals['0-30'].toFixed(2)}</div>
+          <div className="text-2xl font-bold text-green-700">{totals['0-30'].toFixed(2)}</div>
         </div>
         <div className="bg-yellow-100 p-4 rounded">
           <div className="text-sm text-gray-600">31-60 Days</div>
-          <div className="text-2xl font-bold text-yellow-700">₹{totals['31-60'].toFixed(2)}</div>
+          <div className="text-2xl font-bold text-yellow-700">{totals['31-60'].toFixed(2)}</div>
         </div>
         <div className="bg-orange-100 p-4 rounded">
           <div className="text-sm text-gray-600">61-90 Days</div>
-          <div className="text-2xl font-bold text-orange-700">₹{totals['61-90'].toFixed(2)}</div>
+          <div className="text-2xl font-bold text-orange-700">{totals['61-90'].toFixed(2)}</div>
         </div>
         <div className="bg-red-100 p-4 rounded">
           <div className="text-sm text-gray-600">Overdue (90+)</div>
-          <div className="text-2xl font-bold text-red-700">₹{totals['90+'].toFixed(2)}</div>
+          <div className="text-2xl font-bold text-red-700">{totals['90+'].toFixed(2)}</div>
         </div>
       </div>
     </div>

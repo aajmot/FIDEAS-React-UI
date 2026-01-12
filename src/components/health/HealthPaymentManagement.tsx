@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Printer } from 'lucide-react';
 import DataTable from '../common/DataTable';
 import HealthPaymentForm from './HealthPaymentForm';
-import { accountService } from '../../services/api';
+import PaymentReceiptView from './PaymentReceiptView';
+import { accountService, adminService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 const HealthPaymentManagement: React.FC = () => {
@@ -13,6 +14,8 @@ const HealthPaymentManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPayment, setSelectedPayment] = useState<any>(null);
+  const [showReceiptView, setShowReceiptView] = useState(false);
   const { showToast } = useToast();
 
   const pageSize = 10;
@@ -65,6 +68,21 @@ const HealthPaymentManagement: React.FC = () => {
   const handleSearch = (search: string) => {
     setSearchTerm(search);
     setCurrentPage(1);
+  };
+
+  const handlePrint = async (paymentId: number) => {
+    try {
+      const response = await adminService.getPayment(paymentId);
+      setSelectedPayment(response.data);
+      setShowReceiptView(true);
+    } catch (error) {
+      showToast('error', 'Failed to load payment details');
+    }
+  };
+
+  const handleBackFromReceipt = () => {
+    setShowReceiptView(false);
+    setSelectedPayment(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -128,7 +146,7 @@ const HealthPaymentManagement: React.FC = () => {
       label: 'Amount',
       render: (value: any) => {
         const amount = typeof value === 'number' ? value : parseFloat(value) || 0;
-        return <span className="text-xs font-medium">₹{amount.toFixed(2)}</span>;
+        return <span className="text-xs font-medium">{amount.toFixed(2)}</span>;
       }
     },
     {
@@ -136,7 +154,7 @@ const HealthPaymentManagement: React.FC = () => {
       label: 'Allocated',
       render: (value: any) => {
         const amount = typeof value === 'number' ? value : parseFloat(value) || 0;
-        return <span className="text-xs">₹{amount.toFixed(2)}</span>;
+        return <span className="text-xs">{amount.toFixed(2)}</span>;
       }
     },
     {
@@ -144,7 +162,7 @@ const HealthPaymentManagement: React.FC = () => {
       label: 'Unallocated',
       render: (value: any) => {
         const amount = typeof value === 'number' ? value : parseFloat(value) || 0;
-        return <span className="text-xs text-orange-600">₹{amount.toFixed(2)}</span>;
+        return <span className="text-xs text-orange-600">{amount.toFixed(2)}</span>;
       }
     },
     {
@@ -155,8 +173,26 @@ const HealthPaymentManagement: React.FC = () => {
           {value}
         </span>
       )
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      sortable: false,
+      render: (value: any, row: any) => (
+        <button
+          onClick={() => handlePrint(row.id)}
+          className="text-blue-600 hover:text-blue-800 p-1"
+          title="Print Receipt"
+        >
+          <Printer size={16} />
+        </button>
+      )
     }
   ];
+
+  if (showReceiptView && selectedPayment) {
+    return <PaymentReceiptView payment={selectedPayment} onBack={handleBackFromReceipt} />;
+  }
 
   return (
     <div className="p-3 sm:p-6">

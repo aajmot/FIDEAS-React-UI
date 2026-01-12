@@ -769,7 +769,7 @@ const SalesInvoiceForm: React.FC<SalesInvoiceFormProps> = ({ onSave, isCollapsed
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Total Payments:</span>
                       <span className="text-sm font-semibold text-blue-700">
-                        ₹{paymentDetails.reduce((sum, p) => sum + (p.amount_base || 0), 0).toFixed(2)}
+                        {paymentDetails.reduce((sum, p) => sum + (p.amount_base || 0), 0).toFixed(2)}
                       </span>
                     </div>
                   </div>

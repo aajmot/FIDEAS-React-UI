@@ -103,7 +103,7 @@ const CashBook: React.FC = () => {
       label: 'Cash In',
       render: (value: number) => {
         const cashIn = Number(value) || 0;
-        return cashIn > 0 ? `₹${cashIn.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+        return cashIn > 0 ? `${cashIn.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
       }
     },
     {
@@ -111,7 +111,7 @@ const CashBook: React.FC = () => {
       label: 'Cash Out',
       render: (value: number) => {
         const cashOut = Number(value) || 0;
-        return cashOut > 0 ? `₹${cashOut.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+        return cashOut > 0 ? `${cashOut.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
       }
     },
     {
@@ -121,7 +121,7 @@ const CashBook: React.FC = () => {
         const balance = Number(value) || 0;
         return (
           <span className={balance >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-            ₹{balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         );
       }
@@ -200,20 +200,20 @@ const CashBook: React.FC = () => {
       <div className="bg-white p-4 rounded-lg shadow mb-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
-            <div className="text-xl font-bold text-blue-600">₹{summary.opening_balance.toLocaleString()}</div>
+            <div className="text-xl font-bold text-blue-600">{summary.opening_balance.toLocaleString()}</div>
             <div className="text-xs text-gray-600">Opening Balance</div>
           </div>
           <div className="text-center">
-            <div className="text-xl font-bold text-green-600">₹{summary.total_cash_in.toLocaleString()}</div>
+            <div className="text-xl font-bold text-green-600">{summary.total_cash_in.toLocaleString()}</div>
             <div className="text-xs text-gray-600">Total Cash In</div>
           </div>
           <div className="text-center">
-            <div className="text-xl font-bold text-red-600">₹{summary.total_cash_out.toLocaleString()}</div>
+            <div className="text-xl font-bold text-red-600">{summary.total_cash_out.toLocaleString()}</div>
             <div className="text-xs text-gray-600">Total Cash Out</div>
           </div>
           <div className="text-center">
             <div className={`text-xl font-bold ${summary.closing_balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ₹{summary.closing_balance.toLocaleString()}
+              {summary.closing_balance.toLocaleString()}
             </div>
             <div className="text-xs text-gray-600">Closing Balance</div>
           </div>

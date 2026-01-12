@@ -38,7 +38,7 @@ const GSTCalculatorPage: React.FC = () => {
       
       <div className="bg-white p-6 rounded shadow mb-6">
         <div className="mb-4">
-          <label className="block mb-2 font-semibold">Subtotal (₹)</label>
+          <label className="block mb-2 font-semibold">Subtotal ()</label>
           <input
             type="number"
             value={subtotal}
@@ -95,7 +95,7 @@ const GSTCalculatorPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>IGST Amount:</span>
-                  <span className="font-semibold">₹{result.igst_amount?.toFixed(2)}</span>
+                  <span className="font-semibold">{result.igst_amount?.toFixed(2)}</span>
                 </div>
               </>
             ) : (
@@ -106,7 +106,7 @@ const GSTCalculatorPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>CGST Amount:</span>
-                  <span className="font-semibold">₹{result.cgst_amount?.toFixed(2)}</span>
+                  <span className="font-semibold">{result.cgst_amount?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>SGST Rate:</span>
@@ -114,7 +114,7 @@ const GSTCalculatorPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>SGST Amount:</span>
-                  <span className="font-semibold">₹{result.sgst_amount?.toFixed(2)}</span>
+                  <span className="font-semibold">{result.sgst_amount?.toFixed(2)}</span>
                 </div>
               </>
             )}
@@ -122,11 +122,11 @@ const GSTCalculatorPage: React.FC = () => {
             <div className="border-t pt-2 mt-2">
               <div className="flex justify-between text-lg">
                 <span className="font-bold">Total GST:</span>
-                <span className="font-bold">₹{result.total_gst.toFixed(2)}</span>
+                <span className="font-bold">{result.total_gst.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-lg">
                 <span className="font-bold">Total Amount:</span>
-                <span className="font-bold">₹{result.total_amount.toFixed(2)}</span>
+                <span className="font-bold">{result.total_amount.toFixed(2)}</span>
               </div>
             </div>
           </div>

@@ -153,13 +153,13 @@ const OrderCommissionView: React.FC<OrderCommissionViewProps> = ({ commissionId,
               {commission.items?.map((item: any, index: number) => (
                 <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                   <td className="px-2 py-2 text-sm text-gray-900 border-b">{item.item_name}</td>
-                  <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">₹{item.item_rate.toFixed(2)}</td>
+                  <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.item_rate.toFixed(2)}</td>
                   <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.commission_percentage.toFixed(2)}%</td>
-                  <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">₹{item.commission_value.toFixed(2)}</td>
+                  <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.commission_value.toFixed(2)}</td>
                   <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.gst_percentage.toFixed(2)}%</td>
                   <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.cess_percentage.toFixed(2)}%</td>
                   <td className="px-2 py-2 text-sm text-center text-gray-700 border-b">{item.discount_percentage.toFixed(2)}%</td>
-                  <td className="px-2 py-2 text-sm text-right font-medium text-gray-900 border-b">₹{item.final_amount.toFixed(2)}</td>
+                  <td className="px-2 py-2 text-sm text-right font-medium text-gray-900 border-b">{item.final_amount.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
@@ -172,19 +172,19 @@ const OrderCommissionView: React.FC<OrderCommissionViewProps> = ({ commissionId,
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Total:</span>
-                <span>₹{commission.total_amount.toFixed(2)}</span>
+                <span>{commission.total_amount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Discount ({commission.disc_percentage}%):</span>
-                <span>₹{commission.disc_amount.toFixed(2)}</span>
+                <span>{commission.disc_amount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Round Off:</span>
-                <span>₹{commission.roundoff.toFixed(2)}</span>
+                <span>{commission.roundoff.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-semibold text-lg border-t pt-2">
                 <span>Final Total:</span>
-                <span>₹{commission.final_amount.toFixed(2)}</span>
+                <span>{commission.final_amount.toFixed(2)}</span>
               </div>
             </div>
           </div>

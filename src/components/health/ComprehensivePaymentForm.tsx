@@ -504,17 +504,17 @@ const ComprehensivePaymentForm: React.FC<ComprehensivePaymentFormProps> = ({
                           <SearchableDropdown
                             options={invoices.map(inv => ({ 
                               value: inv.invoice_number, 
-                              label: `${inv.invoice_number} - ₹${inv.total_amount_base || 0}` 
+                              label: `${inv.invoice_number} - ${inv.total_amount_base || 0}` 
                             }))}
                             value={allocation.document_number}
                             onChange={(v) => updateAllocation(allocation.id, 'document_number', v)}
                             placeholder="Select..." multiple={false} searchable={true} />
                         </td>
                         <td className="px-2 py-2 text-right">
-                          {allocation.document_total ? `₹${allocation.document_total.toFixed(2)}` : '-'}
+                          {allocation.document_total ? `${allocation.document_total.toFixed(2)}` : '-'}
                         </td>
                         <td className="px-2 py-2 text-right">
-                          {allocation.document_balance ? `₹${allocation.document_balance.toFixed(2)}` : '-'}
+                          {allocation.document_balance ? `${allocation.document_balance.toFixed(2)}` : '-'}
                         </td>
                         <td className="px-2 py-2">
                           <input type="number" value={allocation.allocated_amount_base} step="0.01" required
@@ -550,15 +550,15 @@ const ComprehensivePaymentForm: React.FC<ComprehensivePaymentFormProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="bg-blue-50 p-3 rounded">
                 <label className="block text-xs font-medium text-gray-700 mb-1">Total Amount</label>
-                <div className="text-lg font-bold text-blue-600">₹{formData.total_amount_base.toFixed(2)}</div>
+                <div className="text-lg font-bold text-blue-600">{formData.total_amount_base.toFixed(2)}</div>
               </div>
               <div className="bg-green-50 p-3 rounded">
                 <label className="block text-xs font-medium text-gray-700 mb-1">Allocated Amount</label>
-                <div className="text-lg font-bold text-green-600">₹{formData.allocated_amount_base.toFixed(2)}</div>
+                <div className="text-lg font-bold text-green-600">{formData.allocated_amount_base.toFixed(2)}</div>
               </div>
               <div className="bg-orange-50 p-3 rounded">
                 <label className="block text-xs font-medium text-gray-700 mb-1">Unallocated Amount</label>
-                <div className="text-lg font-bold text-orange-600">₹{formData.unallocated_amount_base.toFixed(2)}</div>
+                <div className="text-lg font-bold text-orange-600">{formData.unallocated_amount_base.toFixed(2)}</div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">TDS Amount</label>

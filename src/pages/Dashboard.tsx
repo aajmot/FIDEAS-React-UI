@@ -54,33 +54,33 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow">
           <div className="text-sm opacity-90">Revenue</div>
-          <div className="text-3xl font-bold mt-2">₹{kpis.revenue?.month?.toFixed(2) || '0.00'}</div>
-          <div className="text-sm mt-2">Today: ₹{kpis.revenue?.today?.toFixed(2) || '0.00'}</div>
+          <div className="text-3xl font-bold mt-2">{kpis.revenue?.month?.toFixed(2) || '0.00'}</div>
+          <div className="text-sm mt-2">Today: {kpis.revenue?.today?.toFixed(2) || '0.00'}</div>
         </div>
         <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-lg shadow">
           <div className="text-sm opacity-90">Expenses</div>
-          <div className="text-3xl font-bold mt-2">₹{kpis.expenses?.month?.toFixed(2) || '0.00'}</div>
-          <div className="text-sm mt-2">Today: ₹{kpis.expenses?.today?.toFixed(2) || '0.00'}</div>
+          <div className="text-3xl font-bold mt-2">{kpis.expenses?.month?.toFixed(2) || '0.00'}</div>
+          <div className="text-sm mt-2">Today: {kpis.expenses?.today?.toFixed(2) || '0.00'}</div>
         </div>
         <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow">
           <div className="text-sm opacity-90">Profit</div>
-          <div className="text-3xl font-bold mt-2">₹{kpis.profit?.month?.toFixed(2) || '0.00'}</div>
-          <div className="text-sm mt-2">Today: ₹{kpis.profit?.today?.toFixed(2) || '0.00'}</div>
+          <div className="text-3xl font-bold mt-2">{kpis.profit?.month?.toFixed(2) || '0.00'}</div>
+          <div className="text-sm mt-2">Today: {kpis.profit?.today?.toFixed(2) || '0.00'}</div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="text-gray-600 text-sm">Stock Value</div>
-          <div className="text-2xl font-bold text-purple-600 mt-2">₹{kpis.stock_value?.toFixed(2) || '0.00'}</div>
+          <div className="text-2xl font-bold text-purple-600 mt-2">{kpis.stock_value?.toFixed(2) || '0.00'}</div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="text-gray-600 text-sm">Receivables</div>
-          <div className="text-2xl font-bold text-orange-600 mt-2">₹{kpis.receivables?.toFixed(2) || '0.00'}</div>
+          <div className="text-2xl font-bold text-orange-600 mt-2">{kpis.receivables?.toFixed(2) || '0.00'}</div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="text-gray-600 text-sm">Payables</div>
-          <div className="text-2xl font-bold text-red-600 mt-2">₹{kpis.payables?.toFixed(2) || '0.00'}</div>
+          <div className="text-2xl font-bold text-red-600 mt-2">{kpis.payables?.toFixed(2) || '0.00'}</div>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ const Dashboard: React.FC = () => {
                   <div className="text-sm text-gray-500">Qty: {product.quantity}</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-semibold text-green-600">₹{product.revenue.toFixed(2)}</div>
+                  <div className="font-semibold text-green-600">{product.revenue.toFixed(2)}</div>
                 </div>
               </div>
             )) : <div className="text-gray-500 text-center py-4">No data available</div>}
@@ -115,7 +115,7 @@ const Dashboard: React.FC = () => {
                   <div className="text-sm text-gray-500">{txn.type} - {txn.date}</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-semibold">₹{txn.amount.toFixed(2)}</div>
+                  <div className="font-semibold">{txn.amount.toFixed(2)}</div>
                 </div>
               </div>
             )) : <div className="text-gray-500 text-center py-4">No data available</div>}
@@ -132,7 +132,7 @@ const Dashboard: React.FC = () => {
             const height = (item.revenue / maxRevenue) * 100;
             return (
               <div key={index} className="flex-1 flex flex-col items-center">
-                <div className="text-xs mb-1 font-semibold">₹{(item.revenue / 1000).toFixed(0)}K</div>
+                <div className="text-xs mb-1 font-semibold">{(item.revenue / 1000).toFixed(0)}K</div>
                 <div className="w-full bg-blue-500 rounded-t" style={{ height: `${height}%` }}></div>
                 <div className="text-xs mt-2 text-gray-600">{item.month.split(' ')[0]}</div>
               </div>

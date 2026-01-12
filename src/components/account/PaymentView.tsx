@@ -265,7 +265,7 @@ const PaymentView: React.FC<PaymentViewProps> = ({ paymentId, onBack }) => {
             <div className="flex justify-between items-center mb-4 print:mb-2">
               <span className="text-xl font-semibold text-gray-800 print:text-base">Amount {isReceipt ? 'Received' : 'Paid'}:</span>
               <span className="print-total text-4xl font-bold text-green-600 print:text-2xl">
-                ₹ {Number(payment.amount || 0).toFixed(2)}
+                 {Number(payment.amount || 0).toFixed(2)}
               </span>
             </div>
             

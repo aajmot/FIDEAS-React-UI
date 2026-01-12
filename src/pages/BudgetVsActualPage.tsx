@@ -51,16 +51,16 @@ const BudgetVsActualPage: React.FC = () => {
       <div className="mb-4 bg-gray-100 p-4 rounded grid grid-cols-3 gap-4">
         <div>
           <div className="text-sm text-gray-600">Total Budget</div>
-          <div className="text-xl font-bold">₹{totalBudget.toFixed(2)}</div>
+          <div className="text-xl font-bold">{totalBudget.toFixed(2)}</div>
         </div>
         <div>
           <div className="text-sm text-gray-600">Total Actual</div>
-          <div className="text-xl font-bold">₹{totalActual.toFixed(2)}</div>
+          <div className="text-xl font-bold">{totalActual.toFixed(2)}</div>
         </div>
         <div>
           <div className="text-sm text-gray-600">Total Variance</div>
           <div className={`text-xl font-bold ${totalVariance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            ₹{totalVariance.toFixed(2)}
+            {totalVariance.toFixed(2)}
           </div>
         </div>
       </div>
@@ -83,10 +83,10 @@ const BudgetVsActualPage: React.FC = () => {
               <tr key={idx} className="hover:bg-gray-50">
                 <td className="px-4 py-2 border">{row.budget_name}</td>
                 <td className="px-4 py-2 border">{row.account}</td>
-                <td className="px-4 py-2 border text-right">₹{row.budget_amount.toFixed(2)}</td>
-                <td className="px-4 py-2 border text-right">₹{row.actual_amount.toFixed(2)}</td>
+                <td className="px-4 py-2 border text-right">{row.budget_amount.toFixed(2)}</td>
+                <td className="px-4 py-2 border text-right">{row.actual_amount.toFixed(2)}</td>
                 <td className={`px-4 py-2 border text-right ${row.variance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  ₹{row.variance.toFixed(2)}
+                  {row.variance.toFixed(2)}
                 </td>
                 <td className="px-4 py-2 border text-right">{row.variance_percent.toFixed(2)}%</td>
                 <td className="px-4 py-2 border">

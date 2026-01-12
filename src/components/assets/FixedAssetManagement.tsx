@@ -93,13 +93,13 @@ const FixedAssetManagement: React.FC = () => {
       key: 'purchase_cost', 
       label: 'Purchase Cost', 
       sortable: true,
-      render: (value: number) => `₹${value?.toFixed(2) || '0.00'}`
+      render: (value: number) => `${value?.toFixed(2) || '0.00'}`
     },
     { 
       key: 'current_value', 
       label: 'Current Value', 
       sortable: true,
-      render: (value: number) => `₹${value?.toFixed(2) || '0.00'}`
+      render: (value: number) => `${value?.toFixed(2) || '0.00'}`
     },
     {
       key: 'status',

@@ -195,7 +195,7 @@ const ReceiptManagement: React.FC = () => {
       label: 'Amount',
       render: (value: any) => {
         const amount = typeof value === 'number' ? value : parseFloat(value) || 0;
-        return <span className="text-xs font-medium">₹ {amount.toFixed(2)}</span>;
+        return <span className="text-xs font-medium"> {amount.toFixed(2)}</span>;
       }
     },
     {

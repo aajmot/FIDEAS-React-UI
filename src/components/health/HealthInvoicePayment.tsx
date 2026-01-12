@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Printer } from 'lucide-react';
 import DatePicker from '../common/DatePicker';
 import SearchableDropdown from '../common/SearchableDropdown';
 import DataTable from '../common/DataTable';
+import PaymentReceiptView from './PaymentReceiptView';
 import { invoiceService } from '../../services/modules/health/invoiceService';
 import { paymentService } from '../../services/modules/account/paymentService';
 import { adminService } from '../../services/api';
@@ -42,6 +43,8 @@ const HealthInvoicePayment: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isFormCollapsed, setIsFormCollapsed] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<TestInvoice | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<any>(null);
+  const [showReceiptView, setShowReceiptView] = useState(false);
   const { showToast } = useToast();
   const { user } = useAuth();
   
@@ -190,6 +193,21 @@ const HealthInvoicePayment: React.FC = () => {
   const requiresInstrumentDate = ['CHEQUE', 'CARD', 'UPI', 'BANK_TRANSFER'].includes(formData.payment_mode);
   const requiresBankDetails = ['CHEQUE', 'BANK_TRANSFER'].includes(formData.payment_mode);
 
+  const handlePrint = async (paymentId: number) => {
+    try {
+      const response = await adminService.getPayment(paymentId);
+      setSelectedPayment(response.data);
+      setShowReceiptView(true);
+    } catch (error) {
+      showToast('error', 'Failed to load payment details');
+    }
+  };
+
+  const handleBackFromReceipt = () => {
+    setShowReceiptView(false);
+    setSelectedPayment(null);
+  };
+
   const columns = [
     { key: 'payment_number', label: 'Payment #', sortable: true },
     //{ key: 'invoice_number', label: 'Invoice #', sortable: true },
@@ -241,8 +259,26 @@ const HealthInvoicePayment: React.FC = () => {
           {value}
         </span>
       )
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      sortable: false,
+      render: (value: any, row: any) => (
+        <button
+          onClick={() => handlePrint(row.id)}
+          className="text-blue-600 hover:text-blue-800 p-1"
+          title="Print Receipt"
+        >
+          <Printer size={16} />
+        </button>
+      )
     }
   ];
+
+  if (showReceiptView && selectedPayment) {
+    return <PaymentReceiptView payment={selectedPayment} onBack={handleBackFromReceipt} />;
+  }
 
   return (
     <div style={{ padding: 'var(--erp-spacing-lg)' }}>

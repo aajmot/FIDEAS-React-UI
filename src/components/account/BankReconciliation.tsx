@@ -53,9 +53,9 @@ const BankReconciliation: React.FC = () => {
             <tr key={stmt.statement_id}>
               <td className="border p-2">{stmt.trans_date}</td>
               <td className="border p-2">{stmt.description}</td>
-              <td className="border p-2">₹{stmt.debit}</td>
-              <td className="border p-2">₹{stmt.credit}</td>
-              <td className="border p-2">₹{stmt.balance}</td>
+              <td className="border p-2">{stmt.debit}</td>
+              <td className="border p-2">{stmt.credit}</td>
+              <td className="border p-2">{stmt.balance}</td>
             </tr>
           ))}
         </tbody>

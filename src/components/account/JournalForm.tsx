@@ -99,7 +99,7 @@ const JournalForm: React.FC<JournalFormProps> = ({ entry, onSave, onCancel, isCo
     
     // Validation 1: Debit must equal Credit
     if (Math.abs(difference) > 0.01) {
-      errors.push(`Debit (₹${totalDebit.toFixed(2)}) and Credit (₹${totalCredit.toFixed(2)}) must be equal`);
+      errors.push(`Debit (${totalDebit.toFixed(2)}) and Credit (${totalCredit.toFixed(2)}) must be equal`);
     }
     
     // Validation 2: At least 2 lines required
@@ -313,8 +313,8 @@ const JournalForm: React.FC<JournalFormProps> = ({ entry, onSave, onCancel, isCo
                 <tfoot className="bg-gray-50">
                   <tr>
                     <td colSpan={2} className="px-2 py-1.5 font-semibold text-xs">Totals:</td>
-                    <td className="px-2 py-1.5 text-center font-semibold text-xs">₹{totalDebit.toFixed(2)}</td>
-                    <td className="px-2 py-1.5 text-center font-semibold text-xs">₹{totalCredit.toFixed(2)}</td>
+                    <td className="px-2 py-1.5 text-center font-semibold text-xs">{totalDebit.toFixed(2)}</td>
+                    <td className="px-2 py-1.5 text-center font-semibold text-xs">{totalCredit.toFixed(2)}</td>
                     <td className="px-2 py-1.5"></td>
                   </tr>
                   <tr>
@@ -322,7 +322,7 @@ const JournalForm: React.FC<JournalFormProps> = ({ entry, onSave, onCancel, isCo
                     <td colSpan={2} className={`px-2 py-1.5 text-center font-semibold text-xs ${
                       Math.abs(difference) < 0.01 ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      ₹{Math.abs(difference).toFixed(2)}
+                      {Math.abs(difference).toFixed(2)}
                     </td>
                     <td className="px-2 py-1.5"></td>
                   </tr>

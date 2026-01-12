@@ -382,7 +382,7 @@ const CreditNoteForm: React.FC<CreditNoteFormProps> = ({ onSave, isCollapsed, on
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Original Invoice No</label>
               <SearchableDropdown 
-                options={salesInvoices.map(inv => ({ value: inv.id, label: `${inv.invoice_number} - ₹${parseFloat(inv.total_amount_base || '0').toFixed(2)}` }))}
+                options={salesInvoices.map(inv => ({ value: inv.id, label: `${inv.invoice_number} - ${parseFloat(inv.total_amount_base || '0').toFixed(2)}` }))}
                 value={formData.original_invoice_id} 
                 onChange={(val) => {
                   const selectedInvoice = salesInvoices.find(inv => inv.id === val);
@@ -503,33 +503,33 @@ const CreditNoteForm: React.FC<CreditNoteFormProps> = ({ onSave, isCollapsed, on
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
-                    <span>₹{subtotal.toFixed(2)}</span>
+                    <span>{subtotal.toFixed(2)}</span>
                   </div>
                   {cgst_amount > 0 && (
                     <div className="flex justify-between">
                       <span>CGST:</span>
-                      <span>₹{cgst_amount.toFixed(2)}</span>
+                      <span>{cgst_amount.toFixed(2)}</span>
                     </div>
                   )}
                   {sgst_amount > 0 && (
                     <div className="flex justify-between">
                       <span>SGST:</span>
-                      <span>₹{sgst_amount.toFixed(2)}</span>
+                      <span>{sgst_amount.toFixed(2)}</span>
                     </div>
                   )}
                   {igst_amount > 0 && (
                     <div className="flex justify-between">
                       <span>IGST:</span>
-                      <span>₹{igst_amount.toFixed(2)}</span>
+                      <span>{igst_amount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span>Total Tax:</span>
-                    <span>₹{tax_amount.toFixed(2)}</span>
+                    <span>{tax_amount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-base border-t pt-2">
                     <span>Total:</span>
-                    <span>₹{total.toFixed(2)}</span>
+                    <span>{total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

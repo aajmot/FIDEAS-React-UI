@@ -55,23 +55,23 @@ const ComparativeReportsPage: React.FC = () => {
             <tbody>
               <tr>
                 <td className="px-4 py-2 font-semibold">Income</td>
-                <td className="px-4 py-2">₹{data.period1.income.toFixed(2)}</td>
-                <td className="px-4 py-2">₹{data.period2.income.toFixed(2)}</td>
-                <td className="px-4 py-2">₹{data.variance.income.toFixed(2)}</td>
+                <td className="px-4 py-2">{data.period1.income.toFixed(2)}</td>
+                <td className="px-4 py-2">{data.period2.income.toFixed(2)}</td>
+                <td className="px-4 py-2">{data.variance.income.toFixed(2)}</td>
                 <td className="px-4 py-2">{data.variance_percent.income.toFixed(2)}%</td>
               </tr>
               <tr>
                 <td className="px-4 py-2 font-semibold">Expense</td>
-                <td className="px-4 py-2">₹{data.period1.expense.toFixed(2)}</td>
-                <td className="px-4 py-2">₹{data.period2.expense.toFixed(2)}</td>
-                <td className="px-4 py-2">₹{data.variance.expense.toFixed(2)}</td>
+                <td className="px-4 py-2">{data.period1.expense.toFixed(2)}</td>
+                <td className="px-4 py-2">{data.period2.expense.toFixed(2)}</td>
+                <td className="px-4 py-2">{data.variance.expense.toFixed(2)}</td>
                 <td className="px-4 py-2">{data.variance_percent.expense.toFixed(2)}%</td>
               </tr>
               <tr className="bg-gray-100">
                 <td className="px-4 py-2 font-bold">Net Profit</td>
-                <td className="px-4 py-2 font-bold">₹{data.period1.profit.toFixed(2)}</td>
-                <td className="px-4 py-2 font-bold">₹{data.period2.profit.toFixed(2)}</td>
-                <td className="px-4 py-2 font-bold">₹{data.variance.profit.toFixed(2)}</td>
+                <td className="px-4 py-2 font-bold">{data.period1.profit.toFixed(2)}</td>
+                <td className="px-4 py-2 font-bold">{data.period2.profit.toFixed(2)}</td>
+                <td className="px-4 py-2 font-bold">{data.variance.profit.toFixed(2)}</td>
                 <td className="px-4 py-2 font-bold">{data.variance_percent.profit.toFixed(2)}%</td>
               </tr>
             </tbody>

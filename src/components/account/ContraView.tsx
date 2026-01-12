@@ -192,7 +192,7 @@ const ContraView: React.FC<ContraViewProps> = ({ contraId, onBack }) => {
             <div className="flex justify-between items-center mb-4 print:mb-2">
               <span className="text-xl font-semibold text-gray-800 print:text-base">Transfer Amount:</span>
               <span className="print-total text-4xl font-bold text-blue-600 print:text-2xl">
-                ₹ {Number(contra.amount || 0).toFixed(2)}
+                 {Number(contra.amount || 0).toFixed(2)}
               </span>
             </div>
             

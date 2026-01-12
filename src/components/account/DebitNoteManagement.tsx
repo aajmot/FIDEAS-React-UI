@@ -55,7 +55,7 @@ const DebitNoteManagement: React.FC = () => {
       key: 'total_amount_base', 
       label: 'Amount', 
       sortable: true,
-      render: (val: string) => `₹${parseFloat(val || '0').toFixed(2)}` 
+      render: (val: string) => `${parseFloat(val || '0').toFixed(2)}` 
     },
     { key: 'reason', label: 'Reason' },
     {

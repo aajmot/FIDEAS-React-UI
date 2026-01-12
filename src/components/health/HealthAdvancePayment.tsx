@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Printer } from 'lucide-react';
 import DatePicker from '../common/DatePicker';
 import SearchableDropdown from '../common/SearchableDropdown';
 import DataTable from '../common/DataTable';
+import PaymentReceiptView from './PaymentReceiptView';
 import { patientService } from '../../services/modules/health/patientService';
 import { paymentService } from '../../services/modules/account/paymentService';
 import { adminService } from '../../services/api';
@@ -40,6 +41,8 @@ const HealthAdvancePayment: React.FC = () => {
   const [paymentModes, setPaymentModes] = useState<string[]>(['CASH']);
   const [loading, setLoading] = useState(false);
   const [isFormCollapsed, setIsFormCollapsed] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<any>(null);
+  const [showReceiptView, setShowReceiptView] = useState(false);
   const { showToast } = useToast();
   const { user } = useAuth();
   
@@ -180,6 +183,21 @@ const HealthAdvancePayment: React.FC = () => {
   const requiresInstrumentDate = ['CHEQUE', 'CARD', 'UPI', 'BANK_TRANSFER'].includes(formData.payment_mode);
   const requiresBankDetails = ['CHEQUE', 'BANK_TRANSFER'].includes(formData.payment_mode);
 
+  const handlePrint = async (paymentId: number) => {
+    try {
+      const response = await adminService.getPayment(paymentId);
+      setSelectedPayment(response.data);
+      setShowReceiptView(true);
+    } catch (error) {
+      showToast('error', 'Failed to load payment details');
+    }
+  };
+
+  const handleBackFromReceipt = () => {
+    setShowReceiptView(false);
+    setSelectedPayment(null);
+  };
+
   const columns = [
     { key: 'payment_number', label: 'Payment #', sortable: true },
     { key: 'party_name', label: 'Patient', sortable: true },
@@ -208,11 +226,30 @@ const HealthAdvancePayment: React.FC = () => {
           {value}
         </span>
       )
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      sortable: false,
+      render: (value: any, row: any) => (
+        <button
+          onClick={() => handlePrint(row.id)}
+          className="text-blue-600 hover:text-blue-800 p-1"
+          title="Print Receipt"
+        >
+          <Printer size={16} />
+        </button>
+      )
     }
   ];
 
+  if (showReceiptView && selectedPayment) {
+    return <PaymentReceiptView payment={selectedPayment} onBack={handleBackFromReceipt} />;
+  }
+
   return (
-    <div style={{ padding: 'var(--erp-spacing-lg)' }}>
+    <>
+      <div style={{ padding: 'var(--erp-spacing-lg)' }}>
       <div className="bg-white rounded-lg shadow mb-6">
         <div className="border-b border-gray-200 flex justify-between items-center" style={{ padding: 'var(--erp-section-padding)' }}>
           <h2 className="font-medium text-gray-800" style={{ fontSize: 'var(--erp-datatable-title-font-size)', lineHeight: 'var(--erp-line-height)' }}>Add New Receipt(Incoming)</h2>
@@ -330,7 +367,8 @@ const HealthAdvancePayment: React.FC = () => {
       </div>
 
       <DataTable title="Receipt Entries (Incoming)" data={payments} columns={columns} loading={loading} />
-    </div>
+      </div>
+    </>
   );
 };
 

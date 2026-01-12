@@ -51,11 +51,11 @@ const ARAgingPage: React.FC = () => {
 
       <div className="mb-4 bg-gray-100 p-4 rounded">
         <div className="flex gap-6">
-          <div><strong>Total:</strong> ₹{totals.total.toFixed(2)}</div>
-          <div><strong>Current:</strong> ₹{totals.current.toFixed(2)}</div>
-          <div><strong>31-60:</strong> ₹{totals.days_31_60.toFixed(2)}</div>
-          <div><strong>61-90:</strong> ₹{totals.days_61_90.toFixed(2)}</div>
-          <div><strong>Over 90:</strong> ₹{totals.over_90.toFixed(2)}</div>
+          <div><strong>Total:</strong> {totals.total.toFixed(2)}</div>
+          <div><strong>Current:</strong> {totals.current.toFixed(2)}</div>
+          <div><strong>31-60:</strong> {totals.days_31_60.toFixed(2)}</div>
+          <div><strong>61-90:</strong> {totals.days_61_90.toFixed(2)}</div>
+          <div><strong>Over 90:</strong> {totals.over_90.toFixed(2)}</div>
         </div>
       </div>
 
@@ -81,13 +81,13 @@ const ARAgingPage: React.FC = () => {
                 <td className="px-4 py-2 border">{row.invoice_number}</td>
                 <td className="px-4 py-2 border">{row.date}</td>
                 <td className="px-4 py-2 border">{row.reference}</td>
-                <td className="px-4 py-2 border text-right">₹{row.amount.toFixed(2)}</td>
-                <td className="px-4 py-2 border text-right">₹{row.balance.toFixed(2)}</td>
+                <td className="px-4 py-2 border text-right">{row.amount.toFixed(2)}</td>
+                <td className="px-4 py-2 border text-right">{row.balance.toFixed(2)}</td>
                 <td className="px-4 py-2 border text-center">{row.days}</td>
-                <td className="px-4 py-2 border text-right">₹{row.current.toFixed(2)}</td>
-                <td className="px-4 py-2 border text-right">₹{row.days_31_60.toFixed(2)}</td>
-                <td className="px-4 py-2 border text-right">₹{row.days_61_90.toFixed(2)}</td>
-                <td className="px-4 py-2 border text-right">₹{row.over_90.toFixed(2)}</td>
+                <td className="px-4 py-2 border text-right">{row.current.toFixed(2)}</td>
+                <td className="px-4 py-2 border text-right">{row.days_31_60.toFixed(2)}</td>
+                <td className="px-4 py-2 border text-right">{row.days_61_90.toFixed(2)}</td>
+                <td className="px-4 py-2 border text-right">{row.over_90.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>

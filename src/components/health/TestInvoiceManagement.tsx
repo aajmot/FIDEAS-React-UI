@@ -128,7 +128,7 @@ const TestInvoiceManagement: React.FC = () => {
       key: 'final_amount',
       label: 'Amount',
       sortable: true,
-      render: (value: number) => `₹${(value || 0).toFixed(2)}`,
+      render: (value: number) => `${(value || 0).toFixed(2)}`,
     },
     {
       key: 'payment_status',
