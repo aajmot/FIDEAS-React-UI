@@ -128,7 +128,9 @@ const TestInvoiceForm: React.FC<TestInvoiceFormProps> = ({
 
   const loadOrders = async () => {
     try {
-      const response = await diagnosticService.getTestOrders();
+      const response = await diagnosticService.getTestOrders({
+        invoice_generated:false
+      });
       const options = response.data.map((order: any) => ({
         value: order.id,
         label: `${order.test_order_number} - ${order.patient_name}`
@@ -171,6 +173,7 @@ const TestInvoiceForm: React.FC<TestInvoiceFormProps> = ({
     });
     setSelectedOrder(null);
     setItems([]);
+    loadOrders();
   }, [generateInvoiceNumber]);
 
   const handleOrderChange = async (value: string | number | (string | number)[]) => {

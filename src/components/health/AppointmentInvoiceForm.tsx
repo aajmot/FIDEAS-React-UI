@@ -458,6 +458,7 @@ const AppointmentInvoiceForm: React.FC<AppointmentInvoiceFormProps> = ({
         await apiClient.post('/api/v1/health/appointment-invoices', payload);
       }
       showToast('success', 'Appointment invoice created successfully');
+      resetFormData();
       onSave();
     } catch (error: any) {
       showToast('error', error.response?.data?.detail || 'Failed to save appointment invoice');

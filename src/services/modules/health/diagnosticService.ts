@@ -32,11 +32,15 @@ export const diagnosticService = {
     return response.data;
   },
   
-  getTestOrders: async (params?: { page?: number; per_page?: number; search?: string }): Promise<PaginatedResponse> => {
+  getTestOrders: async (params?: { page?: number; per_page?: number; search?: string;status?:string[]|null;invoice_generated?:boolean|null; }): Promise<PaginatedResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params?.search) queryParams.append('search', params.search);
+    if (params?.status) queryParams.append('status', params.status.join(","));
+    if (params?.invoice_generated !== undefined && params?.invoice_generated !== null) {
+        queryParams.append('invoice_generated', String(params.invoice_generated));
+    }
     
     const response = await apiClient.get<PaginatedResponse>(`/api/v1/health/testorders?${queryParams.toString()}`);
     return response.data;

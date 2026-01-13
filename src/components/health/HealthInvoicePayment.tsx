@@ -169,7 +169,7 @@ const HealthInvoicePayment: React.FC = () => {
       await paymentService.createInvoicePayment(paymentData);
       showToast('success', 'Invoice payment recorded successfully');
       resetForm();
-      fetchPayments();
+      await Promise.all([fetchPayments(), fetchInvoices()]);
     } catch (error: any) {
       const errorMessage = typeof error.response?.data?.detail === 'string' 
         ? error.response.data.detail 
