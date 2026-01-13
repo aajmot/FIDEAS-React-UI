@@ -24,10 +24,12 @@ export interface AppointmentAnalytics {
 }
 
 export interface ClinicalOperations {
-  medical_records: number;
-  prescriptions: number;
-  test_orders: number;
+  medical_records_generated: number;
+  prescriptions_issued: number;
+  test_orders_created: number;
   sample_collections: number;
+  test_results_completed: number;
+  avg_turnaround_hours: number;
 }
 
 export interface DoctorPerformance {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { dashboardService } from '../services/api';
 import { PatientAnalytics, AppointmentAnalytics, ClinicalOperations, DoctorPerformance } from '../types/dashboard';
-import { Activity, Users, Calendar, TrendingUp, Heart, FileText, TestTube, Clipboard } from 'lucide-react';
+import { Activity, Users, Calendar, TrendingUp, Heart, FileText, TestTube, Clipboard, Clock } from 'lucide-react';
 
 interface HealthDashboardState {
   patientAnalytics: PatientAnalytics | null;
@@ -60,10 +60,12 @@ const Dashboard: React.FC = () => {
       };
 
       const mockClinicalOperations: ClinicalOperations = {
-        medical_records: 1850,
-        prescriptions: 1620,
-        test_orders: 890,
-        sample_collections: 720
+        medical_records_generated: 1850,
+        prescriptions_issued: 1620,
+        test_orders_created: 890,
+        sample_collections: 720,
+        test_results_completed: 0,
+        avg_turnaround_hours: 0.0
       };
 
       const mockDoctorPerformance: DoctorPerformance[] = [
@@ -85,7 +87,7 @@ const Dashboard: React.FC = () => {
         setState({
           patientAnalytics: patientRes.data || mockPatientAnalytics as any,
           appointmentAnalytics: appointmentRes.data || mockAppointmentAnalytics as any,
-          clinicalOperations: clinicalRes.data || mockClinicalOperations,
+          clinicalOperations: clinicalRes.data || mockClinicalOperations as any,
           doctorPerformance: doctorRes.data || mockDoctorPerformance,
           loading: false,
           error: null
@@ -306,23 +308,35 @@ const Dashboard: React.FC = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <FileText className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-blue-600">{co?.medical_records || 0}</p>
+              <p className="text-2xl font-bold text-blue-600">{co?.medical_records_generated || 0}</p>
               <p className="text-sm text-gray-600">Medical Records</p>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <Clipboard className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-green-600">{co?.prescriptions || 0}</p>
+              <p className="text-2xl font-bold text-green-600">{co?.prescriptions_issued || 0}</p>
               <p className="text-sm text-gray-600">Prescriptions</p>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <TestTube className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-purple-600">{co?.test_orders || 0}</p>
+              <p className="text-2xl font-bold text-purple-600">{co?.test_orders_created || 0}</p>
               <p className="text-sm text-gray-600">Test Orders</p>
             </div>
             <div className="text-center p-4 bg-teal-50 rounded-lg">
               <Activity className="h-8 w-8 text-teal-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-teal-600">{co?.sample_collections || 0}</p>
               <p className="text-sm text-gray-600">Sample Collections</p>
+            </div>
+            
+            <div className="text-center p-4 bg-emerald-50 rounded-lg">
+              <FileText className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-emerald-600">{co?.test_results_completed || 0}</p>
+              <p className="text-sm text-gray-600">Test Results Completed</p>
+            </div>
+
+            <div className="text-center p-4 bg-orange-50 rounded-lg">
+              <Clock className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-orange-600">{co?.avg_turnaround_hours || 0}h</p>
+              <p className="text-sm text-gray-600">Avg Turnaround Time</p>
             </div>
           </div>
         </div>
