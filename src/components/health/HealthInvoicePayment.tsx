@@ -5,6 +5,7 @@ import SearchableDropdown from '../common/SearchableDropdown';
 import DataTable from '../common/DataTable';
 import PaymentReceiptView from './PaymentReceiptView';
 import { invoiceService } from '../../services/modules/health/invoiceService';
+import { appointmentInvoiceService } from '../../services/modules/health/appointmentInvoiceService';
 import { paymentService } from '../../services/modules/account/paymentService';
 import { adminService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -12,11 +13,12 @@ import { useAuth } from '../../context/AuthContext';
 import { formatUTCToLocal } from '../../utils/dateUtils';
 import { Payment, PaymentAllocation } from '../../types';
 
-interface TestInvoice {
+interface Invoice {
   id: number;
   invoice_number: string;
   patient_name: string;
   patient_phone: string;
+  doctor_name?: string;
   total_amount: number;
   balance_amount: number;
 }
@@ -37,12 +39,13 @@ interface PaymentFormData {
 }
 
 const HealthInvoicePayment: React.FC = () => {
-  const [invoices, setInvoices] = useState<TestInvoice[]>([]);
+  const [invoiceType, setInvoiceType] = useState<'TEST' | 'CLINIC'>('TEST');
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [paymentModes, setPaymentModes] = useState<string[]>(['CASH']);
   const [loading, setLoading] = useState(false);
   const [isFormCollapsed, setIsFormCollapsed] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<TestInvoice | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
   const [showReceiptView, setShowReceiptView] = useState(false);
   const { showToast } = useToast();
@@ -81,7 +84,7 @@ const HealthInvoicePayment: React.FC = () => {
       await Promise.all([fetchInvoices(), fetchPayments(), fetchPaymentModes()]);
     };
     loadData();
-  }, []);
+  }, [invoiceType]);
 
   const fetchPaymentModes = async () => {
     try {
@@ -96,13 +99,24 @@ const HealthInvoicePayment: React.FC = () => {
 
   const fetchInvoices = async () => {
     try {
-      const response = await invoiceService.getTestInvoices({
-        status:"POSTED",
-        payment_status:"UNPAID,PARTIAL"
-      });
+      let response;
+      if (invoiceType === 'CLINIC') {
+        response = await appointmentInvoiceService.getAppointmentInvoices({
+          status: "POSTED",
+          payment_status: "UNPAID,PARTIAL"
+        });
+      } else {
+        response = await invoiceService.getTestInvoices({
+          status: "POSTED",
+          payment_status: "UNPAID,PARTIAL"
+        });
+      }
       setInvoices(response.data || []);
-    } catch (error) {
-      showToast('error', 'Failed to load invoices');
+    } catch (error: any) {
+      const errorMessage = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : 'Failed to load invoices';
+      showToast('error', errorMessage);
     }
   };
 
@@ -118,8 +132,11 @@ const HealthInvoicePayment: React.FC = () => {
         include_allocations:true
       });
       setPayments(response.data || []);
-    } catch (error) {
-      showToast('error', 'Failed to load payments');
+    } catch (error: any) {
+      const errorMessage = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : 'Failed to load payments';
+      showToast('error', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -154,7 +171,10 @@ const HealthInvoicePayment: React.FC = () => {
       resetForm();
       fetchPayments();
     } catch (error: any) {
-      showToast('error', error.response?.data?.detail || 'Error recording payment');
+      const errorMessage = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : 'Error recording payment';
+      showToast('error', errorMessage);
     }
   };
 
@@ -162,7 +182,7 @@ const HealthInvoicePayment: React.FC = () => {
     setFormData({
       payment_number: generatePaymentNumber(),
       invoice_id: 0,
-      invoice_type: 'TEST',
+      invoice_type: invoiceType,
       amount: 0,
       payment_mode: 'CASH',
       instrument_number: '',
@@ -198,8 +218,11 @@ const HealthInvoicePayment: React.FC = () => {
       const response = await adminService.getPayment(paymentId);
       setSelectedPayment(response.data);
       setShowReceiptView(true);
-    } catch (error) {
-      showToast('error', 'Failed to load payment details');
+    } catch (error: any) {
+      const errorMessage = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : 'Failed to load payment details';
+      showToast('error', errorMessage);
     }
   };
 
@@ -293,11 +316,34 @@ const HealthInvoicePayment: React.FC = () => {
         {!isFormCollapsed && (
           <form onSubmit={handleSubmit} style={{ padding: 'var(--erp-card-padding)' }}>
             <div className="grid grid-cols-1 sm:grid-cols-6" style={{ gap: 'var(--erp-spacing-lg)', marginBottom: 'var(--erp-spacing-xl)' }}>
+             
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Payment Number</label>
                 <input type="text" value={formData.payment_number} readOnly
                   className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-50" />
               </div>
+
+
+ <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Invoice Type *</label>
+                <SearchableDropdown
+                  options={[
+                    { value: 'TEST', label: 'Test' },
+                    { value: 'CLINIC', label: 'Clinic' }
+                  ]}
+                  value={invoiceType}
+                  onChange={(v) => {
+                    const newType = v.toString() as 'TEST' | 'CLINIC';
+                    setInvoiceType(newType);
+                    resetForm();
+                    setFormData(prev => ({ ...prev, invoice_type: newType }));
+                  }}
+                  placeholder="Select type"
+                  multiple={false}
+                  searchable={false}
+                />
+              </div>
+
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Invoice *</label>
@@ -322,6 +368,14 @@ const HealthInvoicePayment: React.FC = () => {
                 <input type="text" value={selectedInvoice?.patient_phone || ''} readOnly
                   className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-50" />
               </div>
+
+              {invoiceType === 'CLINIC' && (
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Doctor Name</label>
+                  <input type="text" value={selectedInvoice?.doctor_name || ''} readOnly
+                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-50" />
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Balance Amount</label>
