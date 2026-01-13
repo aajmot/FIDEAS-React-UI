@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { dashboardService } from '../services/api';
-import { PatientAnalytics, AppointmentAnalytics, ClinicalOperations, DoctorPerformance } from '../types/dashboard';
+import { PatientAnalytics, AppointmentAnalytics, ClinicalOperations, DoctorPerformance } from '../types';
 import { Activity, Users, Calendar, TrendingUp, Heart, FileText, TestTube, Clipboard } from 'lucide-react';
 
 interface HealthDashboardState {
@@ -12,7 +12,7 @@ interface HealthDashboardState {
   error: string | null;
 }
 
-const Dashboard: React.FC = () => {
+const HealthDashboard: React.FC = () => {
   const [state, setState] = useState<HealthDashboardState>({
     patientAnalytics: null,
     appointmentAnalytics: null,
@@ -30,77 +30,21 @@ const Dashboard: React.FC = () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
-      // Mock data for demonstration since API might not be available
-      const mockPatientAnalytics: PatientAnalytics = {
-        total_patients: 1250,
-        new_patients_month: 85,
-        active_patients: 1180,
-        gender_distribution: [
-          { gender: 'Male', count: 620 },
-          { gender: 'Female', count: 580 },
-          { gender: 'Other', count: 50 }
-        ],
-        age_groups: [
-          { group: 'Under 18', count: 150 },
-          { group: '18-35', count: 420 },
-          { group: '36-55', count: 380 },
-          { group: '56-70', count: 220 },
-          { group: 'Over 70', count: 80 }
-        ]
-      };
+      const [patientRes, appointmentRes, clinicalRes, doctorRes] = await Promise.all([
+        dashboardService.getPatientAnalytics(),
+        dashboardService.getAppointmentAnalytics(),
+        dashboardService.getClinicalOperations(),
+        dashboardService.getDoctorPerformance()
+      ]);
 
-      const mockAppointmentAnalytics: AppointmentAnalytics = {
-        total_appointments: 2340,
-        scheduled: 450,
-        completed: 1850,
-        cancelled: 180,
-        no_show: 160,
-        completion_rate: 87,
-        no_show_rate: 8
-      };
-
-      const mockClinicalOperations: ClinicalOperations = {
-        medical_records: 1850,
-        prescriptions: 1620,
-        test_orders: 890,
-        sample_collections: 720
-      };
-
-      const mockDoctorPerformance: DoctorPerformance[] = [
-        { id: 1, doctor_name: 'Dr. Sarah Johnson', specialization: 'Cardiology', total_appointments: 245, completion_rate: 94, consultation_fee: 1500 },
-        { id: 2, doctor_name: 'Dr. Michael Chen', specialization: 'Neurology', total_appointments: 198, completion_rate: 91, consultation_fee: 1800 },
-        { id: 3, doctor_name: 'Dr. Emily Davis', specialization: 'Pediatrics', total_appointments: 312, completion_rate: 89, consultation_fee: 1200 },
-        { id: 4, doctor_name: 'Dr. Robert Wilson', specialization: 'Orthopedics', total_appointments: 156, completion_rate: 87, consultation_fee: 1600 },
-        { id: 5, doctor_name: 'Dr. Lisa Anderson', specialization: 'Dermatology', total_appointments: 189, completion_rate: 92, consultation_fee: 1300 }
-      ];
-
-      try {
-        const [patientRes, appointmentRes, clinicalRes, doctorRes] = await Promise.all([
-          dashboardService.getPatientAnalytics(),
-          dashboardService.getAppointmentAnalytics(),
-          dashboardService.getClinicalOperations(),
-          dashboardService.getDoctorPerformance()
-        ]);
-
-        setState({
-          patientAnalytics: patientRes.data || mockPatientAnalytics as any,
-          appointmentAnalytics: appointmentRes.data || mockAppointmentAnalytics as any,
-          clinicalOperations: clinicalRes.data || mockClinicalOperations,
-          doctorPerformance: doctorRes.data || mockDoctorPerformance,
-          loading: false,
-          error: null
-        });
-      } catch (apiError) {
-        // Use mock data if API fails
-        setState({
-          patientAnalytics: mockPatientAnalytics,
-          appointmentAnalytics: mockAppointmentAnalytics,
-          clinicalOperations: mockClinicalOperations,
-          doctorPerformance: mockDoctorPerformance,
-          loading: false,
-          error: null
-        });
-      }
+      setState({
+        patientAnalytics: patientRes.data || null,
+        appointmentAnalytics: appointmentRes.data || null,
+        clinicalOperations: clinicalRes.data || null,
+        doctorPerformance: doctorRes.data || [],
+        loading: false,
+        error: null
+      });
     } catch (error: any) {
       setState(prev => ({
         ...prev,
@@ -205,24 +149,22 @@ const Dashboard: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Gender Distribution</h3>
           <div className="space-y-3">
-            {pa?.gender_distribution && Array.isArray(pa.gender_distribution) && pa.gender_distribution.map((item: any) => {
-              const total = pa.gender_distribution.reduce((sum: number, g: any) => sum + (Number(g.count) || 0), 0);
-              const numCount = Number(item.count) || 0;
-              const percentage = total > 0 ? Math.round((numCount / total) * 100) : 0;
-              const safePercentage = isNaN(percentage) ? 0 : percentage;
-              const colors = { Male: 'bg-blue-500', Female: 'bg-pink-500', Other: 'bg-gray-500' };
+            {pa?.gender_distribution && Object.entries(pa.gender_distribution).map(([gender, count]) => {
+              const total = Object.values(pa.gender_distribution).reduce((a, b) => a + b, 0);
+              const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+              const colors = { male: 'bg-blue-500', female: 'bg-pink-500', other: 'bg-gray-500' };
               
               return (
-                <div key={`gender-${item.gender}`} className="flex items-center">
+                <div key={gender} className="flex items-center">
                   <div className="flex-1">
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-700">{item.gender}</span>
-                      <span className="text-gray-600">{numCount} ({safePercentage}%)</span>
+                      <span className="capitalize text-gray-700">{gender}</span>
+                      <span className="text-gray-600">{count} ({percentage}%)</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
-                        className={`h-2 rounded-full ${colors[item.gender as keyof typeof colors] || 'bg-gray-500'}`}
-                        style={{ width: `${safePercentage}%` }}
+                        className={`h-2 rounded-full ${colors[gender as keyof typeof colors]}`}
+                        style={{ width: `${percentage}%` }}
                       />
                     </div>
                   </div>
@@ -236,23 +178,28 @@ const Dashboard: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Age Groups</h3>
           <div className="space-y-3">
-            {pa?.age_groups && Array.isArray(pa.age_groups) && pa.age_groups.map((item: any) => {
-              const total = pa.age_groups.reduce((sum: number, g: any) => sum + (Number(g.count) || 0), 0);
-              const numCount = Number(item.count) || 0;
-              const percentage = total > 0 ? Math.round((numCount / total) * 100) : 0;
-              const safePercentage = isNaN(percentage) ? 0 : percentage;
+            {pa?.age_groups && Object.entries(pa.age_groups).map(([ageGroup, count]) => {
+              const total = Object.values(pa.age_groups).reduce((a, b) => a + b, 0);
+              const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+              const labels = {
+                under_18: 'Under 18',
+                age_18_35: '18-35',
+                age_36_55: '36-55', 
+                age_56_70: '56-70',
+                over_70: 'Over 70'
+              };
               
               return (
-                <div key={`age-${item.group}`} className="flex items-center">
+                <div key={ageGroup} className="flex items-center">
                   <div className="flex-1">
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-700">{item.group}</span>
-                      <span className="text-gray-600">{numCount}</span>
+                      <span className="text-gray-700">{labels[ageGroup as keyof typeof labels]}</span>
+                      <span className="text-gray-600">{count}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
                         className="h-2 rounded-full bg-green-500"
-                        style={{ width: `${safePercentage}%` }}
+                        style={{ width: `${percentage}%` }}
                       />
                     </div>
                   </div>
@@ -266,28 +213,27 @@ const Dashboard: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Appointment Status</h3>
           <div className="space-y-3">
-            {aa && [
-              { status: 'scheduled', count: aa.scheduled, color: 'bg-blue-500' },
-              { status: 'completed', count: aa.completed, color: 'bg-green-500' },
-              { status: 'cancelled', count: aa.cancelled, color: 'bg-red-500' },
-              { status: 'no_show', count: aa.no_show, color: 'bg-orange-500' }
-            ].map(({ status, count, color }) => {
-              const total = (aa.scheduled || 0) + (aa.completed || 0) + (aa.cancelled || 0) + (aa.no_show || 0);
-              const numCount = Number(count) || 0;
-              const percentage = total > 0 ? Math.round((numCount / total) * 100) : 0;
-              const safePercentage = isNaN(percentage) ? 0 : percentage;
+            {aa?.appointment_status && Object.entries(aa.appointment_status).map(([status, count]) => {
+              const total = Object.values(aa.appointment_status).reduce((a, b) => a + b, 0);
+              const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+              const colors = {
+                scheduled: 'bg-blue-500',
+                completed: 'bg-green-500',
+                cancelled: 'bg-red-500',
+                no_show: 'bg-orange-500'
+              };
               
               return (
-                <div key={`status-${status}`} className="flex items-center">
+                <div key={status} className="flex items-center">
                   <div className="flex-1">
                     <div className="flex justify-between text-sm mb-1">
                       <span className="capitalize text-gray-700">{status.replace('_', ' ')}</span>
-                      <span className="text-gray-600">{numCount} ({safePercentage}%)</span>
+                      <span className="text-gray-600">{count} ({percentage}%)</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
-                        className={`h-2 rounded-full ${color}`}
-                        style={{ width: `${safePercentage}%` }}
+                        className={`h-2 rounded-full ${colors[status as keyof typeof colors]}`}
+                        style={{ width: `${percentage}%` }}
                       />
                     </div>
                   </div>
@@ -338,26 +284,26 @@ const Dashboard: React.FC = () => {
                   <th className="text-left py-2 text-gray-600">Specialization</th>
                   <th className="text-right py-2 text-gray-600">Appointments</th>
                   <th className="text-right py-2 text-gray-600">Completion %</th>
-                  {/* <th className="text-right py-2 text-gray-600">Fee</th> */}
+                  <th className="text-right py-2 text-gray-600">Fee</th>
                 </tr>
               </thead>
               <tbody>
                 {state.doctorPerformance.length > 0 ? (
-                  state.doctorPerformance.slice(0, 10).map((doctor, index) => (
-                    <tr key={`doctor-${doctor.id || index}`} className="border-b border-gray-100">
-                      <td className="py-2 text-gray-800">{doctor.doctor_name || 'N/A'}</td>
-                      <td className="py-2 text-gray-600">{doctor.specialization || 'N/A'}</td>
-                      <td className="py-2 text-right text-gray-800">{doctor.total_appointments || 0}</td>
+                  state.doctorPerformance.slice(0, 10).map((doctor) => (
+                    <tr key={doctor.id} className="border-b border-gray-100">
+                      <td className="py-2 text-gray-800">{doctor.doctor_name}</td>
+                      <td className="py-2 text-gray-600">{doctor.specialization}</td>
+                      <td className="py-2 text-right text-gray-800">{doctor.total_appointments}</td>
                       <td className="py-2 text-right">
                         <span className={`px-2 py-1 rounded text-xs ${
-                          (doctor.completion_rate || 0) >= 90 ? 'bg-green-100 text-green-800' :
-                          (doctor.completion_rate || 0) >= 75 ? 'bg-yellow-100 text-yellow-800' :
+                          doctor.completion_rate >= 90 ? 'bg-green-100 text-green-800' :
+                          doctor.completion_rate >= 75 ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'
                         }`}>
-                          {isNaN(doctor.completion_rate || 0) ? 0 : (doctor.completion_rate || 0)}%
+                          {doctor.completion_rate}%
                         </span>
                       </td>
-                      {/* <td className="py-2 text-right text-gray-800">{doctor.consultation_fee || 0}</td> */}
+                      <td className="py-2 text-right text-gray-800">₹{doctor.consultation_fee}</td>
                     </tr>
                   ))
                 ) : (
@@ -376,4 +322,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default HealthDashboard;

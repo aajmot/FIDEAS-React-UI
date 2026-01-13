@@ -1,5 +1,5 @@
 import apiClient from '../../apiClient';
-import { BaseResponse, PaginatedResponse } from '../../../types';
+import { BaseResponse, PaginatedResponse, PatientAnalytics, AppointmentAnalytics, ClinicalOperations, DoctorPerformance } from '../../../types';
 
 // Dashboard Service
 export const dashboardService = {
@@ -22,6 +22,47 @@ export const dashboardService = {
     const response = await apiClient.get<BaseResponse>(`/api/v1/dashboard/recent-transactions?limit=${limit}`);
     return response.data;
   },
+
+  // Healthcare Dashboard APIs
+  getPatientAnalytics: async (): Promise<BaseResponse<PatientAnalytics>> => {
+    try {
+      const response = await apiClient.get<BaseResponse<PatientAnalytics>>('/api/v1/dashboard/health/patient-analytics');
+      return response.data;
+    } catch (error: any) {
+      console.error('Patient analytics error:', error);
+      throw error;
+    }
+  },
+
+  getAppointmentAnalytics: async (): Promise<BaseResponse<AppointmentAnalytics>> => {
+    try {
+      const response = await apiClient.get<BaseResponse<AppointmentAnalytics>>('/api/v1/dashboard/health/appointment-analytics');
+      return response.data;
+    } catch (error: any) {
+      console.error('Appointment analytics error:', error);
+      throw error;
+    }
+  },
+
+  getClinicalOperations: async (): Promise<BaseResponse<ClinicalOperations>> => {
+    try {
+      const response = await apiClient.get<BaseResponse<ClinicalOperations>>('/api/v1/dashboard/health/clinical-operations');
+      return response.data;
+    } catch (error: any) {
+      console.error('Clinical operations error:', error);
+      throw error;
+    }
+  },
+
+  getDoctorPerformance: async (): Promise<BaseResponse<DoctorPerformance[]>> => {
+    try {
+      const response = await apiClient.get<BaseResponse<DoctorPerformance[]>>('/api/v1/dashboard/health/doctor-performance');
+      return response.data;
+    } catch (error: any) {
+      console.error('Doctor performance error:', error);
+      throw error;
+    }
+  }
 };
 
 // Add to accountService

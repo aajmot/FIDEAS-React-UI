@@ -708,3 +708,50 @@ export interface PurchaseInvoiceItem {
   total_amount_foreign?: number;
   landed_cost_per_unit?: number;
 }
+
+// Healthcare Dashboard Types
+export interface PatientAnalytics {
+  total_patients: number;
+  new_patients_month: number;
+  active_patients: number;
+  gender_distribution: {
+    male: number;
+    female: number;
+    other: number;
+  };
+  age_groups: {
+    under_18: number;
+    age_18_35: number;
+    age_36_55: number;
+    age_56_70: number;
+    over_70: number;
+  };
+}
+
+export interface AppointmentAnalytics {
+  total_appointments: number;
+  completion_rate: number;
+  no_show_rate: number;
+  appointment_status: {
+    scheduled: number;
+    completed: number;
+    cancelled: number;
+    no_show: number;
+  };
+}
+
+export interface ClinicalOperations {
+  medical_records: number;
+  prescriptions: number;
+  test_orders: number;
+  sample_collections: number;
+}
+
+export interface DoctorPerformance {
+  id: number;
+  doctor_name: string;
+  specialization: string;
+  total_appointments: number;
+  completion_rate: number;
+  consultation_fee: number;
+}

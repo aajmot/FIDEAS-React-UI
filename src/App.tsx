@@ -81,6 +81,7 @@ import HealthAdvancePayment from './components/health/HealthAdvancePayment';
 import HealthInvoicePayment from './components/health/HealthInvoicePayment';
 import PaymentAllocation from './components/health/PaymentAllocation';
 import Dashboard from './pages/Dashboard';
+import HealthDashboard from './pages/HealthDashboard';
 import Profile from './pages/Profile';
 import ARAgingPage from './pages/ARAgingPage';
 import APAgingPage from './pages/APAgingPage';
@@ -145,6 +146,7 @@ function App() {
               }>
                 <Route index element={<Navigate to="/home/dashboard" replace />} />
                 <Route path="home/dashboard" element={<Dashboard />} />
+                <Route path="home/health-dashboard" element={<HealthDashboard />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="admin/user-management" element={<UserManagement />} />
                 <Route path="admin/role-management" element={<RoleManagement />} />
