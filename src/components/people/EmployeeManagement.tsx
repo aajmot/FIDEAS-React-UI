@@ -126,29 +126,29 @@ const EmployeeManagement: React.FC = () => {
       const submitData: any = {
         employee_code: formData.employee_code,
         employee_name: `${formData.first_name} ${formData.last_name}`.trim(),
-        email: formData.email,
+        employee_type: formData.employee_type,
         phone: formData.phone || undefined,
-        department_id: formData.department_id || undefined,
-        branch_id: formData.branch_id || undefined,
+        email: formData.email,
         qualification: formData.qualification || undefined,
         specialization: formData.specialization || undefined,
         license_number: formData.license_number || undefined,
         license_expiry: formData.license_expiry || undefined,
-        employee_type: formData.employee_type,
         employment_type: formData.employment_type,
         status: formData.status,
-        remarks: formData.remarks || undefined
+        remarks: formData.remarks || undefined,
+        branch_id: formData.branch_id || undefined,
+        department_id: formData.department_id || undefined,
+        create_user: formData.create_user
       };
 
       if (formData.create_user && !editingId) {
-        submitData.create_user = true;
         submitData.user_data = {
           username: formData.username || formData.email,
           password: formData.password,
           email: formData.email,
           first_name: formData.first_name,
           last_name: formData.last_name,
-          role_ids: formData.role_ids
+          role_ids: formData.role_ids || []
         };
       }
 
