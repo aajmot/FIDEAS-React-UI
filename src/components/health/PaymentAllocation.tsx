@@ -5,6 +5,7 @@ import SearchableDropdown from '../common/SearchableDropdown';
 import { paymentService  } from '../../services/api';
 import {invoiceService} from '../../services/modules/health/invoiceService';
 import { useToast } from '../../context/ToastContext';
+import { formatUTCToLocal } from '../../utils/dateUtils';
 
 interface Payment {
   id: number;
@@ -252,7 +253,7 @@ const PaymentAllocation: React.FC = () => {
       key: 'balance_amount', 
       label: 'Balance', 
       sortable: true,
-      render: (value: number) => value?.toFixed(2) || '0.00'
+      render: (value: number) => value || '0.00'
     },
     {
       key: 'allocated_amount',
@@ -293,20 +294,20 @@ const PaymentAllocation: React.FC = () => {
 
   const allocationColumns = [
     { key: 'payment_number', label: 'Payment #', sortable: true },
-    { key: 'invoice_number', label: 'Invoice #', sortable: true },
-    { key: 'patient_name', label: 'Patient', sortable: true },
+    { key: 'party_name', label: 'Patient', sortable: true },
+    { key: 'party_phone', label: 'Patient Phone', sortable: true },
     { 
-      key: 'allocated_amount', 
+      key: 'total_amount_base', 
       label: 'Allocated Amount', 
       sortable: true,
-      render: (value: number) => value?.toFixed(2) || '0.00'
+      render: (value: number) => value || '0.00'
     },
     { key: 'remarks', label: 'Remarks', sortable: true },
     { 
-      key: 'created_at', 
+      key: 'updated_at', 
       label: 'Date', 
       sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString()
+      render: (value: string) => formatUTCToLocal(value)
     }
   ];
 

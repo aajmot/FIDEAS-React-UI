@@ -112,6 +112,8 @@ import ApprovalWorkflowManagement from './components/admin/ApprovalWorkflowManag
 import PaymentTermsManagement from './components/admin/PaymentTermsManagement';
 import DocumentTemplates from './components/admin/DocumentTemplates';
 import StockByLocation from './components/inventory/StockByLocation';
+import DepartmentManagement from './components/people/DepartmentManagement';
+import EmployeeManagement from './components/people/EmployeeManagement';
 
 const DashboardHome: React.FC = () => {
   const appName = process.env.REACT_APP_NAME || 'FIDEAS';
@@ -250,6 +252,8 @@ function App() {
                 <Route path="health/payment/advance" element={<HealthAdvancePayment />} />
                 <Route path="health/payment/invoice" element={<HealthInvoicePayment />} />
                 <Route path="health/payment/allocation" element={<PaymentAllocation />} />
+                <Route path="people/departments" element={<DepartmentManagement />} />
+                <Route path="people/employees" element={<EmployeeManagement />} />
 
               </Route>
             </Routes>

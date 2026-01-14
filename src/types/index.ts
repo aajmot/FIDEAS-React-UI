@@ -755,3 +755,40 @@ export interface DoctorPerformance {
   completion_rate: number;
   consultation_fee: number;
 }
+
+export interface Department {
+  id: number;
+  department_code: string;
+  department_name: string;
+  description?: string;
+  parent_department_id?: number;
+  parent_name?: string;
+  branch_id?: number;
+  default_cost_center_id?: number;
+  org_unit_type?: string;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Employee {
+  id: number;
+  employee_code: string;
+  employee_name: string;
+  email: string;
+  phone?: string;
+  department_id?: number;
+  department_name?: string;
+  branch_id?: number;
+  qualification?: string;
+  specialization?: string;
+  license_number?: string;
+  license_expiry?: string;
+  employee_type?: string;
+  employment_type?: string;
+  status: string;
+  remarks?: string;
+  user_id?: number;
+  created_at?: string;
+  updated_at?: string;
+}

@@ -41,5 +41,11 @@ export {
   accountServiceExtensions 
 } from './modules/dashboard';
 
+// People
+export { 
+  departmentService,
+  employeeService 
+} from './modules/people';
+
 // Re-export apiClient for backward compatibility
 export { default as api } from './apiClient';

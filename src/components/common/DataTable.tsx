@@ -66,13 +66,6 @@ const DataTable: React.FC<DataTableProps> = ({
       )
     );
     
-    // If external pagination and no client-side results found, trigger server search only once
-    if (isExternalPagination && searchTerm && filtered.length === 0 && onSearch && lastServerSearch !== searchTerm) {
-      setLastServerSearch(searchTerm);
-      onSearch(searchTerm);
-      return data; // Return current data while server search is in progress
-    }
-    
     if (sortConfig) {
       filtered.sort((a, b) => {
         const aVal = a[sortConfig.key];
@@ -84,7 +77,15 @@ const DataTable: React.FC<DataTableProps> = ({
     }
     
     return filtered;
-  }, [data, searchTerm, sortConfig, columns, isExternalPagination, onSearch, lastServerSearch]);
+  }, [data, searchTerm, sortConfig, columns, isExternalPagination]);
+  
+  // Trigger server search in useEffect instead of during render
+  React.useEffect(() => {
+    if (isExternalPagination && searchTerm && filteredAndSortedData.length === 0 && onSearch && lastServerSearch !== searchTerm) {
+      setLastServerSearch(searchTerm);
+      onSearch(searchTerm);
+    }
+  }, [isExternalPagination, searchTerm, filteredAndSortedData.length, onSearch, lastServerSearch]);
   
   const totalPages = isExternalPagination 
     ? Math.ceil((totalItems || 0) / pageSize)
