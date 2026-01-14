@@ -15,7 +15,32 @@ overriding style
     margin-bottom: .3rem!important;
 }
 
+@keyframes colorChange {
+  0% {
+    filter: hue-rotate(0deg);
+  }
 
+    100% {
+      filter: hue-rotate(360deg);
+    }
+    }
+  
+    .dotted-bg {
+      background-color: #0f172a;
+      background-image: radial-gradient(#3b82f6 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: colorChange 10s linear infinite;
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+    }
+  
+    .glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
 :root {
   /* Typography */

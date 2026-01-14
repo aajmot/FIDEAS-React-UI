@@ -117,7 +117,7 @@ import EmployeeManagement from './components/people/EmployeeManagement';
 
 const DashboardHome: React.FC = () => {
   const appName = process.env.REACT_APP_NAME || 'FIDEAS';
-  
+
   return (
     <div className="p-3 sm:p-6">
       <div className="text-center">
@@ -135,130 +135,158 @@ function App() {
     <AuthProvider>
       <TenantProvider>
         <ToastProvider>
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <div className="App">
-            <Routes>
-              <Route path="/public/health/test-result/:resultNo" element={<PublicTestResultView />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<TenantRegistration />} />
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <MainLayout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<Navigate to="/home/dashboard" replace />} />
-                <Route path="home/dashboard" element={<Dashboard />} />
-                <Route path="home/health-dashboard" element={<HealthDashboard />} />
-                <Route path="profile" element={<Profile />} />
-                <Route path="admin/user-management" element={<UserManagement />} />
-                <Route path="admin/role-management" element={<RoleManagement />} />
-                <Route path="admin/user-role-mapping" element={<UserRoleMapping />} />
-                <Route path="admin/menu-access" element={<MenuAccessScreen />} />
-                <Route path="admin/tenant-update" element={<TenantUpdate />} />
-                <Route path="admin/transaction-templates" element={<TransactionTemplates />} />
-                <Route path="admin/account-type-mappings" element={<AccountTypeMappings />} />
-                <Route path="admin/legal-entity" element={<LegalEntityManagement />} />
-                <Route path="admin/financial-years" element={<FinancialYearManagement />} />
-                <Route path="admin/agency-management" element={<AgencyManagement />} />
-                <Route path="admin/agency-commission-setup" element={<AgencyCommissionManagement />} />
-                <Route path="inventory/units" element={<UnitManagement />} />
-                <Route path="inventory/unit-management" element={<UnitManagement />} />
-                <Route path="inventory/category-management" element={<CategoryManagement />} />
-                <Route path="inventory/product-management" element={<ProductManagement />} />
-                <Route path="inventory/customer-management" element={<CustomerManagement />} />
-                <Route path="inventory/supplier-management" element={<SupplierManagement />} />
-                <Route path="inventory/purchase-order" element={<PurchaseOrderManagement />} />
-                <Route path="inventory/sales-order" element={<SalesOrderManagement />} />
-                <Route path="inventory/order-commission" element={<OrderCommissionManagement />} />
-                <Route path="inventory/product-waste" element={<ProductWasteManagement />} />
-                <Route path="inventory/stock-adjustment" element={<StockAdjustmentManagement />} />
-                <Route path="inventory/stock-details" element={<StockDetails />} />
-                <Route path="inventory/stock-meter" element={<StockMeter />} />
-                <Route path="inventory/stock-tracking" element={<StockTracking />} />
-                <Route path="account/chart-accounts" element={<ChartOfAccounts />} />
-                <Route path="account/account-groups" element={<AccountGroupManagement />} />
-                <Route path="account/voucher-series" element={<VoucherSeriesManagement />} />
-                <Route path="account/cost-centers" element={<CostCenterManagement />} />
-                <Route path="account/budgets" element={<BudgetManagement />} />
-                <Route path="account/tax-management" element={<TaxManagement />} />
-                <Route path="admin/currency-management" element={<CurrencyManagement />} />
-                <Route path="account/bank-reconciliation" element={<BankReconciliation />} />
-                <Route path="account/journal" element={<Journal />} />
-                <Route path="account/vouchers" element={<VoucherManagement />} />
-                <Route path="account/payments" element={<PaymentManagement />} />
-                <Route path="account/receipts" element={<ReceiptManagement />} />
-                <Route path="account/recurring-vouchers" element={<RecurringVouchers />} />
-                <Route path="account/contra" element={<ContraManagement />} />
-                <Route path="account/credit-notes" element={<CreditNoteManagement />} />
-                <Route path="account/debit-notes" element={<DebitNoteManagement />} />
-                <Route path="account/aging-analysis" element={<AgingAnalysis />} />
-                <Route path="account/tds-management" element={<TDSManagement />} />
-                <Route path="account/ledger" element={<Ledger />} />
-                <Route path="account/day-book" element={<DayBook />} />
-                <Route path="account/cash-book" element={<CashBook />} />
-                <Route path="account/bank-book" element={<BankBook />} />
-                <Route path="account/reports" element={<Reports />} />
-                <Route path="account/outstanding-reports" element={<OutstandingReports />} />
-                <Route path="account/comparative-reports" element={<ComparativeReports />} />
-                <Route path="account/reports/ar-aging" element={<ARAgingPage />} />
-                <Route path="account/reports/ap-aging" element={<APAgingPage />} />
-                <Route path="account/audit-trail" element={<AuditTrailPage />} />
-                <Route path="account/utilities/gst-calculator" element={<GSTCalculatorPage />} />
-                <Route path="account/reports/comparative" element={<ComparativeReportsPage />} />
-                <Route path="account/reports/budget-vs-actual" element={<BudgetVsActualPage />} />
-                <Route path="account/gst-reports" element={<GSTReports />} />
-                <Route path="inventory/stock-valuation" element={<StockValuation />} />
-                <Route path="inventory/stock-aging" element={<StockAging />} />
-                <Route path="inventory/batch-management" element={<BatchManagement />} />
-                <Route path="inventory/sales-invoice" element={<SalesInvoiceManagement />} />
-                <Route path="inventory/purchase-invoice" element={<PurchaseInvoiceManagement />} />
-                <Route path="inventory/warehouses" element={<WarehouseManagement />} />
-                <Route path="inventory/stock-transfer" element={<StockTransferManagement />} />
-                <Route path="account/fixed-assets" element={<FixedAssetManagement />} />
-                <Route path="account/asset-categories" element={<AssetCategoryManagement />} />
-                <Route path="account/depreciation" element={<DepreciationManagement />} />
-                <Route path="account/einvoice" element={<EInvoiceManagement />} />
-                <Route path="account/eway-bill" element={<EWayBillManagement />} />
-                <Route path="account/gstr1" element={<GSTR1Management />} />
-                <Route path="account/tds-returns" element={<TDSReturns />} />
-                <Route path="account/custom-reports" element={<CustomReports />} />
-                <Route path="account/scheduled-reports" element={<ScheduledReports />} />
-                <Route path="admin/pending-approvals" element={<PendingApprovals />} />
-                <Route path="admin/approval-workflows" element={<ApprovalWorkflowManagement />} />
-                <Route path="admin/payment-terms" element={<PaymentTermsManagement />} />
-                <Route path="admin/document-templates" element={<DocumentTemplates />} />
-                <Route path="inventory/stock-by-location" element={<StockByLocation />} />
-                <Route path="admin/notifications" element={<Notifications />} />
-                <Route path="clinic/patient-management" element={<PatientManagement />} />
-                <Route path="clinic/doctor-management" element={<DoctorManagement />} />
-                <Route path="clinic/appointments" element={<AppointmentManagement />} />
-                <Route path="clinic/medical-records" element={<MedicalRecordManagement />} />
-                <Route path="clinic/prescriptions" element={<PrescriptionManagement />} />
-                <Route path="clinic/billings" element={<BillingManagement />} />
-                <Route path="clinic/billing-master" element={<BillingMasterManagement />} />
-                <Route path="clinic/test-category" element={<TestCategoryManagement />} />
-                <Route path="clinic/test-master" element={<TestManagement />} />
-                <Route path="diagnostic/patient-management" element={<DiagnosticPatientManagement />} />
-                <Route path="diagnostic/doctor-management" element={<DiagnosticDoctorManagement />} />
-                <Route path="diagnostic/test-category" element={<DiagnosticTestCategoryManagement />} />
-                <Route path="diagnostic/test-master" element={<DiagnosticTestManagement />} />
-                <Route path="diagnostic/test-panel" element={<TestPanelManagement />} />
-                <Route path="diagnostic/test-order" element={<TestOrderManagement />} />
-                <Route path="diagnostic/test-result" element={<TestResultManagement />} />
-                <Route path="diagnostic/order-commission" element={<OrderCommissionManagement />} />
-                <Route path="health/test-invoice" element={<TestInvoiceManagement />} />
-                <Route path="health/appointment-invoice" element={<AppointmentInvoicePage />} />
-                <Route path="health/payments" element={<HealthPaymentManagement />} />
-                <Route path="health/payment/advance" element={<HealthAdvancePayment />} />
-                <Route path="health/payment/invoice" element={<HealthInvoicePayment />} />
-                <Route path="health/payment/allocation" element={<PaymentAllocation />} />
-                <Route path="people/departments" element={<DepartmentManagement />} />
-                <Route path="people/employees" element={<EmployeeManagement />} />
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <div className="App">
+              <Routes>
+                <Route path="/public/health/test-result/:resultNo" element={<PublicTestResultView />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<TenantRegistration />} />
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <MainLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route path="profile" element={<Profile />} />
+                  <Route index element={<Navigate to="/home/dashboard" replace />} />
+                  <Route path="home/dashboard" element={<Dashboard />} />
+                  <Route path="home/health-dashboard" element={<HealthDashboard />} />
 
-              </Route>
-            </Routes>
-          </div>
-        </Router>
+                  {/* admin routes */}
+                  <Route path="admin">
+                    <Route path="user-management" element={<UserManagement />} />
+                    <Route path="role-management" element={<RoleManagement />} />
+                    <Route path="user-role-mapping" element={<UserRoleMapping />} />
+                    <Route path="menu-access" element={<MenuAccessScreen />} />
+                    <Route path="tenant-update" element={<TenantUpdate />} />
+                    <Route path="transaction-templates" element={<TransactionTemplates />} />
+                    <Route path="account-type-mappings" element={<AccountTypeMappings />} />
+                    <Route path="legal-entity" element={<LegalEntityManagement />} />
+                    <Route path="financial-years" element={<FinancialYearManagement />} />
+                    <Route path="agency-management" element={<AgencyManagement />} />
+                    <Route path="agency-commission-setup" element={<AgencyCommissionManagement />} />
+                    <Route path="currency-management" element={<CurrencyManagement />} />
+                    <Route path="pending-approvals" element={<PendingApprovals />} />
+                    <Route path="approval-workflows" element={<ApprovalWorkflowManagement />} />
+                    <Route path="payment-terms" element={<PaymentTermsManagement />} />
+                    <Route path="document-templates" element={<DocumentTemplates />} />
+                    <Route path="notifications" element={<Notifications />} />
+
+                  </Route>
+
+                  {/* Inventory Routes */}
+                  <Route path='inventory'>
+                    <Route path="units" element={<UnitManagement />} />
+                    <Route path="unit-management" element={<UnitManagement />} />
+                    <Route path="category-management" element={<CategoryManagement />} />
+                    <Route path="product-management" element={<ProductManagement />} />
+                    <Route path="customer-management" element={<CustomerManagement />} />
+                    <Route path="supplier-management" element={<SupplierManagement />} />
+                    <Route path="purchase-order" element={<PurchaseOrderManagement />} />
+                    <Route path="sales-order" element={<SalesOrderManagement />} />
+                    <Route path="order-commission" element={<OrderCommissionManagement />} />
+                    <Route path="product-waste" element={<ProductWasteManagement />} />
+                    <Route path="stock-adjustment" element={<StockAdjustmentManagement />} />
+                    <Route path="stock-details" element={<StockDetails />} />
+                    <Route path="stock-meter" element={<StockMeter />} />
+                    <Route path="stock-tracking" element={<StockTracking />} />
+                    <Route path="stock-valuation" element={<StockValuation />} />
+                    <Route path="stock-aging" element={<StockAging />} />
+                    <Route path="batch-management" element={<BatchManagement />} />
+                    <Route path="sales-invoice" element={<SalesInvoiceManagement />} />
+                    <Route path="purchase-invoice" element={<PurchaseInvoiceManagement />} />
+                    <Route path="warehouses" element={<WarehouseManagement />} />
+                    <Route path="stock-transfer" element={<StockTransferManagement />} />
+                    <Route path="stock-by-location" element={<StockByLocation />} />
+                  </Route>
+
+                  {/* account route */}
+                  <Route path="account">
+                    <Route path="chart-accounts" element={<ChartOfAccounts />} />
+                    <Route path="account-groups" element={<AccountGroupManagement />} />
+                    <Route path="voucher-series" element={<VoucherSeriesManagement />} />
+                    <Route path="cost-centers" element={<CostCenterManagement />} />
+                    <Route path="budgets" element={<BudgetManagement />} />
+                    <Route path="tax-management" element={<TaxManagement />} />
+                    <Route path="bank-reconciliation" element={<BankReconciliation />} />
+                    <Route path="journal" element={<Journal />} />
+                    <Route path="vouchers" element={<VoucherManagement />} />
+                    <Route path="payments" element={<PaymentManagement />} />
+                    <Route path="receipts" element={<ReceiptManagement />} />
+                    <Route path="recurring-vouchers" element={<RecurringVouchers />} />
+                    <Route path="contra" element={<ContraManagement />} />
+                    <Route path="credit-notes" element={<CreditNoteManagement />} />
+                    <Route path="debit-notes" element={<DebitNoteManagement />} />
+                    <Route path="aging-analysis" element={<AgingAnalysis />} />
+                    <Route path="tds-management" element={<TDSManagement />} />
+                    <Route path="ledger" element={<Ledger />} />
+                    <Route path="day-book" element={<DayBook />} />
+                    <Route path="cash-book" element={<CashBook />} />
+                    <Route path="bank-book" element={<BankBook />} />
+                    <Route path="reports" element={<Reports />} />
+                    <Route path="outstanding-reports" element={<OutstandingReports />} />
+                    <Route path="comparative-reports" element={<ComparativeReports />} />
+                    <Route path="audit-trail" element={<AuditTrailPage />} />
+                    <Route path="utilities/gst-calculator" element={<GSTCalculatorPage />} />
+                    <Route path="reports">
+                      <Route path="comparative" element={<ComparativeReportsPage />} />
+                      <Route path="budget-vs-actual" element={<BudgetVsActualPage />} />
+                      <Route path="ar-aging" element={<ARAgingPage />} />
+                      <Route path="ap-aging" element={<APAgingPage />} />
+                    </Route>
+                    <Route path="gst-reports" element={<GSTReports />} />
+                    <Route path="fixed-assets" element={<FixedAssetManagement />} />
+                    <Route path="asset-categories" element={<AssetCategoryManagement />} />
+                    <Route path="depreciation" element={<DepreciationManagement />} />
+                    <Route path="einvoice" element={<EInvoiceManagement />} />
+                    <Route path="eway-bill" element={<EWayBillManagement />} />
+                    <Route path="gstr1" element={<GSTR1Management />} />
+                    <Route path="tds-returns" element={<TDSReturns />} />
+                    <Route path="custom-reports" element={<CustomReports />} />
+                    <Route path="scheduled-reports" element={<ScheduledReports />} />
+                  </Route>
+
+                  {/* Clinic Route */}
+                  <Route path="clinic">
+                    <Route path="patient-management" element={<PatientManagement />} />
+                    <Route path="doctor-management" element={<DoctorManagement />} />
+                    <Route path="appointments" element={<AppointmentManagement />} />
+                    <Route path="medical-records" element={<MedicalRecordManagement />} />
+                    <Route path="prescriptions" element={<PrescriptionManagement />} />
+                    <Route path="billings" element={<BillingManagement />} />
+                    <Route path="billing-master" element={<BillingMasterManagement />} />
+                    <Route path="test-category" element={<TestCategoryManagement />} />
+                    <Route path="test-master" element={<TestManagement />} />
+                  </Route>
+                  <Route path="diagnostic">
+                    <Route path="patient-management" element={<DiagnosticPatientManagement />} />
+                    <Route path="doctor-management" element={<DiagnosticDoctorManagement />} />
+                    <Route path="test-category" element={<DiagnosticTestCategoryManagement />} />
+                    <Route path="test-master" element={<DiagnosticTestManagement />} />
+                    <Route path="test-panel" element={<TestPanelManagement />} />
+                    <Route path="test-order" element={<TestOrderManagement />} />
+                    <Route path="test-result" element={<TestResultManagement />} />
+                    <Route path="order-commission" element={<OrderCommissionManagement />} />
+                  </Route>
+                  <Route path="health">
+                    <Route path="test-invoice" element={<TestInvoiceManagement />} />
+                    <Route path="appointment-invoice" element={<AppointmentInvoicePage />} />
+                    <Route path="payment" element={<HealthPaymentManagement />}>
+                      <Route path="advance" element={<HealthAdvancePayment />} />
+                      <Route path="invoice" element={<HealthInvoicePayment />} />
+                      <Route path="allocation" element={<PaymentAllocation />} />
+                    </Route>
+                  </Route>
+                  <Route path="people">
+                    <Route path="departments" element={<DepartmentManagement />} />
+                    <Route path="employees" element={<EmployeeManagement />} />
+                  </Route>
+
+
+
+                </Route>
+              </Routes>
+            </div>
+          </Router>
         </ToastProvider>
       </TenantProvider>
     </AuthProvider>
