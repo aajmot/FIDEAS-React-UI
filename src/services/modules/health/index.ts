@@ -6,3 +6,4 @@ export { prescriptionService } from './prescriptionService';
 export { billingService } from './billingService';
 export { invoiceService } from './invoiceService';
 export { appointmentInvoiceService } from './appointmentInvoiceService';
+export { sampleCollectionService } from './sampleCollectionService';

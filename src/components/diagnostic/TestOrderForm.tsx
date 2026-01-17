@@ -614,10 +614,9 @@ const TestOrderForm: React.FC<TestOrderFormProps> = ({ onSave, onCancel, isColla
               <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
               <SearchableDropdown
                 options={[
-                  { value: 'DRAFT', label: 'Draft' },
-                  { value: 'PENDING', label: 'Pending' },
-                  { value: 'COMPLETED', label: 'Completed' },
-                  { value: 'CANCELLED', label: 'Cancelled' }
+                  { value: 'DRAFT', label: 'DRAFT' },
+                  { value: 'ORDERED', label: 'ORDERED' },
+                  { value: 'CANCELLED', label: 'CANCELLED' }
                 ]}
                 value={formData.status}
                 onChange={(value) => setFormData(prev => ({ ...prev, status: value.toString() }))}
