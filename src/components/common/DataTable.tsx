@@ -34,7 +34,7 @@ const DataTable: React.FC<DataTableProps> = ({
   onDelete,
   onRowClick,
   loading = false,
-  pageSize = 10,
+  pageSize = 200,
   totalItems,
   currentPage: externalCurrentPage,
   onPageChange,

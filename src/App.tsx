@@ -115,6 +115,7 @@ import DocumentTemplates from './components/admin/DocumentTemplates';
 import StockByLocation from './components/inventory/StockByLocation';
 import DepartmentManagement from './components/people/DepartmentManagement';
 import EmployeeManagement from './components/people/EmployeeManagement';
+import InvoicePaymentReportPage from './pages/InvoicePaymentReportPage';
 
 const DashboardHome: React.FC = () => {
   const appName = process.env.REACT_APP_NAME || 'FIDEAS';
@@ -256,7 +257,7 @@ function App() {
                 <Route path="health/payment/allocation" element={<PaymentAllocation />} />
                 <Route path="people/departments" element={<DepartmentManagement />} />
                 <Route path="people/employees" element={<EmployeeManagement />} />
-
+                <Route path="/health/reports/invoice-payment" element={<InvoicePaymentReportPage />} />
               </Route>
             </Routes>
           </div>
